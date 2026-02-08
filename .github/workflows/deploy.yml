@@ -58,3 +58,5 @@ jobs:
               --env-file /srv/hotspot/.env.admin \
               --restart always \
               hotspot/admin-be:dev
+            
+            docker image prune -f
