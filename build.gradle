@@ -2,9 +2,14 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+
+	// Code Quality
+	id 'checkstyle'
+	id 'jacoco'
+	id 'com.diffplug.spotless' version '6.25.0'
 }
 
-group = 'hotspot'
+group = 'com.hotspot'
 version = '0.0.1-SNAPSHOT'
 description = 'Hotspot Admin Domain API'
 
@@ -18,6 +23,9 @@ repositories {
 	mavenCentral()
 }
 
+/* =========================
+   Dependencies
+========================= */
 dependencies {
 	// Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -43,6 +51,111 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 }
 
+/* =========================
+   Test
+========================= */
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
 }
+
+/* =========================
+   Spotless
+========================= */
+spotless {
+	java {
+		target 'src/**/*.java'
+		// 4칸 들여쓰기 강제
+		indentWithSpaces(4)
+
+		// 개행 & 공백 정리
+		trimTrailingWhitespace()
+		endWithNewline()
+
+		// import 정렬
+		importOrder(
+				'java',
+				'javax',
+				'jakarta',
+				'org',
+				'com',
+				''
+		)
+		removeUnusedImports()
+	}
+}
+
+/* =========================
+   Checkstyle
+========================= */
+checkstyle {
+	toolVersion = "10.12.5"
+	configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+}
+
+tasks.withType(Checkstyle).configureEach {
+	reports {
+		xml.required = false
+		html.required = true
+	}
+}
+
+/* =========================
+   JaCoCo
+========================= */
+jacoco {
+	toolVersion = "0.8.11"
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+	}
+
+	classDirectories.setFrom(
+			files(classDirectories.files.collect {
+				fileTree(dir: it, exclude: [
+						'**/*Application*',
+						'**/config/**',
+						'**/dto/**',
+						'**/request/**',
+						'**/response/**',
+						'**/entity/**',
+						'**/exception/**'
+				])
+			})
+	)
+}
+
+jacocoTestCoverageVerification {
+	dependsOn test
+
+	violationRules {
+		rule {
+			element = 'CLASS'
+
+			excludes = [
+					'*Application*',
+					'hotspot.user.common.config.*',
+					'hotspot.user.common.exception.*'
+			]
+
+			limit {
+				counter = 'INSTRUCTION'
+				value = 'COVEREDRATIO'
+				minimum = 0.70
+			}
+		}
+	}
+}
+
+/* =========================
+   CI Gate
+========================= */
+check.dependsOn(
+		spotlessCheck,
+		checkstyleMain,
+		jacocoTestCoverageVerification
+)
