@@ -107,13 +107,28 @@ jacoco {
 	toolVersion = "0.8.11"
 }
 
-def coverageExcludes = [
+def reportExcludes = [
 		'**/*Application*',
+		'**/config/**',
 		'**/dto/**',
 		'**/request/**',
 		'**/response/**',
 		'**/entity/**',
-		'**/common/**'
+		'**/exception/**',
+		'**/common/**',
+		'**/infrastructure/**'
+]
+
+def verificationExcludes = [
+		'hotspot.admin.*Application*',
+		'hotspot.admin.*.config.*',
+		'hotspot.admin.*.dto.*',
+		'hotspot.admin.*.request.*',
+		'hotspot.admin.*.response.*',
+		'hotspot.admin.*.entity.*',
+		'hotspot.admin.*.exception.*',
+		'hotspot.admin.common.*',
+		'hotspot.admin.*.infrastructure.*'
 ]
 
 jacocoTestReport {
@@ -125,7 +140,7 @@ jacocoTestReport {
 
 	classDirectories.setFrom(
 			files(classDirectories.files.collect {
-				fileTree(dir: it, exclude: coverageExcludes)
+				fileTree(dir: it, exclude: reportExcludes)
 			})
 	)
 }
@@ -137,7 +152,7 @@ jacocoTestCoverageVerification {
 		rule {
 			element = 'CLASS'
 
-			excludes = coverageExcludes
+			excludes = verificationExcludes
 
 			limit {
 				counter = 'INSTRUCTION'
