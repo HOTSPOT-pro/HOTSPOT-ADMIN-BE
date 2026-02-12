@@ -1,4 +1,4 @@
-package hotspot.admin.common;
+package hotspot.admin;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
