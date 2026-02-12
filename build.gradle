@@ -128,7 +128,8 @@ jacocoTestReport {
 						'**/request/**',
 						'**/response/**',
 						'**/entity/**',
-						'**/exception/**'
+						'**/exception/**',
+						'**/common/**'
 				])
 			})
 	)
