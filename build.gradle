@@ -107,6 +107,15 @@ jacoco {
 	toolVersion = "0.8.11"
 }
 
+def coverageExcludes = [
+		'**/*Application*',
+		'**/dto/**',
+		'**/request/**',
+		'**/response/**',
+		'**/entity/**',
+		'**/common/**'
+]
+
 jacocoTestReport {
 	dependsOn test
 	reports {
@@ -116,16 +125,7 @@ jacocoTestReport {
 
 	classDirectories.setFrom(
 			files(classDirectories.files.collect {
-				fileTree(dir: it, exclude: [
-						'**/*Application*',
-						'**/config/**',
-						'**/dto/**',
-						'**/request/**',
-						'**/response/**',
-						'**/entity/**',
-						'**/exception/**',
-						'**/common/**'
-				])
+				fileTree(dir: it, exclude: coverageExcludes)
 			})
 	)
 }
@@ -137,11 +137,7 @@ jacocoTestCoverageVerification {
 		rule {
 			element = 'CLASS'
 
-			excludes = [
-					'*Application*',
-					'hotspot.user.common.config.*',
-					'hotspot.user.common.exception.*'
-			]
+			excludes = coverageExcludes
 
 			limit {
 				counter = 'INSTRUCTION'
