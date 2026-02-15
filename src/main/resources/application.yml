@@ -1,6 +1,7 @@
 project:
   name: Hotspot Admin Domain API
   version: 1.0.0
+  admin-code: ${ADMIN_CODE}
 
 jwt:
   secret: ${JWT_SECRET_KEY}

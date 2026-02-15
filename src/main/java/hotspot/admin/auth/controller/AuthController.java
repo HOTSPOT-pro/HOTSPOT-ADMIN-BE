@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.admin.auth.controller.port.LoginService;
 import hotspot.admin.auth.controller.request.LoginRequest;
 import hotspot.admin.auth.controller.response.TokenResponse;
+import hotspot.admin.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,7 +22,7 @@ public class AuthController {
     private final LoginService loginService;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody @Valid LoginRequest request) {
-        return ResponseEntity.ok(loginService.login(request));
+    public ResponseEntity<ApiResponse<TokenResponse>> login(@RequestBody @Valid LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(loginService.login(request)));
     }
 }

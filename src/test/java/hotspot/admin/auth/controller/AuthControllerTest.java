@@ -48,7 +48,7 @@ class AuthControllerTest {
                         .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("mock-token"));
+                .andExpect(jsonPath("$.data.accessToken").value("mock-token"));
     }
 
     @Test

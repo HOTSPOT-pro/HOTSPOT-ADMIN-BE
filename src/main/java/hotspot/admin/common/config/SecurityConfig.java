@@ -8,6 +8,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import hotspot.admin.common.jwt.JwtAuthenticationFilter;
 import hotspot.admin.common.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -35,7 +38,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtProvider, objectMapper),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }

@@ -12,11 +12,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    @Value("${server.domain.local}")
-    private String localServerDomain;
+    private final String localServerDomain;
+    private final String devServerDomain;
 
-    @Value("${server.domain.dev}")
-    private String devServerDomain;
+    public CorsConfig(
+            @Value("${server.domain.local}") String localServerDomain,
+            @Value("${server.domain.dev}") String devServerDomain) {
+        this.localServerDomain = localServerDomain;
+        this.devServerDomain = devServerDomain;
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
