@@ -66,6 +66,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
         try {
             String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
+            // TODO: usedData/remainingData는 사용량 집계 연동 전까지 null 유지.
             return FamilyListItem.builder()
                     .familyId(item.familyId())
                     .representativeName(item.representativeName())

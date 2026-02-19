@@ -106,6 +106,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     }
 
     private FamilyListItem mapFamilyListItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
+        // TODO: usedData/remainingData는 데이터 사용량 집계 테이블(또는 뷰) 연동 후 채운다.
         return FamilyListItem.builder()
                 .familyId(rs.getLong("family_id"))
                 .representativeName(rs.getString("representative_name"))
