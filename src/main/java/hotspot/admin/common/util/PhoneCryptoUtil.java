@@ -2,6 +2,7 @@ package hotspot.admin.common.util;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -13,10 +14,16 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class PhoneCryptoUtil {
 
     private static final int AES_BLOCK_SIZE = 16;
+    private static final int AES_KEY_SIZE_128 = 16;
+    private static final int AES_KEY_SIZE_192 = 24;
+    private static final int AES_KEY_SIZE_256 = 32;
     private static final String AES_ALGORITHM = "AES";
 
     private final List<byte[]> keyCandidates;
@@ -35,14 +42,16 @@ public class PhoneCryptoUtil {
                 byte[] ciphertext = Arrays.copyOfRange(decoded, AES_BLOCK_SIZE, decoded.length);
                 try {
                     return decryptAesCbc(ciphertext, iv, keyBytes);
-                } catch (GeneralSecurityException ignored) {
+                } catch (GeneralSecurityException e) {
+                    log.trace("CBC decryption failed. Falling back to ECB mode.", e);
                     // Fallback to ECB if storage format is ciphertext only.
                 }
             }
 
             try {
                 return decryptAesEcb(decoded, keyBytes);
-            } catch (GeneralSecurityException ignored) {
+            } catch (GeneralSecurityException e) {
+                log.trace("ECB decryption failed with current key candidate.", e);
                 // Try next key candidate.
             }
         }
@@ -65,25 +74,32 @@ public class PhoneCryptoUtil {
     }
 
     private List<byte[]> resolveKeyCandidates(String rawKey) {
-        byte[] rawBytes = rawKey.getBytes(StandardCharsets.UTF_8);
-        byte[] normalizedRaw = normalizeKey(rawBytes);
+        List<byte[]> candidates = new ArrayList<>();
+
+        addIfValidKey(candidates, rawKey.getBytes(StandardCharsets.UTF_8));
 
         try {
             byte[] decoded = Base64.getDecoder().decode(rawKey);
-            byte[] normalizedDecoded = normalizeKey(decoded);
-            return List.of(normalizedDecoded, normalizedRaw);
-        } catch (IllegalArgumentException ignored) {
-            return List.of(normalizedRaw);
+            addIfValidKey(candidates, decoded);
+        } catch (IllegalArgumentException e) {
+            log.trace("PHONE_SECRET_KEY is not Base64 encoded. Raw key bytes only will be considered.");
+        }
+
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "PHONE_SECRET_KEY length must be 16/24/32 bytes (raw or Base64-decoded).");
+        }
+
+        return candidates;
+    }
+
+    private void addIfValidKey(List<byte[]> candidates, byte[] key) {
+        if (isValidAesKeyLength(key.length)) {
+            candidates.add(key);
         }
     }
 
-    private byte[] normalizeKey(byte[] source) {
-        if (source.length == 16 || source.length == 24 || source.length == 32) {
-            return source;
-        }
-        byte[] normalized = new byte[32];
-        int length = Math.min(source.length, normalized.length);
-        System.arraycopy(source, 0, normalized, 0, length);
-        return normalized;
+    private boolean isValidAesKeyLength(int length) {
+        return length == AES_KEY_SIZE_128 || length == AES_KEY_SIZE_192 || length == AES_KEY_SIZE_256;
     }
 }
