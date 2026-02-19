@@ -16,6 +16,7 @@ import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    @Transactional(readOnly = true)
     @Override
     public FamilyListResponse getFamilyList(FamilyListRequest request) {
         validateSize(request.getSize());
