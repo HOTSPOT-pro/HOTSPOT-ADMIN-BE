@@ -1,9 +1,7 @@
 name: ADMIN-BE CD (dev)
 
 on:
-  push:
-    branches:
-      - develop
+  workflow_dispatch:
 
 jobs:
   deploy:
