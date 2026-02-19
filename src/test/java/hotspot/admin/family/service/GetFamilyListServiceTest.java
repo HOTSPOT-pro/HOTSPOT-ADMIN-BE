@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -101,7 +102,7 @@ class GetFamilyListServiceTest {
         when(familyRepository.findFamilySlice(31, 0L))
                 .thenReturn(rows);
         when(phoneCryptoUtil.decryptPhone("enc"))
-                .thenThrow(new RuntimeException("decrypt failed"));
+                .thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyList(request))
                 .isInstanceOf(ApplicationException.class)
