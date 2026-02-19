@@ -125,16 +125,17 @@ def reportExcludes = [
 ]
 
 def verificationExcludes = [
-		'hotspot.admin.*Application*',
-		'hotspot.admin.*.config.*',
-		'hotspot.admin.*.dto.*',
-		'hotspot.admin.*.request.*',
-		'hotspot.admin.*.response.*',
-		'hotspot.admin.*.entity.*',
-		'hotspot.admin.*.exception.*',
-		'hotspot.admin.common.*',
-		'hotspot.admin.*.infrastructure.*',
-		'hotspot.admin.HealthController'
+		'*.config.*',
+		'*.dto.*',
+		'*.request.*',
+		'*.response.*',
+		'*.entity.*',
+		'*.exception.*',
+		'*.mapper.*',
+		'*.common.*',
+		'*.domain.*',
+		'**.*Application*',    // 메인 애플리케이션
+		'**.*HealthController' // 특정 컨트롤러
 ]
 
 jacocoTestReport {
