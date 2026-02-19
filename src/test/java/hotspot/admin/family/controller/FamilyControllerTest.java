@@ -17,8 +17,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.admin.family.controller.port.GetFamilyListService;
+import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
+import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 
 @WebMvcTest(FamilyController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -29,6 +31,9 @@ class FamilyControllerTest {
 
     @MockBean
     private GetFamilyListService getFamilyListService;
+
+    @MockBean
+    private SearchFamilyByPhoneService searchFamilyByPhoneService;
 
     @Test
     @DisplayName("가족 목록 조회 성공")
@@ -60,5 +65,31 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.hasNext").value(true))
                 .andExpect(jsonPath("$.data.familyList[0].familyId").value(1))
                 .andExpect(jsonPath("$.data.familyList[0].phoneNumber").value("010-****-0000"));
+    }
+
+    @Test
+    @DisplayName("전화번호 검색 성공")
+    void searchFamilyByPhoneSuccess() throws Exception {
+        FamilyListItem item = FamilyListItem.builder()
+                .familyId(2L)
+                .representativeName("김보호자")
+                .phoneNumber("010-****-1234")
+                .memberCount(4)
+                .usedData(null)
+                .remainingData(null)
+                .build();
+
+        FamilyPhoneSearchResponse response = FamilyPhoneSearchResponse.builder()
+                .family(item)
+                .build();
+
+        when(searchFamilyByPhoneService.searchByPhone("010-1234-1234"))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/admin/families/search/phone")
+                        .param("phoneNumber", "010-1234-1234"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.family.familyId").value(2))
+                .andExpect(jsonPath("$.data.family.phoneNumber").value("010-****-1234"));
     }
 }
