@@ -1,8 +1,6 @@
 package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
-import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,51 +8,42 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
+import hotspot.admin.common.util.PhoneHashUtil;
 import hotspot.admin.common.util.PhoneMaskingUtil;
-import hotspot.admin.family.controller.port.GetFamilyListService;
-import hotspot.admin.family.controller.request.FamilyListRequest;
+import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
-import hotspot.admin.family.controller.response.FamilyListResponse;
+import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class GetFamilyListServiceImpl implements GetFamilyListService {
-
-    private static final Set<Integer> ALLOWED_SIZE = Set.of(30, 50, 100);
+public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneService {
 
     private final FamilyRepository familyRepository;
+    private final PhoneHashUtil phoneHashUtil;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     @Transactional(readOnly = true)
     @Override
-    public FamilyListResponse getFamilyList(FamilyListRequest request) {
-        validateSize(request.getSize());
-
-        long cursor = request.getCursor() == null ? 0L : request.getCursor();
-        List<FamilyListItem> rows = familyRepository.findFamilySlice(request.getSize() + 1, cursor);
-
-        boolean hasNext = rows.size() > request.getSize();
-        List<FamilyListItem> content = hasNext ? rows.subList(0, request.getSize()) : rows;
-        List<FamilyListItem> maskedContent = content.stream()
+    public FamilyPhoneSearchResponse searchByPhone(String phoneNumber) {
+        String phoneHash = createPhoneHash(phoneNumber);
+        FamilyListItem family = familyRepository.findFamilyByPhoneHash(phoneHash)
                 .map(this::decryptAndMaskPhone)
-                .toList();
-        Long nextCursor = hasNext && !content.isEmpty()
-                ? content.get(content.size() - 1).familyId()
-                : null;
+                .orElse(null);
 
-        return FamilyListResponse.builder()
-                .size(request.getSize())
-                .hasNext(hasNext)
-                .nextCursor(nextCursor)
-                .familyList(maskedContent)
+        return FamilyPhoneSearchResponse.builder()
+                .family(family)
                 .build();
     }
 
-    private void validateSize(Integer size) {
-        if (size == null || !ALLOWED_SIZE.contains(size)) {
-            throw new ApplicationException(FamilyErrorCode.INVALID_SIZE);
+    private String createPhoneHash(String phoneNumber) {
+        try {
+            return phoneHashUtil.hashPhone(phoneNumber);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(FamilyErrorCode.INVALID_PHONE_NUMBER);
+        } catch (GeneralSecurityException e) {
+            throw new ApplicationException(FamilyErrorCode.PHONE_HASH_FAILED);
         }
     }
 

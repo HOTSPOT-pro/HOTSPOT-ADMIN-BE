@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,5 +59,32 @@ class FamilyRepositoryImplTest {
         assertThat(result.get(0).representativeName()).isEqualTo("김가족");
         assertThat(result.get(0).phoneNumber()).isEqualTo("encrypted-phone");
         assertThat(result.get(0).memberCount()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("전화번호 해시로 가족 목록 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyByPhoneHashSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyListItem> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("family_id")).thenReturn(7L);
+                    when(rs.getString("representative_name")).thenReturn("박대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
+                    when(rs.getInt("member_count")).thenReturn(2);
+
+                    FamilyListItem row = mapper.mapRow(rs, 0);
+                    return List.of(row);
+                });
+
+        Optional<FamilyListItem> result = familyRepository.findFamilyByPhoneHash("hashed-phone");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().familyId()).isEqualTo(7L);
+        assertThat(result.get().representativeName()).isEqualTo("박대표");
+        assertThat(result.get().phoneNumber()).isEqualTo("enc-phone");
+        assertThat(result.get().memberCount()).isEqualTo(2);
     }
 }
