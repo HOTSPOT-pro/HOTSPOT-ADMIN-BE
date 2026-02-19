@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.controller.response.FamilyListItem;
+import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -23,13 +24,13 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                     SELECT
                         f.family_id,
                         COALESCE(
-                            MAX(CASE WHEN fs.family_role = 'OWNER' THEN m.name END),
-                            MAX(CASE WHEN fs.family_role = 'PARENT' THEN m.name END),
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN m.name END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN m.name END),
                             MIN(m.name)
                         ) AS representative_name,
                         COALESCE(
-                            MAX(CASE WHEN fs.family_role = 'OWNER' THEN s.phone_enc END),
-                            MAX(CASE WHEN fs.family_role = 'PARENT' THEN s.phone_enc END),
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
                             MIN(s.phone_enc)
                         ) AS phone_number_enc,
                         COUNT(fs.family_sub_id)::int AS member_count
@@ -49,7 +50,9 @@ public class FamilyRepositoryImpl implements FamilyRepository {
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("cursorFamilyId", cursorFamilyId)
-                .addValue("limit", limitPlusOne);
+                .addValue("limit", limitPlusOne)
+                .addValue("ownerRole", FamilyRole.OWNER.name())
+                .addValue("parentRole", FamilyRole.PARENT.name());
 
         return jdbcTemplate.query(sql, params, (rs, rowNum) -> FamilyListItem.builder()
                 .familyId(rs.getLong("family_id"))
