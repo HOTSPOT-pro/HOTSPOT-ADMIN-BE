@@ -36,7 +36,7 @@ public class PlanEntity extends BaseEntity {
     @Column(name = "plan_id")
     private Long planId;
 
-    @Column(name = "plan_name", length = 10, nullable = false)
+    @Column(name = "plan_name", length = 20, nullable = false)
     private String planName;
 
     @Column(name = "plan_data_amount", nullable = false)

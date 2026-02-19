@@ -43,13 +43,13 @@ public class SocialAccountEntity extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private MemberEntity member;
 
-    @Column(name = "email", length = 20, nullable = false)
+    @Column(name = "email", length = 50, nullable = false)
     private String email;
 
-    @Column(name = "social_id", length = 20, nullable = false)
+    @Column(name = "social_id", length = 50, nullable = false)
     private String socialId;
 
-    @Column(name = "provider", length = 20, nullable = false)
+    @Column(name = "provider", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
