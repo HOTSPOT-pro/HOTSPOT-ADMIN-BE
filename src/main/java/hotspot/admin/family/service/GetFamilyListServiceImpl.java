@@ -1,5 +1,6 @@
 package hotspot.admin.family.service;
 
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Set;
 
@@ -71,7 +72,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
                     .usedData(item.usedData())
                     .remainingData(item.remainingData())
                     .build();
-        } catch (Exception e) {
+        } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);
         }
     }
