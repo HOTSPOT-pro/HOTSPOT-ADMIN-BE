@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PhoneHashUtil {
 
     private static final String HMAC_ALGORITHM = "HmacSHA256";
-    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01\\d{9}$");
+    private static final Pattern MOBILE_PATTERN = Pattern.compile("^01\\d{8,9}$");
     private final List<byte[]> keyCandidates;
 
     public PhoneHashUtil(@Value("${project.phone-hash-key}") String hashKey) {
@@ -54,7 +54,11 @@ public class PhoneHashUtil {
             throw new IllegalArgumentException("Phone number format is invalid.");
         }
 
-        return digits.substring(0, 3) + "-" + digits.substring(3, 7) + "-" + digits.substring(7);
+        if (digits.length() == 11) {
+            return digits.substring(0, 3) + "-" + digits.substring(3, 7) + "-" + digits.substring(7);
+        }
+
+        return digits.substring(0, 3) + "-" + digits.substring(3, 6) + "-" + digits.substring(6);
     }
 
     private List<byte[]> resolveKeyCandidates(String rawKey) {
