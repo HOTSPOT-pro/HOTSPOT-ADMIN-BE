@@ -8,6 +8,7 @@ import lombok.Builder;
 @Builder
 public record TimePolicyListItem(
         Long policyId,
+        String displayId,
         String policyName,
         PolicyType policyType,
         String policyScheduleLabel,

@@ -7,6 +7,7 @@ import lombok.Builder;
 @Builder
 public record AppPolicyListItem(
         Long policyId,
+        String displayId,
         String policyName,
         String policyCode,
         Boolean active,

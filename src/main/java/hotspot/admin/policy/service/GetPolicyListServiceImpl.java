@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import hotspot.admin.common.domain.DisplayIdType;
+import hotspot.admin.common.util.DisplayIdFormatter;
 import hotspot.admin.appservice.domain.AppBlockedService;
 import hotspot.admin.policy.controller.port.GetPolicyListService;
 import hotspot.admin.policy.controller.request.PolicyListRequest;
@@ -92,6 +94,7 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
         boolean active = Boolean.TRUE.equals(blockPolicy.getIsActive());
         return TimePolicyListItem.builder()
                 .policyId(blockPolicy.getBlockPolicyId())
+                .displayId(DisplayIdFormatter.format(DisplayIdType.TIME_POLICY, blockPolicy.getBlockPolicyId()))
                 .policyName(blockPolicy.getPolicyName())
                 .policyType(blockPolicy.getPolicyType())
                 .policyScheduleLabel(toPolicyScheduleLabel(blockPolicy.getPolicySnapshot()))
@@ -104,6 +107,7 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
         boolean active = !Boolean.TRUE.equals(appBlockedService.getIsDeleted());
         return AppPolicyListItem.builder()
                 .policyId(appBlockedService.getAppBlockedServiceId())
+                .displayId(DisplayIdFormatter.format(DisplayIdType.APP_POLICY, appBlockedService.getAppBlockedServiceId()))
                 .policyName(appBlockedService.getBlockedServiceName())
                 .policyCode(appBlockedService.getBlockedServiceCode())
                 .active(active)

@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
+import hotspot.admin.common.domain.DisplayIdType;
+import hotspot.admin.common.util.DisplayIdFormatter;
 import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.common.util.PhoneMaskingUtil;
 import hotspot.admin.family.controller.port.GetFamilyListService;
@@ -60,7 +62,15 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
 
     private FamilyListItem decryptAndMaskPhone(FamilyListItem item) {
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
-            return item;
+            return FamilyListItem.builder()
+                    .familyId(item.familyId())
+                    .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
+                    .representativeName(item.representativeName())
+                    .phoneNumber(item.phoneNumber())
+                    .memberCount(item.memberCount())
+                    .usedData(item.usedData())
+                    .remainingData(item.remainingData())
+                    .build();
         }
 
         try {
@@ -69,6 +79,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
             // [TODO] usedData/remainingData는 사용량 집계 연동 전까지 null 유지.
             return FamilyListItem.builder()
                     .familyId(item.familyId())
+                    .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)
                     .memberCount(item.memberCount())
