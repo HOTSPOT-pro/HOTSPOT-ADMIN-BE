@@ -39,6 +39,10 @@ public class AppBlockedServiceEntity extends BaseEntity {
     @Column(name = "blocked_service_code", length = 30, nullable = false)
     private String blockedServiceCode;
 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
@@ -48,6 +52,7 @@ public class AppBlockedServiceEntity extends BaseEntity {
                 .appBlockedServiceId(appBlockedService.getAppBlockedServiceId())
                 .blockedServiceName(appBlockedService.getBlockedServiceName())
                 .blockedServiceCode(appBlockedService.getBlockedServiceCode())
+                .isActive(appBlockedService.getIsActive())
                 .isDeleted(appBlockedService.getIsDeleted())
                 .build();
     }
@@ -57,6 +62,7 @@ public class AppBlockedServiceEntity extends BaseEntity {
                 .appBlockedServiceId(appBlockedServiceId)
                 .blockedServiceName(blockedServiceName)
                 .blockedServiceCode(blockedServiceCode)
+                .isActive(isActive)
                 .isDeleted(isDeleted)
                 .createdTime(getCreatedTime())
                 .modifiedTime(getModifiedTime())

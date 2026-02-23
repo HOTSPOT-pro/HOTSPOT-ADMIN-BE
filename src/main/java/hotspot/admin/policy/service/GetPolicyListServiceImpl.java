@@ -98,19 +98,19 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
                 .policyName(blockPolicy.getPolicyName())
                 .policyType(blockPolicy.getPolicyType())
                 .policyScheduleLabel(toPolicyScheduleLabel(blockPolicy.getPolicySnapshot()))
-                .active(active)
+                .isActive(active)
                 .createdTime(blockPolicy.getCreatedTime())
                 .build();
     }
 
     private AppPolicyListItem toAppItem(AppBlockedService appBlockedService) {
-        boolean active = !Boolean.TRUE.equals(appBlockedService.getIsDeleted());
+        boolean active = Boolean.TRUE.equals(appBlockedService.getIsActive());
         return AppPolicyListItem.builder()
                 .policyId(appBlockedService.getAppBlockedServiceId())
                 .displayId(DisplayIdFormatter.format(DisplayIdType.APP_POLICY, appBlockedService.getAppBlockedServiceId()))
                 .policyName(appBlockedService.getBlockedServiceName())
                 .policyCode(appBlockedService.getBlockedServiceCode())
-                .active(active)
+                .isActive(active)
                 .createdTime(appBlockedService.getCreatedTime())
                 .build();
     }

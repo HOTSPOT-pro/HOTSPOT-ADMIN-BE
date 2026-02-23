@@ -13,6 +13,7 @@ public class AppBlockedService {
     private final Long appBlockedServiceId;
     private final String blockedServiceName;
     private final String blockedServiceCode;
+    private final Boolean isActive;
     private final Boolean isDeleted;
     private final LocalDateTime createdTime;
     private final LocalDateTime modifiedTime;
