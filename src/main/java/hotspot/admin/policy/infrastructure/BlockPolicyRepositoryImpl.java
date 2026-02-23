@@ -29,6 +29,11 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     }
 
     @Override
+    public int softDeleteById(Long policyId) {
+        return blockPolicyJpaRepository.softDeleteById(policyId);
+    }
+
+    @Override
     public Optional<BlockPolicy> findById(Long policyId) {
         return blockPolicyJpaRepository.findById(policyId)
                 .map(BlockPolicyEntity::entityToDomain);

@@ -3,6 +3,7 @@ package hotspot.admin.policy.controller;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.admin.common.ApiResponse;
+import hotspot.admin.policy.controller.port.DeletePolicyService;
 import hotspot.admin.policy.controller.port.GetPolicyListService;
 import hotspot.admin.policy.controller.port.UpdatePolicyActiveService;
 import hotspot.admin.policy.controller.request.PolicyListRequest;
@@ -29,6 +31,7 @@ public class PolicyController {
 
     private final GetPolicyListService getPolicyListService;
     private final UpdatePolicyActiveService updatePolicyActiveService;
+    private final DeletePolicyService deletePolicyService;
 
     @GetMapping("/time")
     public ResponseEntity<ApiResponse<TimePolicyListResponse>> getTimePolicies(
@@ -42,6 +45,15 @@ public class PolicyController {
             @Valid @ModelAttribute PolicyListRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(getPolicyListService.getAppPolicies(request)));
+    }
+
+    @DeleteMapping("/{policyType}/{policyId}")
+    public ResponseEntity<ApiResponse<Void>> deletePolicy(
+            @PathVariable String policyType,
+            @PathVariable Long policyId
+    ) {
+        deletePolicyService.deletePolicy(AdminPolicyType.from(policyType), policyId);
+        return ResponseEntity.ok(ApiResponse.success());
     }
 
     @PatchMapping("/{policyType}/{policyId}/active")

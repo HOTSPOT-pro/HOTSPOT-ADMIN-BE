@@ -29,6 +29,11 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
     }
 
     @Override
+    public int softDeleteById(Long policyId) {
+        return appBlockedServiceJpaRepository.softDeleteById(policyId);
+    }
+
+    @Override
     public Optional<AppBlockedService> findById(Long policyId) {
         return appBlockedServiceJpaRepository.findById(policyId)
                 .map(AppBlockedServiceEntity::entityToDomain);

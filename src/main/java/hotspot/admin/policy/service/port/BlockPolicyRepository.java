@@ -12,6 +12,7 @@ public interface BlockPolicyRepository {
     Page<BlockPolicy> findAll(Pageable pageable);
 
     int updateActiveById(Long policyId, Boolean isActive);
+    int softDeleteById(Long policyId);
 
     Optional<BlockPolicy> findById(Long policyId);
 }

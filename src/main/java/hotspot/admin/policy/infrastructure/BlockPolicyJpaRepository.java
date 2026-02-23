@@ -21,4 +21,17 @@ public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntit
             nativeQuery = true
     )
     int updateActiveById(@Param("policyId") Long policyId, @Param("isActive") Boolean isActive);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            value = """
+                    UPDATE block_policy
+                    SET is_deleted = true,
+                        modified_time = now()
+                    WHERE block_policy_id = :policyId
+                      AND is_deleted = false
+                    """,
+            nativeQuery = true
+    )
+    int softDeleteById(@Param("policyId") Long policyId);
 }

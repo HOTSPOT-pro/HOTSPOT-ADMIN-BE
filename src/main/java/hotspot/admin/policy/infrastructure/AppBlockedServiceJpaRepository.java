@@ -21,4 +21,17 @@ public interface AppBlockedServiceJpaRepository extends JpaRepository<AppBlocked
             nativeQuery = true
     )
     int updateActiveById(@Param("policyId") Long policyId, @Param("isActive") Boolean isActive);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            value = """
+                    UPDATE app_blocked_service
+                    SET is_deleted = true,
+                        modified_time = now()
+                    WHERE app_blocked_service_id = :policyId
+                      AND is_deleted = false
+                    """,
+            nativeQuery = true
+    )
+    int softDeleteById(@Param("policyId") Long policyId);
 }
