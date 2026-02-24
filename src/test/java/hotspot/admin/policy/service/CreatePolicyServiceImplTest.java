@@ -92,23 +92,6 @@ class CreatePolicyServiceImplTest {
     }
 
     @Test
-    @DisplayName("시간 정책 스냅샷 유효성 실패면 예외")
-    void createTimePolicyInvalidSnapshot() {
-        CreateTimePolicyRequest request = new CreateTimePolicyRequest(
-                "시험기간",
-                PolicyType.ONCE,
-                PolicySnapshot.builder()
-                        .days(List.of(PolicyDay.MON))
-                        .durationMinutes(180)
-                        .build()
-        );
-
-        assertThatThrownBy(() -> service.createTimePolicy(request))
-                .isInstanceOf(ApplicationException.class)
-                .matches(ex -> ((ApplicationException) ex).getCode() == PolicyErrorCode.INVALID_POLICY_SNAPSHOT);
-    }
-
-    @Test
     @DisplayName("앱 정책 생성 성공")
     void createAppPolicySuccess() {
         CreateAppPolicyRequest request = new CreateAppPolicyRequest("유튜브", "MEDIA_YOUTUBE");

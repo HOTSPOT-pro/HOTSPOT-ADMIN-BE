@@ -134,6 +134,26 @@ class PolicyControllerTest {
     }
 
     @Test
+    @DisplayName("시간 정책 생성 실패 - 스냅샷 검증 실패")
+    void createTimePolicyBadRequest() throws Exception {
+        String request = """
+                {
+                  "policyName":"시험기간",
+                  "policyType":"ONCE",
+                  "policySnapshot":{
+                    "days":["MON"],
+                    "durationMinutes":180
+                  }
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/admin/policies/time")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("앱 정책 생성 성공")
     void createAppPolicySuccess() throws Exception {
         when(createPolicyService.createAppPolicy(any()))

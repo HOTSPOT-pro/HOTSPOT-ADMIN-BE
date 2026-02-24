@@ -14,7 +14,6 @@ import hotspot.admin.policy.controller.request.CreateTimePolicyRequest;
 import hotspot.admin.policy.controller.response.CreateAppPolicyResponse;
 import hotspot.admin.policy.controller.response.CreateTimePolicyResponse;
 import hotspot.admin.policy.domain.BlockPolicy;
-import hotspot.admin.policy.domain.PolicySnapshot;
 import hotspot.admin.policy.domain.PolicyType;
 import hotspot.admin.policy.service.port.AppBlockedServiceRepository;
 import hotspot.admin.policy.service.port.BlockPolicyRepository;
@@ -30,7 +29,6 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
     @Transactional
     @Override
     public CreateTimePolicyResponse createTimePolicy(CreateTimePolicyRequest request) {
-        validateTimeSnapshot(request.policyType(), request.policySnapshot());
         validateDuplicatePolicyNameType(request.policyName(), request.policyType());
 
         BlockPolicy saved = blockPolicyRepository.save(BlockPolicy.builder()
@@ -65,21 +63,6 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
                 .displayId(DisplayIdFormatter.format(DisplayIdType.APP_POLICY, saved.getAppBlockedServiceId()))
                 .isActive(saved.getIsActive())
                 .build();
-    }
-
-    private void validateTimeSnapshot(PolicyType policyType, PolicySnapshot snapshot) {
-        if (policyType == null || snapshot == null) {
-            throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_SNAPSHOT);
-        }
-
-        boolean valid = switch (policyType) {
-            case SCHEDULED -> snapshot.isScheduledPolicy() && snapshot.getDurationMinutes() == null;
-            case ONCE -> snapshot.isOncePolicy() && (snapshot.getDays() == null || snapshot.getDays().isEmpty());
-        };
-
-        if (!valid) {
-            throw new ApplicationException(PolicyErrorCode.INVALID_POLICY_SNAPSHOT);
-        }
     }
 
     private void validateDuplicatePolicyNameType(String policyName, PolicyType policyType) {
