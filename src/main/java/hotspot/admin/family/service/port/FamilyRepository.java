@@ -24,4 +24,13 @@ public interface FamilyRepository {
     );
 
     long countFamilyRequestList(ApplyType applyType, FamilyApplyStatus status);
+
+    int updateFamilyRequestStatus(
+            Long familyApplyId,
+            ApplyType applyType,
+            FamilyApplyStatus currentStatus,
+            FamilyApplyStatus newStatus
+    );
+
+    boolean existsFamilyRequest(Long familyApplyId, ApplyType applyType);
 }

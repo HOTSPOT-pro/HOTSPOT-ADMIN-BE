@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.admin.common.ApiResponse;
 import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
+import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.request.FamilyRequestListRequest;
@@ -30,6 +32,7 @@ public class FamilyController {
     private final GetFamilyListService getFamilyListService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
     private final GetFamilyRequestListService getFamilyRequestListService;
+    private final ProcessFamilyRequestService processFamilyRequestService;
 
     @GetMapping("")
     public ResponseEntity<ApiResponse<FamilyListResponse>> getFamilyList(
@@ -54,5 +57,23 @@ public class FamilyController {
         return ResponseEntity.ok(ApiResponse.success(
                 getFamilyRequestListService.getFamilyRequests(parsedApplyType, parsedStatus, request)
         ));
+    }
+
+    @PatchMapping("/requests/{applyType}/{requestId}/approve")
+    public ResponseEntity<ApiResponse<Void>> approveFamilyRequest(
+            @PathVariable String applyType,
+            @PathVariable Long requestId
+    ) {
+        processFamilyRequestService.approve(ApplyType.from(applyType), requestId);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @PatchMapping("/requests/{applyType}/{requestId}/reject")
+    public ResponseEntity<ApiResponse<Void>> rejectFamilyRequest(
+            @PathVariable String applyType,
+            @PathVariable Long requestId
+    ) {
+        processFamilyRequestService.reject(ApplyType.from(applyType), requestId);
+        return ResponseEntity.ok(ApiResponse.success());
     }
 }

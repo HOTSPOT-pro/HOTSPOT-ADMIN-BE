@@ -168,6 +168,50 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return total == null ? 0L : total;
     }
 
+    @Override
+    public int updateFamilyRequestStatus(
+            Long familyApplyId,
+            ApplyType applyType,
+            FamilyApplyStatus currentStatus,
+            FamilyApplyStatus newStatus
+    ) {
+        String sql = """
+                UPDATE family_apply
+                SET status = :newStatus,
+                    modified_time = NOW()
+                WHERE family_apply_id = :familyApplyId
+                  AND apply_type = :applyType
+                  AND status = :currentStatus
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyApplyId", familyApplyId)
+                .addValue("applyType", applyType.name())
+                .addValue("currentStatus", currentStatus.name())
+                .addValue("newStatus", newStatus.name());
+
+        return jdbcTemplate.update(sql, params);
+    }
+
+    @Override
+    public boolean existsFamilyRequest(Long familyApplyId, ApplyType applyType) {
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM family_apply
+                    WHERE family_apply_id = :familyApplyId
+                      AND apply_type = :applyType
+                )
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyApplyId", familyApplyId)
+                .addValue("applyType", applyType.name());
+
+        Boolean exists = jdbcTemplate.queryForObject(sql, params, Boolean.class);
+        return Boolean.TRUE.equals(exists);
+    }
+
     private FamilyListItem mapFamilyListItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         // [TODO] usedData/remainingData는 데이터 사용량 집계 테이블(또는 뷰) 연동 후 채운다.
         return FamilyListItem.builder()
