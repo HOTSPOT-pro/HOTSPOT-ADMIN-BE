@@ -8,17 +8,23 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.admin.common.ApiResponse;
+import hotspot.admin.policy.controller.port.CreatePolicyService;
 import hotspot.admin.policy.controller.port.DeletePolicyService;
 import hotspot.admin.policy.controller.port.GetPolicyListService;
 import hotspot.admin.policy.controller.port.UpdatePolicyActiveService;
+import hotspot.admin.policy.controller.request.CreateAppPolicyRequest;
+import hotspot.admin.policy.controller.request.CreateTimePolicyRequest;
 import hotspot.admin.policy.controller.request.PolicyListRequest;
 import hotspot.admin.policy.controller.request.UpdatePolicyActiveRequest;
 import hotspot.admin.policy.controller.response.AppPolicyListResponse;
+import hotspot.admin.policy.controller.response.CreateAppPolicyResponse;
+import hotspot.admin.policy.controller.response.CreateTimePolicyResponse;
 import hotspot.admin.policy.controller.response.TimePolicyListResponse;
 import hotspot.admin.policy.controller.response.UpdatePolicyActiveResponse;
 import hotspot.admin.policy.domain.AdminPolicyType;
@@ -30,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class PolicyController {
 
     private final GetPolicyListService getPolicyListService;
+    private final CreatePolicyService createPolicyService;
     private final UpdatePolicyActiveService updatePolicyActiveService;
     private final DeletePolicyService deletePolicyService;
 
@@ -45,6 +52,20 @@ public class PolicyController {
             @Valid @ModelAttribute PolicyListRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(getPolicyListService.getAppPolicies(request)));
+    }
+
+    @PostMapping("/time")
+    public ResponseEntity<ApiResponse<CreateTimePolicyResponse>> createTimePolicy(
+            @Valid @RequestBody CreateTimePolicyRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(createPolicyService.createTimePolicy(request)));
+    }
+
+    @PostMapping("/app")
+    public ResponseEntity<ApiResponse<CreateAppPolicyResponse>> createAppPolicy(
+            @Valid @RequestBody CreateAppPolicyRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(createPolicyService.createAppPolicy(request)));
     }
 
     @DeleteMapping("/{policyType}/{policyId}")

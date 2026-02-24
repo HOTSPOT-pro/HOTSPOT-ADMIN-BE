@@ -1,6 +1,5 @@
 package hotspot.admin.policy.domain;
 
-import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -19,7 +18,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PolicySnapshot {
 
-    private List<DayOfWeek> days;
+    private List<PolicyDay> days;
 
     private String startTime;
 
