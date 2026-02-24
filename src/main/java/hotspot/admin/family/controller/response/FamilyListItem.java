@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record FamilyListItem(
         Long familyId,
+        String displayId,
         String representativeName,
         String phoneNumber,
         Integer memberCount,
