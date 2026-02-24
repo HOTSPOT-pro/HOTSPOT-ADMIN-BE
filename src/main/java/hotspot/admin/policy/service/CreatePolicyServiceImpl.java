@@ -83,7 +83,7 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
     }
 
     private void validateDuplicatePolicyNameType(String policyName, PolicyType policyType) {
-        if (blockPolicyRepository.existsByPolicyNameAndPolicyType(policyName, policyType.name())) {
+        if (blockPolicyRepository.existsByPolicyNameAndPolicyType(policyName, policyType)) {
             throw new ApplicationException(PolicyErrorCode.DUPLICATE_POLICY_NAME_TYPE);
         }
     }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.policy.domain.BlockPolicy;
+import hotspot.admin.policy.domain.PolicyType;
 import hotspot.admin.policy.infrastructure.entity.BlockPolicyEntity;
 import hotspot.admin.policy.service.port.BlockPolicyRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     }
 
     @Override
-    public boolean existsByPolicyNameAndPolicyType(String policyName, String policyType) {
+    public boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
         return blockPolicyJpaRepository.existsByPolicyNameAndPolicyType(policyName, policyType);
     }
 

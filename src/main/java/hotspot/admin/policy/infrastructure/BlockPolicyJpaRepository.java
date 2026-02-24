@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import hotspot.admin.policy.domain.PolicyType;
 import hotspot.admin.policy.infrastructure.entity.BlockPolicyEntity;
 
 public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntity, Long> {
@@ -35,18 +36,5 @@ public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntit
     )
     int softDeleteById(@Param("policyId") Long policyId);
 
-    @Query(
-            value = """
-                    SELECT EXISTS (
-                        SELECT 1
-                        FROM block_policy
-                        WHERE policy_name = :policyName
-                          AND policy_type = :policyType
-                          AND is_deleted = false
-                    )
-                    """,
-            nativeQuery = true
-    )
-    boolean existsByPolicyNameAndPolicyType(@Param("policyName") String policyName,
-                                            @Param("policyType") String policyType);
+    boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType);
 }
