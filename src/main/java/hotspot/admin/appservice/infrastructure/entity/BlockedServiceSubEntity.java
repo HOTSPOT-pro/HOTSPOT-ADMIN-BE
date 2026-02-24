@@ -41,9 +41,15 @@ public class BlockedServiceSubEntity extends BaseEntity {
     @JoinColumn(name = "sub_id", nullable = false)
     private SubscriptionEntity subscription;
 
+    @Column(name = "sub_id", nullable = false, insertable = false, updatable = false)
+    private Long subId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blocked_service_id", nullable = false)
     private AppBlockedServiceEntity appBlockedService;
+
+    @Column(name = "blocked_service_id", nullable = false, insertable = false, updatable = false)
+    private Long blockedServiceId;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
@@ -65,8 +71,8 @@ public class BlockedServiceSubEntity extends BaseEntity {
     public BlockedServiceSub entityToDomain() {
         return BlockedServiceSub.builder()
                 .blockedServiceSubId(blockedServiceSubId)
-                .subId(subscription.getSubId())
-                .blockedServiceId(appBlockedService.getAppBlockedServiceId())
+                .subId(subId)
+                .blockedServiceId(blockedServiceId)
                 .isDeleted(isDeleted)
                 .createdTime(getCreatedTime())
                 .modifiedTime(getModifiedTime())

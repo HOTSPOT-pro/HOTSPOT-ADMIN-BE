@@ -44,6 +44,9 @@ public class PolicySubEntity extends BaseEntity {
     @JoinColumn(name = "sub_id", nullable = false)
     private SubscriptionEntity subscription;
 
+    @Column(name = "sub_id", nullable = false, insertable = false, updatable = false)
+    private Long subId;
+
     @Column(name = "policy_id", nullable = false)
     private Long policyId;
 
@@ -71,7 +74,7 @@ public class PolicySubEntity extends BaseEntity {
     public PolicySub entityToDomain() {
         return PolicySub.builder()
                 .policySubId(policySubId)
-                .subId(subscription.getSubId())
+                .subId(subId)
                 .policyId(policyId)
                 .dateSnapshot(dateSnapshot)
                 .isDeleted(isDeleted)
