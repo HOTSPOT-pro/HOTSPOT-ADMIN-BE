@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
+import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
@@ -43,6 +44,9 @@ class FamilyControllerTest {
 
     @MockBean
     private GetFamilyRequestListService getFamilyRequestListService;
+
+    @MockBean
+    private ProcessFamilyRequestService processFamilyRequestService;
 
     @Test
     @DisplayName("가족 목록 조회 성공")
@@ -151,5 +155,23 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.status").value("PENDING"))
                 .andExpect(jsonPath("$.data.requests[0].requestDisplayId").value("REQ-013"))
                 .andExpect(jsonPath("$.data.requests[0].requesterName").value("가족대표"));
+    }
+
+    @Test
+    @DisplayName("가족 요청 승인 성공")
+    void approveFamilyRequestSuccess() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/v1/admin/families/requests/remove/99/approve"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 요청 거절 성공")
+    void rejectFamilyRequestSuccess() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/v1/admin/families/requests/add/100/reject"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 }

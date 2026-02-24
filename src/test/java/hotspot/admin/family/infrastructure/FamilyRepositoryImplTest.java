@@ -157,4 +157,42 @@ class FamilyRepositoryImplTest {
 
         assertThat(result).isZero();
     }
+
+    @Test
+    @DisplayName("대기중 요청 상태 업데이트 성공")
+    void updateFamilyRequestStatusSuccess() {
+        when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class)))
+                .thenReturn(1);
+
+        int updated = familyRepository.updateFamilyRequestStatus(
+                1L,
+                ApplyType.ADD,
+                FamilyApplyStatus.PENDING,
+                FamilyApplyStatus.APPROVED
+        );
+
+        assertThat(updated).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("요청 존재 여부 조회 성공")
+    void existsFamilyRequestSuccess() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(true);
+
+        boolean exists = familyRepository.existsFamilyRequest(10L, ApplyType.REMOVE);
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("요청 존재 여부 조회 null이면 false")
+    void existsFamilyRequestNullThenFalse() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(null);
+
+        boolean exists = familyRepository.existsFamilyRequest(11L, ApplyType.ADD);
+
+        assertThat(exists).isFalse();
+    }
 }
