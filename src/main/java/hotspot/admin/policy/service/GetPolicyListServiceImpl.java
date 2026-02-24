@@ -1,6 +1,5 @@
 package hotspot.admin.policy.service;
 
-import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +22,7 @@ import hotspot.admin.policy.controller.response.AppPolicyListResponse;
 import hotspot.admin.policy.controller.response.TimePolicyListItem;
 import hotspot.admin.policy.controller.response.TimePolicyListResponse;
 import hotspot.admin.policy.domain.BlockPolicy;
+import hotspot.admin.policy.domain.PolicyDay;
 import hotspot.admin.policy.domain.PolicySnapshot;
 import hotspot.admin.policy.service.port.AppBlockedServiceRepository;
 import hotspot.admin.policy.service.port.BlockPolicyRepository;
@@ -32,16 +32,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GetPolicyListServiceImpl implements GetPolicyListService {
 
-    private static final Set<DayOfWeek> WEEKDAYS = EnumSet.of(
-            DayOfWeek.MONDAY,
-            DayOfWeek.TUESDAY,
-            DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY,
-            DayOfWeek.FRIDAY
+    private static final Set<PolicyDay> WEEKDAYS = EnumSet.of(
+            PolicyDay.MON,
+            PolicyDay.TUE,
+            PolicyDay.WED,
+            PolicyDay.THU,
+            PolicyDay.FRI
     );
 
-    private static final Set<DayOfWeek> EVERYDAY = EnumSet.allOf(DayOfWeek.class);
-    private static final Set<DayOfWeek> WEEKEND = EnumSet.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
+    private static final Set<PolicyDay> EVERYDAY = EnumSet.allOf(PolicyDay.class);
+    private static final Set<PolicyDay> WEEKEND = EnumSet.of(PolicyDay.SAT, PolicyDay.SUN);
 
     private final BlockPolicyRepository blockPolicyRepository;
     private final AppBlockedServiceRepository appBlockedServiceRepository;
@@ -134,12 +134,12 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
             return null;
         }
 
-        List<DayOfWeek> days = snapshot.getDays();
+        List<PolicyDay> days = snapshot.getDays();
         if (days == null || days.isEmpty()) {
             return startTime + "~" + endTime;
         }
 
-        Set<DayOfWeek> daySet = EnumSet.copyOf(days);
+        Set<PolicyDay> daySet = EnumSet.copyOf(days);
         if (daySet.equals(EVERYDAY)) {
             return "매일 " + startTime + "~" + endTime;
         }
@@ -157,15 +157,15 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
         return dayLabel + " " + startTime + "~" + endTime;
     }
 
-    private String toKoreanDayShort(DayOfWeek dayOfWeek) {
-        return switch (dayOfWeek) {
-            case MONDAY -> "월";
-            case TUESDAY -> "화";
-            case WEDNESDAY -> "수";
-            case THURSDAY -> "목";
-            case FRIDAY -> "금";
-            case SATURDAY -> "토";
-            case SUNDAY -> "일";
+    private String toKoreanDayShort(PolicyDay day) {
+        return switch (day) {
+            case MON -> "월";
+            case TUE -> "화";
+            case WED -> "수";
+            case THU -> "목";
+            case FRI -> "금";
+            case SAT -> "토";
+            case SUN -> "일";
         };
     }
 }

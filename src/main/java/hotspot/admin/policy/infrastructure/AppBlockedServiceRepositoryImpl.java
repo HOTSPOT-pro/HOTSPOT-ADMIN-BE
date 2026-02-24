@@ -24,6 +24,19 @@ public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceReposit
     }
 
     @Override
+    public AppBlockedService save(AppBlockedService appBlockedService) {
+        AppBlockedServiceEntity saved = appBlockedServiceJpaRepository.save(
+                AppBlockedServiceEntity.domainToEntity(appBlockedService)
+        );
+        return saved.entityToDomain();
+    }
+
+    @Override
+    public boolean existsByBlockedServiceCode(String policyCode) {
+        return appBlockedServiceJpaRepository.existsByBlockedServiceCode(policyCode);
+    }
+
+    @Override
     public int updateActiveById(Long policyId, Boolean isActive) {
         return appBlockedServiceJpaRepository.updateActiveById(policyId, isActive);
     }

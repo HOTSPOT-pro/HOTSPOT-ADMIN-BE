@@ -34,4 +34,17 @@ public interface AppBlockedServiceJpaRepository extends JpaRepository<AppBlocked
             nativeQuery = true
     )
     int softDeleteById(@Param("policyId") Long policyId);
+
+    @Query(
+            value = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM app_blocked_service
+                        WHERE blocked_service_code = :policyCode
+                          AND is_deleted = false
+                    )
+                    """,
+            nativeQuery = true
+    )
+    boolean existsByBlockedServiceCode(@Param("policyCode") String policyCode);
 }

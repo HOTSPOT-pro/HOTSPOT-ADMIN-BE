@@ -34,4 +34,19 @@ public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntit
             nativeQuery = true
     )
     int softDeleteById(@Param("policyId") Long policyId);
+
+    @Query(
+            value = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM block_policy
+                        WHERE policy_name = :policyName
+                          AND policy_type = :policyType
+                          AND is_deleted = false
+                    )
+                    """,
+            nativeQuery = true
+    )
+    boolean existsByPolicyNameAndPolicyType(@Param("policyName") String policyName,
+                                            @Param("policyType") String policyType);
 }

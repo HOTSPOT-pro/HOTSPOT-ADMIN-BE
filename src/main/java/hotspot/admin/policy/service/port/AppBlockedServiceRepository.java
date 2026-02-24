@@ -11,6 +11,9 @@ public interface AppBlockedServiceRepository {
 
     Page<AppBlockedService> findAll(Pageable pageable);
 
+    AppBlockedService save(AppBlockedService appBlockedService);
+    boolean existsByBlockedServiceCode(String policyCode);
+
     int updateActiveById(Long policyId, Boolean isActive);
     int softDeleteById(Long policyId);
 

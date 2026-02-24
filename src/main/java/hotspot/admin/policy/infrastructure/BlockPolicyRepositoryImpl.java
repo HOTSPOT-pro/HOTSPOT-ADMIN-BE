@@ -24,6 +24,17 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     }
 
     @Override
+    public BlockPolicy save(BlockPolicy blockPolicy) {
+        BlockPolicyEntity saved = blockPolicyJpaRepository.save(BlockPolicyEntity.domainToEntity(blockPolicy));
+        return saved.entityToDomain();
+    }
+
+    @Override
+    public boolean existsByPolicyNameAndPolicyType(String policyName, String policyType) {
+        return blockPolicyJpaRepository.existsByPolicyNameAndPolicyType(policyName, policyType);
+    }
+
+    @Override
     public int updateActiveById(Long policyId, Boolean isActive) {
         return blockPolicyJpaRepository.updateActiveById(policyId, isActive);
     }
