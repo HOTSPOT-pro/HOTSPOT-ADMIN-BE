@@ -21,7 +21,7 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     @Override
     public Page<BlockPolicy> findAll(Pageable pageable) {
         return blockPolicyJpaRepository.findAll(pageable)
-                .map(hotspot.admin.policy.infrastructure.entity.BlockPolicyEntity::entityToDomain);
+                .map(BlockPolicyEntity::entityToDomain);
     }
 
     @Override
