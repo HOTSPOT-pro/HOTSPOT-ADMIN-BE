@@ -48,6 +48,7 @@ class CreatePolicyServiceImplTest {
     void createTimePolicySuccess() {
         CreateTimePolicyRequest request = new CreateTimePolicyRequest(
                 "수면모드",
+                "매일 00:00~07:00 차단",
                 PolicyType.SCHEDULED,
                 PolicySnapshot.builder()
                         .days(List.of(PolicyDay.MON, PolicyDay.TUE))
@@ -60,6 +61,7 @@ class CreatePolicyServiceImplTest {
                 .thenReturn(BlockPolicy.builder()
                         .blockPolicyId(3L)
                         .policyName("수면모드")
+                        .policyDescription("매일 00:00~07:00 차단")
                         .policyType(PolicyType.SCHEDULED)
                         .policySnapshot(request.policySnapshot())
                         .isActive(true)
@@ -77,6 +79,7 @@ class CreatePolicyServiceImplTest {
     void createTimePolicyDuplicate() {
         CreateTimePolicyRequest request = new CreateTimePolicyRequest(
                 "수면모드",
+                "중복 설명",
                 PolicyType.SCHEDULED,
                 PolicySnapshot.builder()
                         .days(List.of(PolicyDay.MON))

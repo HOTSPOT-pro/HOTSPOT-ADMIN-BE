@@ -116,6 +116,7 @@ class PolicyControllerTest {
         String request = """
                 {
                   "policyName":"모닝 루틴",
+                  "policyDescription":"아침 집중 시간 차단",
                   "policyType":"SCHEDULED",
                   "policySnapshot":{
                     "days":["MON","TUE"],
@@ -139,6 +140,7 @@ class PolicyControllerTest {
         String request = """
                 {
                   "policyName":"시험기간",
+                  "policyDescription":"시험 기간 차단",
                   "policyType":"ONCE",
                   "policySnapshot":{
                     "days":["MON"],

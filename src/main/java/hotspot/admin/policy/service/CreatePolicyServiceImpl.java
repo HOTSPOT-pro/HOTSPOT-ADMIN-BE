@@ -33,6 +33,7 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
 
         BlockPolicy saved = blockPolicyRepository.save(BlockPolicy.builder()
                 .policyName(request.policyName())
+                .policyDescription(request.policyDescription())
                 .policyType(request.policyType())
                 .policySnapshot(request.policySnapshot())
                 .isActive(true)

@@ -11,6 +11,7 @@ import hotspot.admin.policy.domain.PolicyType;
 @ValidTimePolicyRequest
 public record CreateTimePolicyRequest(
         @NotBlank String policyName,
+        @NotBlank String policyDescription,
         @NotNull PolicyType policyType,
         @NotNull @Valid PolicySnapshot policySnapshot
 ) {

@@ -53,6 +53,7 @@ class GetPolicyListServiceImplTest {
                 BlockPolicy.builder()
                         .blockPolicyId(1L)
                         .policyName("수면모드")
+                        .policyDescription("매일 수면 시간 차단")
                         .policyType(PolicyType.SCHEDULED)
                         .policySnapshot(PolicySnapshot.builder()
                                 .days(List.of(
@@ -68,6 +69,7 @@ class GetPolicyListServiceImplTest {
                 BlockPolicy.builder()
                         .blockPolicyId(2L)
                         .policyName("방해 금지")
+                        .policyDescription("3시간 집중")
                         .policyType(PolicyType.ONCE)
                         .policySnapshot(PolicySnapshot.builder().durationMinutes(180).build())
                         .isActive(true)
@@ -76,6 +78,7 @@ class GetPolicyListServiceImplTest {
                 BlockPolicy.builder()
                         .blockPolicyId(3L)
                         .policyName("커스텀")
+                        .policyDescription("커스텀 요일 차단")
                         .policyType(PolicyType.SCHEDULED)
                         .policySnapshot(PolicySnapshot.builder()
                                 .days(List.of(PolicyDay.MON, PolicyDay.WED, PolicyDay.FRI))
