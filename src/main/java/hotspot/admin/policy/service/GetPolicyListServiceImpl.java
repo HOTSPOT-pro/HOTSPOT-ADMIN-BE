@@ -107,7 +107,10 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
         boolean active = Boolean.TRUE.equals(appBlockedService.getIsActive());
         return AppPolicyListItem.builder()
                 .policyId(appBlockedService.getAppBlockedServiceId())
-                .displayId(DisplayIdFormatter.format(DisplayIdType.APP_POLICY, appBlockedService.getAppBlockedServiceId()))
+                .displayId(DisplayIdFormatter.format(
+                        DisplayIdType.APP_POLICY,
+                        appBlockedService.getAppBlockedServiceId()
+                ))
                 .policyName(appBlockedService.getBlockedServiceName())
                 .policyCode(appBlockedService.getBlockedServiceCode())
                 .isActive(active)
