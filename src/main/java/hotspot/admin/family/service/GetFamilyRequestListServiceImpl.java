@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListService {
 
+    private static final String FAMILY_NAME_SUFFIX = " 가족";
+
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
@@ -35,8 +37,8 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
             FamilyApplyStatus status,
             FamilyRequestListRequest request
     ) {
-        int page = request.getPage() == null ? 0 : request.getPage();
-        int size = request.getSize() == null ? 20 : request.getSize();
+        int page = request.getPage();
+        int size = request.getSize();
         long offset = (long) page * size;
 
         long totalElements = familyRepository.countFamilyRequestList(applyType, status);
@@ -63,7 +65,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
     private FamilyRequestListItem decryptAndMaskPhones(FamilyRequestListItem item) {
         String requesterPhone = decryptAndMask(item.requesterPhoneNumber());
         String targetPhone = decryptAndMask(item.targetPhoneNumber());
-        String familyName = item.requesterName() == null ? null : item.requesterName() + " 가족";
+        String familyName = item.requesterName() == null ? null : item.requesterName() + FAMILY_NAME_SUFFIX;
 
         return FamilyRequestListItem.builder()
                 .requestId(item.requestId())
