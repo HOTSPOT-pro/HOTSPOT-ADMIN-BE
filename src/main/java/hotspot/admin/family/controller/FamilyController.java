@@ -1,5 +1,7 @@
 package hotspot.admin.family.controller;
 
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -12,15 +14,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.admin.common.ApiResponse;
-import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.GetFamilyListService;
+import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
+import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.request.FamilyRequestListRequest;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.domain.ApplyType;
@@ -33,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyController {
     private final GetFamilyListService getFamilyListService;
     private final GetFamilySummaryService getFamilySummaryService;
+    private final GetFamilyPolicyStatusService getFamilyPolicyStatusService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
     private final GetFamilyRequestListService getFamilyRequestListService;
     private final ProcessFamilyRequestService processFamilyRequestService;
@@ -47,6 +52,12 @@ public class FamilyController {
     public ResponseEntity<ApiResponse<FamilySummaryResponse>> getFamilySummary(
             @PathVariable Long familyId) {
         return ResponseEntity.ok(ApiResponse.success(getFamilySummaryService.getFamilySummary(familyId)));
+    }
+
+    @GetMapping("/{familyId}/policy-status")
+    public ResponseEntity<ApiResponse<List<FamilyPolicyMemberStatusItem>>> getFamilyPolicyStatus(
+            @PathVariable Long familyId) {
+        return ResponseEntity.ok(ApiResponse.success(getFamilyPolicyStatusService.getFamilyPolicyStatus(familyId)));
     }
 
     @GetMapping("/search/phone")
