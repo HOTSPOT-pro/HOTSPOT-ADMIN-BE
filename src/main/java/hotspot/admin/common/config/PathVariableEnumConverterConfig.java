@@ -7,6 +7,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
+import hotspot.admin.policy.domain.AdminPolicyType;
 
 @Configuration
 public class PathVariableEnumConverterConfig implements WebMvcConfigurer {
@@ -15,6 +16,7 @@ public class PathVariableEnumConverterConfig implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new CaseInsensitiveApplyTypeConverter());
         registry.addConverter(new CaseInsensitiveFamilyApplyStatusConverter());
+        registry.addConverter(new CaseInsensitiveAdminPolicyTypeConverter());
     }
 
     private static class CaseInsensitiveApplyTypeConverter implements Converter<String, ApplyType> {
@@ -46,6 +48,22 @@ public class PathVariableEnumConverterConfig implements WebMvcConfigurer {
                 }
             }
             throw new IllegalArgumentException("Invalid FamilyApplyStatus: " + source);
+        }
+    }
+
+    private static class CaseInsensitiveAdminPolicyTypeConverter implements Converter<String, AdminPolicyType> {
+        @Override
+        public AdminPolicyType convert(String source) {
+            if (source == null) {
+                return null;
+            }
+
+            for (AdminPolicyType policyType : AdminPolicyType.values()) {
+                if (policyType.name().equalsIgnoreCase(source)) {
+                    return policyType;
+                }
+            }
+            throw new IllegalArgumentException("Invalid AdminPolicyType: " + source);
         }
     }
 }

@@ -3,7 +3,7 @@ package hotspot.admin.family.controller.response;
 import lombok.Builder;
 
 @Builder
-public record FamilyListItem(
+public record FamilySummaryResponse(
         Long familyId,
         String displayId,
         String representativeName,

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -27,6 +28,12 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.service.dto.FamilyControlMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
+import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyRepositoryImplTest {
@@ -42,8 +49,8 @@ class FamilyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("가족 목록 슬라이스 조회 시 row 매핑이 정상 동작한다")
-    void findFamilySliceSuccess() throws Exception {
+    @DisplayName("가족 목록 페이지 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyListSuccess() throws Exception {
         when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
                     @SuppressWarnings("unchecked")
@@ -59,7 +66,7 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        List<FamilyListItem> result = familyRepository.findFamilySlice(31, 30L);
+        List<FamilyListItem> result = familyRepository.findFamilyList(20, 0);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).familyId()).isEqualTo(31L);
@@ -93,6 +100,233 @@ class FamilyRepositoryImplTest {
         assertThat(result.get().representativeName()).isEqualTo("박대표");
         assertThat(result.get().phoneNumber()).isEqualTo("enc-phone");
         assertThat(result.get().memberCount()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("가족 ID로 상세 상단 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyByIdSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyListItem> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("family_id")).thenReturn(9L);
+                    when(rs.getString("representative_name")).thenReturn("이대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-9999");
+                    when(rs.getInt("member_count")).thenReturn(5);
+
+                    FamilyListItem row = mapper.mapRow(rs, 0);
+                    return List.of(row);
+                });
+
+        Optional<FamilyListItem> result = familyRepository.findFamilyById(9L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().familyId()).isEqualTo(9L);
+        assertThat(result.get().representativeName()).isEqualTo("이대표");
+        assertThat(result.get().phoneNumber()).isEqualTo("enc-9999");
+        assertThat(result.get().memberCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("가족 존재 여부 조회 성공")
+    void existsFamilyByIdSuccess() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(true);
+
+        boolean exists = familyRepository.existsFamilyById(1L);
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("가족 존재 여부 조회 결과 null이면 false")
+    void existsFamilyByIdNullThenFalse() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(null);
+
+        boolean exists = familyRepository.existsFamilyById(1L);
+
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    @DisplayName("가족 우선순위 타입 조회 성공")
+    void findFamilyPriorityTypeSuccess() {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<PriorityType> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getString("priority_type")).thenReturn("FIFO");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        Optional<PriorityType> result = familyRepository.findFamilyPriorityType(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(PriorityType.FIFO);
+    }
+
+    @Test
+    @DisplayName("가족 제어 기능 구성원 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyControlMembersSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyControlMemberRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(501L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(false);
+                    when(rs.getObject("data_limit", Long.class)).thenReturn(2048L);
+                    when(rs.getObject("priority", Integer.class)).thenReturn(1);
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyControlMemberRow> result = familyRepository.findFamilyControlMembers(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(501L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).blocked()).isFalse();
+        assertThat(result.get(0).dataLimit()).isEqualTo(2048L);
+        assertThat(result.get(0).priority()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 구성원 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyPolicyMembersSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyMemberRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(100L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(true);
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyMemberRow> result = familyRepository.findFamilyPolicyMembers(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(100L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).blocked()).isTrue();
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 시간대 정책 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyTimePoliciesSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyTimePolicyRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(101L);
+                    when(rs.getString("policy_name")).thenReturn("야간 차단");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyTimePolicyRow> result = familyRepository.findFamilyTimePolicies(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(101L);
+        assertThat(result.get(0).policyName()).isEqualTo("야간 차단");
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 차단 서비스 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyAppPoliciesSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyAppPolicyRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(102L);
+                    when(rs.getString("blocked_service_name")).thenReturn("유튜브");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyAppPolicyRow> result = familyRepository.findFamilyAppPolicies(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(102L);
+        assertThat(result.get(0).blockedServiceName()).isEqualTo("유튜브");
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 통합 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyPolicyStatusRowsSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyStatusRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    Array timeArray = org.mockito.Mockito.mock(Array.class);
+                    Array appArray = org.mockito.Mockito.mock(Array.class);
+
+                    when(rs.getLong("sub_id")).thenReturn(201L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(true);
+                    when(rs.getArray("time_policy_names")).thenReturn(timeArray);
+                    when(rs.getArray("app_policy_names")).thenReturn(appArray);
+                    when(timeArray.getArray()).thenReturn(new String[]{"야간 차단", "학습 시간"});
+                    when(appArray.getArray()).thenReturn(new String[]{"유튜브"});
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyStatusRow> result = familyRepository.findFamilyPolicyStatusRows(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(201L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).appliedTimePolicies()).containsExactly("야간 차단", "학습 시간");
+        assertThat(result.get(0).appliedBlockedServicePolicies()).containsExactly("유튜브");
+    }
+
+    @Test
+    @DisplayName("가족 목록 총 개수 조회 성공")
+    void countFamilyListSuccess() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
+                .thenReturn(15L);
+
+        long total = familyRepository.countFamilyList();
+
+        assertThat(total).isEqualTo(15L);
+    }
+
+    @Test
+    @DisplayName("가족 목록 총 개수 null이면 0 반환")
+    void countFamilyListNullThenZero() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
+                .thenReturn(null);
+
+        long total = familyRepository.countFamilyList();
+
+        assertThat(total).isZero();
     }
 
     @Test

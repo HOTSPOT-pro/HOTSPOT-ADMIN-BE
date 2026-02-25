@@ -19,6 +19,7 @@ import hotspot.admin.common.exception.code.PolicyErrorCode;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.policy.controller.request.CreateTimePolicyRequest;
+import hotspot.admin.policy.domain.AdminPolicyType;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -93,6 +94,9 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
         }
         if (requiredType == FamilyApplyStatus.class) {
             return FamilyErrorCode.INVALID_APPLY_STATUS;
+        }
+        if (requiredType == AdminPolicyType.class) {
+            return PolicyErrorCode.INVALID_POLICY_TYPE;
         }
         return GlobalErrorCode.BAD_REQUEST;
     }

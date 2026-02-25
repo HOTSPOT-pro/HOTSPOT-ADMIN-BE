@@ -6,8 +6,10 @@ import lombok.Builder;
 
 @Builder
 public record FamilyListResponse(
+        Integer page,
         Integer size,
-        Long nextCursor,
+        Long totalElements,
+        Integer totalPages,
         Boolean hasNext,
         List<FamilyListItem> familyList
 ) {

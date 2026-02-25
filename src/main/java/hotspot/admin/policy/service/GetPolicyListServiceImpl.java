@@ -96,6 +96,7 @@ public class GetPolicyListServiceImpl implements GetPolicyListService {
                 .policyId(blockPolicy.getBlockPolicyId())
                 .displayId(DisplayIdFormatter.format(DisplayIdType.TIME_POLICY, blockPolicy.getBlockPolicyId()))
                 .policyName(blockPolicy.getPolicyName())
+                .policyDescription(blockPolicy.getPolicyDescription())
                 .policyType(blockPolicy.getPolicyType())
                 .policyScheduleLabel(toPolicyScheduleLabel(blockPolicy.getPolicySnapshot()))
                 .isActive(active)

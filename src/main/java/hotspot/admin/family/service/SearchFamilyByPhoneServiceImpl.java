@@ -26,6 +26,7 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
     private final PhoneHashUtil phoneHashUtil;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    /** 전화번호 해시 검색으로 가족을 조회하고 전화번호를 마스킹해 반환한다. */
     @Transactional(readOnly = true)
     @Override
     public FamilyPhoneSearchResponse searchByPhone(String phoneNumber) {
@@ -39,6 +40,7 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
                 .build();
     }
 
+    /** 입력 전화번호를 검색용 해시로 변환한다. */
     private String createPhoneHash(String phoneNumber) {
         try {
             return phoneHashUtil.hashPhone(phoneNumber);
@@ -49,6 +51,7 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
         }
     }
 
+    /** 조회 항목의 암호화 전화번호를 복호화/마스킹한 값으로 치환한다. */
     private FamilyListItem decryptAndMaskPhone(FamilyListItem item) {
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
             return FamilyListItem.builder()
@@ -57,23 +60,18 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
                     .representativeName(item.representativeName())
                     .phoneNumber(item.phoneNumber())
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         }
 
         try {
             String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
-            // [TODO] usedData/remainingData는 사용량 집계 연동 전까지 null 유지.
             return FamilyListItem.builder()
                     .familyId(item.familyId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);

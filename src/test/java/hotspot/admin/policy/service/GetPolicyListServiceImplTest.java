@@ -95,6 +95,7 @@ class GetPolicyListServiceImplTest {
 
         TimePolicyListResponse response = service.getTimePolicies(request);
         assertThat(response.items()).hasSize(3);
+        assertThat(response.items().get(0).policyDescription()).isEqualTo("매일 수면 시간 차단");
         assertThat(response.items().get(0).policyScheduleLabel()).isEqualTo("매일 00:00~07:00");
         assertThat(response.items().get(1).policyScheduleLabel()).isEqualTo("3시간");
         assertThat(response.items().get(2).policyScheduleLabel()).isEqualTo("월,수,금 09:00~14:00");
