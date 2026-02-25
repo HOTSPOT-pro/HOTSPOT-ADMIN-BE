@@ -11,6 +11,7 @@ import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 
 public interface FamilyRepository {
@@ -34,6 +35,8 @@ public interface FamilyRepository {
     List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId);
 
     List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId);
+
+    List<FamilyPolicyStatusRow> findFamilyPolicyStatusRows(Long familyId);
 
     List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 
 @ExtendWith(MockitoExtension.class)
@@ -246,6 +248,41 @@ class FamilyRepositoryImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).subId()).isEqualTo(102L);
         assertThat(result.get(0).blockedServiceName()).isEqualTo("유튜브");
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 통합 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyPolicyStatusRowsSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyStatusRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    Array timeArray = org.mockito.Mockito.mock(Array.class);
+                    Array appArray = org.mockito.Mockito.mock(Array.class);
+
+                    when(rs.getLong("sub_id")).thenReturn(201L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(true);
+                    when(rs.getArray("time_policy_names")).thenReturn(timeArray);
+                    when(rs.getArray("app_policy_names")).thenReturn(appArray);
+                    when(timeArray.getArray()).thenReturn(new String[]{"야간 차단", "학습 시간"});
+                    when(appArray.getArray()).thenReturn(new String[]{"유튜브"});
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyStatusRow> result = familyRepository.findFamilyPolicyStatusRows(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(201L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).appliedTimePolicies()).containsExactly("야간 차단", "학습 시간");
+        assertThat(result.get(0).appliedBlockedServicePolicies()).containsExactly("유튜브");
     }
 
     @Test

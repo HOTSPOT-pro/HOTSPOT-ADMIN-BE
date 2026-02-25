@@ -1,5 +1,9 @@
 package hotspot.admin.family.infrastructure;
 
+import java.sql.Array;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +20,7 @@ import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
@@ -299,6 +304,59 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     }
 
     @Override
+    public List<FamilyPolicyStatusRow> findFamilyPolicyStatusRows(Long familyId) {
+        String sql = """
+                SELECT
+                    s.sub_id,
+                    m.name AS member_name,
+                    s.phone_enc AS phone_number_enc,
+                    fs.family_role,
+                    s.is_locked AS blocked,
+                    COALESCE(tp.time_policy_names, ARRAY[]::text[]) AS time_policy_names,
+                    COALESCE(ap.app_policy_names, ARRAY[]::text[]) AS app_policy_names
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                LEFT JOIN LATERAL (
+                    SELECT array_agg(DISTINCT ps.date_snapshot->>'policyName'
+                            ORDER BY ps.date_snapshot->>'policyName') AS time_policy_names
+                    FROM policy_sub ps
+                    WHERE ps.sub_id = s.sub_id
+                      AND ps.is_deleted = false
+                      AND COALESCE(ps.date_snapshot->>'policyName', '') <> ''
+                ) tp ON true
+                LEFT JOIN LATERAL (
+                    SELECT array_agg(DISTINCT abs.blocked_service_name
+                            ORDER BY abs.blocked_service_name) AS app_policy_names
+                    FROM blocked_service_sub bss
+                    JOIN app_blocked_service abs
+                      ON abs.app_blocked_service_id = bss.blocked_service_id
+                     AND abs.is_deleted = false
+                    WHERE bss.sub_id = s.sub_id
+                      AND bss.is_deleted = false
+                ) ap ON true
+                WHERE fs.family_id = :familyId
+                ORDER BY
+                    CASE fs.family_role
+                        WHEN :ownerRole THEN 1
+                        WHEN :parentRole THEN 2
+                        WHEN :childRole THEN 3
+                        ELSE 4
+                    END,
+                    m.name ASC
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId)
+                .addValue("ownerRole", FamilyRole.OWNER.name())
+                .addValue("parentRole", FamilyRole.PARENT.name())
+                .addValue("childRole", FamilyRole.CHILD.name());
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyPolicyStatusRow);
+    }
+
+    @Override
     public List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,
             FamilyApplyStatus status,
@@ -462,5 +520,28 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 .subId(rs.getLong("sub_id"))
                 .blockedServiceName(rs.getString("blocked_service_name"))
                 .build();
+    }
+
+    private FamilyPolicyStatusRow mapFamilyPolicyStatusRow(java.sql.ResultSet rs, int rowNum) throws SQLException {
+        return FamilyPolicyStatusRow.builder()
+                .subId(rs.getLong("sub_id"))
+                .memberName(rs.getString("member_name"))
+                .phoneNumberEnc(rs.getString("phone_number_enc"))
+                .familyRole(FamilyRole.valueOf(rs.getString("family_role")))
+                .blocked(rs.getBoolean("blocked"))
+                .appliedTimePolicies(toStringList(rs.getArray("time_policy_names")))
+                .appliedBlockedServicePolicies(toStringList(rs.getArray("app_policy_names")))
+                .build();
+    }
+
+    private List<String> toStringList(Array sqlArray) throws SQLException {
+        if (sqlArray == null) {
+            return Collections.emptyList();
+        }
+        Object value = sqlArray.getArray();
+        if (!(value instanceof String[] arr)) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(arr);
     }
 }

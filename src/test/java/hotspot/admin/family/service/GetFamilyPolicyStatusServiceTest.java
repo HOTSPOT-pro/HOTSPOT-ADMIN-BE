@@ -21,9 +21,7 @@ import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.domain.FamilyRole;
-import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
-import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,32 +45,26 @@ class GetFamilyPolicyStatusServiceTest {
     void getFamilyPolicyStatusSuccess() throws Exception {
         when(familyRepository.findFamilyById(1L))
                 .thenReturn(Optional.of(FamilyListItem.builder().familyId(1L).build()));
-        when(familyRepository.findFamilyPolicyMembers(1L))
+        when(familyRepository.findFamilyPolicyStatusRows(1L))
                 .thenReturn(List.of(
-                        FamilyPolicyMemberRow.builder()
+                        FamilyPolicyStatusRow.builder()
                                 .subId(10L)
                                 .memberName("대표")
                                 .phoneNumberEnc("enc-1")
                                 .familyRole(FamilyRole.OWNER)
                                 .blocked(true)
+                                .appliedTimePolicies(List.of("야간 차단"))
+                                .appliedBlockedServicePolicies(List.of("유튜브", "틱톡"))
                                 .build(),
-                        FamilyPolicyMemberRow.builder()
+                        FamilyPolicyStatusRow.builder()
                                 .subId(11L)
                                 .memberName("자녀")
                                 .phoneNumberEnc("enc-2")
                                 .familyRole(FamilyRole.CHILD)
                                 .blocked(false)
+                                .appliedTimePolicies(List.of("학습 시간"))
+                                .appliedBlockedServicePolicies(List.of())
                                 .build()
-                ));
-        when(familyRepository.findFamilyTimePolicies(1L))
-                .thenReturn(List.of(
-                        FamilyPolicyTimePolicyRow.builder().subId(10L).policyName("야간 차단").build(),
-                        FamilyPolicyTimePolicyRow.builder().subId(11L).policyName("학습 시간").build()
-                ));
-        when(familyRepository.findFamilyAppPolicies(1L))
-                .thenReturn(List.of(
-                        FamilyPolicyAppPolicyRow.builder().subId(10L).blockedServiceName("유튜브").build(),
-                        FamilyPolicyAppPolicyRow.builder().subId(10L).blockedServiceName("틱톡").build()
                 ));
         when(phoneCryptoUtil.decryptPhone("enc-1")).thenReturn("01011112222");
         when(phoneCryptoUtil.decryptPhone("enc-2")).thenReturn("01033334444");
@@ -102,16 +94,16 @@ class GetFamilyPolicyStatusServiceTest {
     void decryptFailThenException() throws Exception {
         when(familyRepository.findFamilyById(1L))
                 .thenReturn(Optional.of(FamilyListItem.builder().familyId(1L).build()));
-        when(familyRepository.findFamilyPolicyMembers(1L))
-                .thenReturn(List.of(FamilyPolicyMemberRow.builder()
+        when(familyRepository.findFamilyPolicyStatusRows(1L))
+                .thenReturn(List.of(FamilyPolicyStatusRow.builder()
                         .subId(1L)
                         .memberName("대표")
                         .phoneNumberEnc("enc")
                         .familyRole(FamilyRole.OWNER)
                         .blocked(false)
+                        .appliedTimePolicies(List.of())
+                        .appliedBlockedServicePolicies(List.of())
                         .build()));
-        when(familyRepository.findFamilyTimePolicies(1L)).thenReturn(List.of());
-        when(familyRepository.findFamilyAppPolicies(1L)).thenReturn(List.of());
         when(phoneCryptoUtil.decryptPhone("enc")).thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyPolicyStatus(1L))
