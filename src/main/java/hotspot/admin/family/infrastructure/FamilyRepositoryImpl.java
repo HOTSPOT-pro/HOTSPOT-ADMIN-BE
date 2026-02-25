@@ -164,6 +164,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return result.stream().findFirst();
     }
 
+    /** 가족 상세 제어 기능 탭에서 사용할 우선순위 유형(FIFO/PRIORITY) 단건 조회 */
     @Override
     public Optional<PriorityType> findFamilyPriorityType(Long familyId) {
         String sql = """
@@ -182,6 +183,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return result.stream().findFirst();
     }
 
+    /** 가족 상세 제어 기능 탭에서 사용할 구성원별 제어 정보 조회 */
     @Override
     public List<FamilyControlMemberRow> findFamilyControlMembers(Long familyId) {
         String sql = """
@@ -217,6 +219,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyControlMemberRow);
     }
 
+    /** 가족 상세 정책 탭의 구성원 기본 정보(회선/역할/차단 상태) 조회 */
     @Override
     public List<FamilyPolicyMemberRow> findFamilyPolicyMembers(Long familyId) {
         String sql = """
@@ -250,6 +253,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyPolicyMemberRow);
     }
 
+    /** 가족 상세 정책 탭의 구성원별 시간대 정책명 조회 */
     @Override
     public List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId) {
         String sql = """
@@ -270,6 +274,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyTimePolicyRow);
     }
 
+    /** 가족 상세 정책 탭의 구성원별 차단 서비스 정책명 조회 */
     @Override
     public List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId) {
         String sql = """

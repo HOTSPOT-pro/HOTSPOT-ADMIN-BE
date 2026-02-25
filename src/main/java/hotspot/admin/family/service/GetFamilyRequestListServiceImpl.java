@@ -30,6 +30,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    /** 가족 요청 목록을 페이지 단위로 조회하고 화면 표시용 필드를 구성한다. */
     @Override
     @Transactional(readOnly = true)
     public FamilyRequestListResponse getFamilyRequests(
@@ -62,6 +63,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
                 .build();
     }
 
+    /** 요청자/대상자 전화번호 마스킹 및 표시용 ID/이름을 채워 응답 항목으로 변환한다. */
     private FamilyRequestListItem decryptAndMaskPhones(FamilyRequestListItem item) {
         String requesterPhone = decryptAndMask(item.requesterPhoneNumber());
         String targetPhone = decryptAndMask(item.targetPhoneNumber());
@@ -83,6 +85,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
                 .build();
     }
 
+    /** 단일 전화번호를 복호화 후 마스킹 형식으로 변환한다. */
     private String decryptAndMask(String phoneEnc) {
         if (phoneEnc == null || phoneEnc.isBlank()) {
             return phoneEnc;

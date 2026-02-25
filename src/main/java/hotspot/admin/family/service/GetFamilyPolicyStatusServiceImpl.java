@@ -28,6 +28,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    /** 구성원별 적용 정책(시간대/차단 서비스)과 차단 상태를 묶어 반환한다. */
     @Transactional(readOnly = true)
     @Override
     public List<FamilyPolicyMemberStatusItem> getFamilyPolicyStatus(Long familyId) {
@@ -51,6 +52,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
                 .toList();
     }
 
+    /** 구성원 정보와 정책 맵을 조합해 정책 탭 응답 항목으로 변환한다. */
     private FamilyPolicyMemberStatusItem toMemberItem(
             FamilyPolicyMemberRow member,
             Map<Long, List<String>> timePolicyMap,
@@ -66,6 +68,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
                 .build();
     }
 
+    /** 암호화된 전화번호를 복호화하고 마스킹해 표시 형식으로 변환한다. */
     private String decryptAndMaskPhone(String encryptedPhone) {
         if (encryptedPhone == null || encryptedPhone.isBlank()) {
             return encryptedPhone;

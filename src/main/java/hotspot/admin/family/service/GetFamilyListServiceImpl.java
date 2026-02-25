@@ -26,6 +26,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    /** 가족 목록을 페이지 단위로 조회하고 전화번호를 마스킹해 반환한다. */
     @Transactional(readOnly = true)
     @Override
     public FamilyListResponse getFamilyList(FamilyListRequest request) {
@@ -50,6 +51,7 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
                 .build();
     }
 
+    /** 암호화된 전화번호를 복호화/마스킹하고 화면용 항목으로 변환한다. */
     private FamilyListItem decryptAndMaskPhone(FamilyListItem item) {
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
             return FamilyListItem.builder()

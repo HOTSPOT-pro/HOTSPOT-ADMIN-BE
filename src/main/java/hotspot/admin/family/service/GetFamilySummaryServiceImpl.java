@@ -24,6 +24,7 @@ public class GetFamilySummaryServiceImpl implements GetFamilySummaryService {
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
+    /** 가족 상세 상단에 노출할 요약 정보를 조회하고 전화번호를 마스킹한다. */
     @Transactional(readOnly = true)
     @Override
     public FamilySummaryResponse getFamilySummary(Long familyId) {
@@ -40,6 +41,7 @@ public class GetFamilySummaryServiceImpl implements GetFamilySummaryService {
                 .build();
     }
 
+    /** 암호화된 전화번호를 복호화하고 마스킹해 화면용 항목으로 변환한다. */
     private FamilyListItem decryptAndMaskPhone(FamilyListItem item) {
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
             return FamilyListItem.builder()

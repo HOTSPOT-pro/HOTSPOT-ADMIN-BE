@@ -23,6 +23,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
 
     private final FamilyRepository familyRepository;
 
+    /** 가족 우선순위 유형과 구성원별 제어 상태를 제어 탭 응답 형태로 변환한다. */
     @Transactional(readOnly = true)
     @Override
     public FamilyControlStatusResponse getFamilyControlStatus(Long familyId) {
@@ -39,6 +40,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .build();
     }
 
+    /** 구성원 제어 조회 행을 제어 탭 응답 항목으로 변환한다. */
     private FamilyControlMemberItem toMemberItem(FamilyControlMemberRow member, PriorityType priorityType) {
         return FamilyControlMemberItem.builder()
                 .subId(member.subId())
@@ -50,6 +52,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .build();
     }
 
+    /** 우선순위 유형 규칙에 따라 화면 노출용 우선순위 순서를 계산한다. */
     private Integer resolvePriorityOrder(Integer priority, PriorityType priorityType) {
         if (priorityType == PriorityType.FIFO) {
             return -1;
@@ -57,6 +60,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
         return priority == null ? -1 : priority;
     }
 
+    /** 데이터 한도(KB)를 MB 단위로 변환한다. */
     private Long toMb(Long dataLimit) {
         if (dataLimit == null) {
             return null;
