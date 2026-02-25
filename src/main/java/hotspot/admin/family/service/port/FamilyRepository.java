@@ -7,6 +7,9 @@ import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
+import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 
 public interface FamilyRepository {
     List<FamilyListItem> findFamilyList(
@@ -19,6 +22,12 @@ public interface FamilyRepository {
     Optional<FamilyListItem> findFamilyByPhoneHash(String phoneHash);
 
     Optional<FamilyListItem> findFamilyById(Long familyId);
+
+    List<FamilyPolicyMemberRow> findFamilyPolicyMembers(Long familyId);
+
+    List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId);
+
+    List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId);
 
     List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,

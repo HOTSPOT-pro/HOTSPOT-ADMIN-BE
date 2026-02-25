@@ -12,6 +12,9 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -160,6 +163,82 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     }
 
     @Override
+    public List<FamilyPolicyMemberRow> findFamilyPolicyMembers(Long familyId) {
+        String sql = """
+                SELECT
+                    s.sub_id,
+                    m.name AS member_name,
+                    s.phone_enc AS phone_number_enc,
+                    fs.family_role,
+                    s.is_locked AS blocked
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                WHERE fs.family_id = :familyId
+                ORDER BY
+                    CASE fs.family_role
+                        WHEN :ownerRole THEN 1
+                        WHEN :parentRole THEN 2
+                        WHEN :childRole THEN 3
+                        ELSE 4
+                    END,
+                    m.name ASC
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId)
+                .addValue("ownerRole", FamilyRole.OWNER.name())
+                .addValue("parentRole", FamilyRole.PARENT.name())
+                .addValue("childRole", FamilyRole.CHILD.name());
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyPolicyMemberRow);
+    }
+
+    @Override
+    public List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId) {
+        String sql = """
+                SELECT DISTINCT
+                    ps.sub_id,
+                    ps.date_snapshot->>'policyName' AS policy_name
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN policy_sub ps ON ps.sub_id = s.sub_id AND ps.is_deleted = false
+                WHERE fs.family_id = :familyId
+                ORDER BY ps.sub_id, policy_name
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyTimePolicyRow);
+    }
+
+    @Override
+    public List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId) {
+        String sql = """
+                SELECT DISTINCT
+                    bss.sub_id,
+                    abs.blocked_service_name
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_deleted = false
+                JOIN app_blocked_service abs
+                  ON abs.app_blocked_service_id = bss.blocked_service_id
+                 AND abs.is_deleted = false
+                WHERE fs.family_id = :familyId
+                ORDER BY bss.sub_id, abs.blocked_service_name
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyRow);
+    }
+
+    @Override
     public List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,
             FamilyApplyStatus status,
@@ -283,6 +362,33 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 .targetFamilyRole(FamilyRole.valueOf(rs.getString("target_family_role")))
                 .relationDocumentUrl(rs.getString("doc_url"))
                 .requestedAt(rs.getTimestamp("created_time").toLocalDateTime())
+                .build();
+    }
+
+    private FamilyPolicyMemberRow mapFamilyPolicyMemberRow(java.sql.ResultSet rs, int rowNum)
+            throws java.sql.SQLException {
+        return FamilyPolicyMemberRow.builder()
+                .subId(rs.getLong("sub_id"))
+                .memberName(rs.getString("member_name"))
+                .phoneNumberEnc(rs.getString("phone_number_enc"))
+                .familyRole(FamilyRole.valueOf(rs.getString("family_role")))
+                .blocked(rs.getBoolean("blocked"))
+                .build();
+    }
+
+    private FamilyPolicyTimePolicyRow mapFamilyTimePolicyRow(java.sql.ResultSet rs, int rowNum)
+            throws java.sql.SQLException {
+        return FamilyPolicyTimePolicyRow.builder()
+                .subId(rs.getLong("sub_id"))
+                .policyName(rs.getString("policy_name"))
+                .build();
+    }
+
+    private FamilyPolicyAppPolicyRow mapFamilyAppPolicyRow(java.sql.ResultSet rs, int rowNum)
+            throws java.sql.SQLException {
+        return FamilyPolicyAppPolicyRow.builder()
+                .subId(rs.getLong("sub_id"))
+                .blockedServiceName(rs.getString("blocked_service_name"))
                 .build();
     }
 }
