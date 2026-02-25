@@ -27,6 +27,9 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyRepositoryImplTest {
@@ -120,6 +123,77 @@ class FamilyRepositoryImplTest {
         assertThat(result.get().representativeName()).isEqualTo("이대표");
         assertThat(result.get().phoneNumber()).isEqualTo("enc-9999");
         assertThat(result.get().memberCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 구성원 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyPolicyMembersSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyMemberRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(100L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(true);
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyMemberRow> result = familyRepository.findFamilyPolicyMembers(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(100L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).blocked()).isTrue();
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 시간대 정책 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyTimePoliciesSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyTimePolicyRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(101L);
+                    when(rs.getString("policy_name")).thenReturn("야간 차단");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyTimePolicyRow> result = familyRepository.findFamilyTimePolicies(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(101L);
+        assertThat(result.get(0).policyName()).isEqualTo("야간 차단");
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 차단 서비스 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyAppPoliciesSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyAppPolicyRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(102L);
+                    when(rs.getString("blocked_service_name")).thenReturn("유튜브");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyAppPolicyRow> result = familyRepository.findFamilyAppPolicies(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(102L);
+        assertThat(result.get(0).blockedServiceName()).isEqualTo("유튜브");
     }
 
     @Test

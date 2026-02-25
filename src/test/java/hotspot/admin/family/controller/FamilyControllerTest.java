@@ -17,6 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.admin.family.controller.port.GetFamilyListService;
+import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
@@ -24,6 +25,7 @@ import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
@@ -43,6 +45,9 @@ class FamilyControllerTest {
 
     @MockBean
     private GetFamilySummaryService getFamilySummaryService;
+
+    @MockBean
+    private GetFamilyPolicyStatusService getFamilyPolicyStatusService;
 
     @MockBean
     private SearchFamilyByPhoneService searchFamilyByPhoneService;
@@ -109,6 +114,30 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.representativeName").value("김대표"))
                 .andExpect(jsonPath("$.data.phoneNumber").value("010-****-5678"))
                 .andExpect(jsonPath("$.data.memberCount").value(5));
+    }
+
+    @Test
+    @DisplayName("가족 정책 적용 현황 조회 성공")
+    void getFamilyPolicyStatusSuccess() throws Exception {
+        FamilyPolicyMemberStatusItem member = FamilyPolicyMemberStatusItem.builder()
+                .memberName("홍길동")
+                .phoneNumber("010-****-1111")
+                .familyRole(FamilyRole.OWNER)
+                .blocked(true)
+                .appliedTimePolicies(List.of("야간 차단"))
+                .appliedBlockedServicePolicies(List.of("유튜브", "틱톡"))
+                .build();
+
+        when(getFamilyPolicyStatusService.getFamilyPolicyStatus(5L))
+                .thenReturn(List.of(member));
+
+        mockMvc.perform(get("/api/v1/admin/families/5/policy-status"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].memberName").value("홍길동"))
+                .andExpect(jsonPath("$.data[0].familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data[0].blocked").value(true))
+                .andExpect(jsonPath("$.data[0].appliedTimePolicies[0]").value("야간 차단"))
+                .andExpect(jsonPath("$.data[0].appliedBlockedServicePolicies[0]").value("유튜브"));
     }
 
     @Test
