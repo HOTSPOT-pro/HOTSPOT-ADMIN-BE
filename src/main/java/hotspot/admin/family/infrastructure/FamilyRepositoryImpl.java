@@ -12,6 +12,8 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
@@ -160,6 +162,59 @@ public class FamilyRepositoryImpl implements FamilyRepository {
 
         List<FamilyListItem> result = jdbcTemplate.query(sql, params, this::mapFamilyListItem);
         return result.stream().findFirst();
+    }
+
+    @Override
+    public Optional<PriorityType> findFamilyPriorityType(Long familyId) {
+        String sql = """
+                SELECT f.priority_type
+                FROM family f
+                WHERE f.family_id = :familyId
+                  AND f.is_deleted = false
+                LIMIT 1
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        List<PriorityType> result = jdbcTemplate.query(sql, params,
+                (rs, rowNum) -> PriorityType.valueOf(rs.getString("priority_type")));
+        return result.stream().findFirst();
+    }
+
+    @Override
+    public List<FamilyControlMemberRow> findFamilyControlMembers(Long familyId) {
+        String sql = """
+                SELECT
+                    s.sub_id,
+                    m.name AS member_name,
+                    fs.family_role,
+                    s.is_locked AS blocked,
+                    fs.data_limit,
+                    fs.priority
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                WHERE fs.family_id = :familyId
+                ORDER BY
+                    CASE fs.family_role
+                        WHEN :ownerRole THEN 1
+                        WHEN :parentRole THEN 2
+                        WHEN :childRole THEN 3
+                        ELSE 4
+                    END,
+                    fs.priority ASC NULLS LAST,
+                    m.name ASC
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId)
+                .addValue("ownerRole", FamilyRole.OWNER.name())
+                .addValue("parentRole", FamilyRole.PARENT.name())
+                .addValue("childRole", FamilyRole.CHILD.name());
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyControlMemberRow);
     }
 
     @Override
@@ -373,6 +428,18 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 .phoneNumberEnc(rs.getString("phone_number_enc"))
                 .familyRole(FamilyRole.valueOf(rs.getString("family_role")))
                 .blocked(rs.getBoolean("blocked"))
+                .build();
+    }
+
+    private FamilyControlMemberRow mapFamilyControlMemberRow(java.sql.ResultSet rs, int rowNum)
+            throws java.sql.SQLException {
+        return FamilyControlMemberRow.builder()
+                .subId(rs.getLong("sub_id"))
+                .memberName(rs.getString("member_name"))
+                .familyRole(FamilyRole.valueOf(rs.getString("family_role")))
+                .blocked(rs.getBoolean("blocked"))
+                .dataLimit(rs.getObject("data_limit", Long.class))
+                .priority(rs.getObject("priority", Integer.class))
                 .build();
     }
 
