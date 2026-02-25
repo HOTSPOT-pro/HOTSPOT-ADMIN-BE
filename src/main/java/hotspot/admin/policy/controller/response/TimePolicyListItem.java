@@ -12,6 +12,7 @@ public record TimePolicyListItem(
         Long policyId,
         String displayId,
         String policyName,
+        String policyDescription,
         PolicyType policyType,
         String policyScheduleLabel,
         @JsonProperty("is_active") Boolean isActive,

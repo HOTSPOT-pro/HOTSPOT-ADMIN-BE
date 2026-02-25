@@ -66,6 +66,7 @@ class PolicyControllerTest {
                         .policyId(1L)
                         .displayId("TP-001")
                         .policyName("수면모드")
+                        .policyDescription("매일 수면 시간 차단")
                         .policyType(PolicyType.SCHEDULED)
                         .policyScheduleLabel("매일 00:00~07:00")
                         .isActive(true)
@@ -76,6 +77,7 @@ class PolicyControllerTest {
         mockMvc.perform(get("/api/v1/admin/policies/time").param("page", "0").param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.items[0].displayId").value("TP-001"))
+                .andExpect(jsonPath("$.data.items[0].policyDescription").value("매일 수면 시간 차단"))
                 .andExpect(jsonPath("$.data.items[0].is_active").value(true));
     }
 
