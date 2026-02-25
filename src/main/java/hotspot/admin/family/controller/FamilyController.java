@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import hotspot.admin.common.ApiResponse;
+import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
 import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
@@ -21,6 +22,7 @@ import hotspot.admin.family.controller.request.FamilyRequestListRequest;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
+import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/admin/families")
 public class FamilyController {
     private final GetFamilyListService getFamilyListService;
+    private final GetFamilySummaryService getFamilySummaryService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
     private final GetFamilyRequestListService getFamilyRequestListService;
     private final ProcessFamilyRequestService processFamilyRequestService;
@@ -38,6 +41,12 @@ public class FamilyController {
     public ResponseEntity<ApiResponse<FamilyListResponse>> getFamilyList(
             @Valid @ModelAttribute FamilyListRequest request) {
         return ResponseEntity.ok(ApiResponse.success(getFamilyListService.getFamilyList(request)));
+    }
+
+    @GetMapping("/{familyId}")
+    public ResponseEntity<ApiResponse<FamilySummaryResponse>> getFamilySummary(
+            @PathVariable Long familyId) {
+        return ResponseEntity.ok(ApiResponse.success(getFamilySummaryService.getFamilySummary(familyId)));
     }
 
     @GetMapping("/search/phone")
