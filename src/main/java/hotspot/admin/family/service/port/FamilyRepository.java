@@ -18,6 +18,8 @@ public interface FamilyRepository {
 
     Optional<FamilyListItem> findFamilyByPhoneHash(String phoneHash);
 
+    Optional<FamilyListItem> findFamilyById(Long familyId);
+
     List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,
             FamilyApplyStatus status,

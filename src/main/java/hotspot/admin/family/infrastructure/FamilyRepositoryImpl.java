@@ -121,6 +121,45 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     }
 
     @Override
+    public Optional<FamilyListItem> findFamilyById(Long familyId) {
+        String sql = """
+                WITH family_agg AS (
+                    SELECT
+                        f.family_id,
+                        COALESCE(
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN m.name END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN m.name END),
+                            MIN(m.name)
+                        ) AS representative_name,
+                        COALESCE(
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
+                            MIN(s.phone_enc)
+                        ) AS phone_number_enc,
+                        COUNT(fs.family_sub_id)::int AS member_count
+                    FROM family f
+                    LEFT JOIN family_sub fs ON fs.family_id = f.family_id
+                    LEFT JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                    LEFT JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                    WHERE f.is_deleted = false
+                      AND f.family_id = :familyId
+                    GROUP BY f.family_id
+                )
+                SELECT family_id, representative_name, phone_number_enc, member_count
+                FROM family_agg
+                LIMIT 1
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId)
+                .addValue("ownerRole", FamilyRole.OWNER.name())
+                .addValue("parentRole", FamilyRole.PARENT.name());
+
+        List<FamilyListItem> result = jdbcTemplate.query(sql, params, this::mapFamilyListItem);
+        return result.stream().findFirst();
+    }
+
+    @Override
     public List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,
             FamilyApplyStatus status,
