@@ -27,6 +27,8 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
@@ -123,6 +125,56 @@ class FamilyRepositoryImplTest {
         assertThat(result.get().representativeName()).isEqualTo("이대표");
         assertThat(result.get().phoneNumber()).isEqualTo("enc-9999");
         assertThat(result.get().memberCount()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("가족 우선순위 타입 조회 성공")
+    void findFamilyPriorityTypeSuccess() {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<PriorityType> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getString("priority_type")).thenReturn("FIFO");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        Optional<PriorityType> result = familyRepository.findFamilyPriorityType(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get()).isEqualTo(PriorityType.FIFO);
+    }
+
+    @Test
+    @DisplayName("가족 제어 기능 구성원 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyControlMembersSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyControlMemberRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("sub_id")).thenReturn(501L);
+                    when(rs.getString("member_name")).thenReturn("대표");
+                    when(rs.getString("family_role")).thenReturn("OWNER");
+                    when(rs.getBoolean("blocked")).thenReturn(false);
+                    when(rs.getObject("data_limit", Long.class)).thenReturn(2048L);
+                    when(rs.getObject("priority", Integer.class)).thenReturn(1);
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyControlMemberRow> result = familyRepository.findFamilyControlMembers(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).subId()).isEqualTo(501L);
+        assertThat(result.get(0).memberName()).isEqualTo("대표");
+        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
+        assertThat(result.get(0).blocked()).isFalse();
+        assertThat(result.get(0).dataLimit()).isEqualTo(2048L);
+        assertThat(result.get(0).priority()).isEqualTo(1);
     }
 
     @Test
