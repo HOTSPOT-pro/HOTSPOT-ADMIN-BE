@@ -34,7 +34,7 @@ public class FamilyController {
     private final GetFamilyRequestListService getFamilyRequestListService;
     private final ProcessFamilyRequestService processFamilyRequestService;
 
-    @GetMapping("")
+    @GetMapping()
     public ResponseEntity<ApiResponse<FamilyListResponse>> getFamilyList(
             @Valid @ModelAttribute FamilyListRequest request) {
         return ResponseEntity.ok(ApiResponse.success(getFamilyListService.getFamilyList(request)));
