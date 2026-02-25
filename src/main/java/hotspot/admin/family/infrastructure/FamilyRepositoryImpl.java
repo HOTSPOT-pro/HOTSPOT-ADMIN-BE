@@ -169,6 +169,24 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return result.stream().findFirst();
     }
 
+    @Override
+    public boolean existsFamilyById(Long familyId) {
+        String sql = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM family f
+                    WHERE f.family_id = :familyId
+                      AND f.is_deleted = false
+                )
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        Boolean exists = jdbcTemplate.queryForObject(sql, params, Boolean.class);
+        return Boolean.TRUE.equals(exists);
+    }
+
     /** 가족 상세 제어 기능 탭에서 사용할 우선순위 유형(FIFO/PRIORITY) 단건 조회 */
     @Override
     public Optional<PriorityType> findFamilyPriorityType(Long familyId) {

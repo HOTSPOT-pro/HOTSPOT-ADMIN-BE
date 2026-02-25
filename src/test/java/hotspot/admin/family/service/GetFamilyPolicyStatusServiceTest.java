@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
-import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
@@ -43,8 +41,7 @@ class GetFamilyPolicyStatusServiceTest {
     @Test
     @DisplayName("가족 정책 적용 현황 조회 성공")
     void getFamilyPolicyStatusSuccess() throws Exception {
-        when(familyRepository.findFamilyById(1L))
-                .thenReturn(Optional.of(FamilyListItem.builder().familyId(1L).build()));
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
         when(familyRepository.findFamilyPolicyStatusRows(1L))
                 .thenReturn(List.of(
                         FamilyPolicyStatusRow.builder()
@@ -82,7 +79,7 @@ class GetFamilyPolicyStatusServiceTest {
     @Test
     @DisplayName("가족이 없으면 FAMILY_NOT_FOUND")
     void familyNotFound() {
-        when(familyRepository.findFamilyById(999L)).thenReturn(Optional.empty());
+        when(familyRepository.existsFamilyById(999L)).thenReturn(false);
 
         assertThatThrownBy(() -> service.getFamilyPolicyStatus(999L))
                 .isInstanceOf(ApplicationException.class)
@@ -92,8 +89,7 @@ class GetFamilyPolicyStatusServiceTest {
     @Test
     @DisplayName("전화번호 복호화 실패 시 예외")
     void decryptFailThenException() throws Exception {
-        when(familyRepository.findFamilyById(1L))
-                .thenReturn(Optional.of(FamilyListItem.builder().familyId(1L).build()));
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
         when(familyRepository.findFamilyPolicyStatusRows(1L))
                 .thenReturn(List.of(FamilyPolicyStatusRow.builder()
                         .subId(1L)

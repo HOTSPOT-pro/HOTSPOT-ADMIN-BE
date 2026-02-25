@@ -27,8 +27,9 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
     @Transactional(readOnly = true)
     @Override
     public List<FamilyPolicyMemberStatusItem> getFamilyPolicyStatus(Long familyId) {
-        familyRepository.findFamilyById(familyId)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
+        if (!familyRepository.existsFamilyById(familyId)) {
+            throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
+        }
 
         return familyRepository.findFamilyPolicyStatusRows(familyId).stream()
                 .map(this::toMemberItem)

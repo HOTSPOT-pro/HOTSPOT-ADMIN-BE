@@ -26,6 +26,8 @@ public interface FamilyRepository {
 
     Optional<FamilyListItem> findFamilyById(Long familyId);
 
+    boolean existsFamilyById(Long familyId);
+
     Optional<PriorityType> findFamilyPriorityType(Long familyId);
 
     List<FamilyControlMemberRow> findFamilyControlMembers(Long familyId);

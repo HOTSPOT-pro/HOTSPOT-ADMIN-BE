@@ -130,6 +130,28 @@ class FamilyRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("가족 존재 여부 조회 성공")
+    void existsFamilyByIdSuccess() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(true);
+
+        boolean exists = familyRepository.existsFamilyById(1L);
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("가족 존재 여부 조회 결과 null이면 false")
+    void existsFamilyByIdNullThenFalse() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
+                .thenReturn(null);
+
+        boolean exists = familyRepository.existsFamilyById(1L);
+
+        assertThat(exists).isFalse();
+    }
+
+    @Test
     @DisplayName("가족 우선순위 타입 조회 성공")
     void findFamilyPriorityTypeSuccess() {
         when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
