@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatusService {
 
     private static final long KB_PER_MB = 1024L;
+    private static final int UNUSED_PRIORITY_ORDER = -1;
 
     private final FamilyRepository familyRepository;
 
@@ -55,9 +56,9 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
     /** 우선순위 유형 규칙에 따라 화면 노출용 우선순위 순서를 계산한다. */
     private Integer resolvePriorityOrder(Integer priority, PriorityType priorityType) {
         if (priorityType == PriorityType.FIFO) {
-            return -1;
+            return UNUSED_PRIORITY_ORDER;
         }
-        return priority == null ? -1 : priority;
+        return priority == null ? UNUSED_PRIORITY_ORDER : priority;
     }
 
     /** 데이터 한도(KB)를 MB 단위로 변환한다. */
