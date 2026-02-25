@@ -53,7 +53,7 @@ public class FamilyApplyEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ApplyType applyType;
 
-    @Column(name = "taget_family_role", nullable = false)
+    @Column(name = "target_family_role", nullable = false)
     @Enumerated(EnumType.STRING)
     private FamilyRole targetFamilyRole;
 
@@ -77,7 +77,7 @@ public class FamilyApplyEntity extends BaseEntity {
                 .targetSubscription(targetSubscriptionEntity)
                 .family(familyEntity)
                 .applyType(familyApply.getApplyType())
-                .targetFamilyRole(familyApply.getTagetFamilyRole())
+                .targetFamilyRole(familyApply.getTargetFamilyRole())
                 .docUrl(familyApply.getDocUrl())
                 .status(familyApply.getStatus())
                 .build();
@@ -90,7 +90,7 @@ public class FamilyApplyEntity extends BaseEntity {
                 .targetSubId(targetSubscription.getSubId())
                 .familyId(family.getFamilyId())
                 .applyType(applyType)
-                .tagetFamilyRole(targetFamilyRole)
+                .targetFamilyRole(targetFamilyRole)
                 .docUrl(docUrl)
                 .status(status)
                 .createdTime(getCreatedTime())

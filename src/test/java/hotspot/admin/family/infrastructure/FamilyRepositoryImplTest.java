@@ -110,7 +110,7 @@ class FamilyRepositoryImplTest {
                     when(rs.getString("requester_phone_enc")).thenReturn("enc-1");
                     when(rs.getString("target_name")).thenReturn("추가대상");
                     when(rs.getString("target_phone_enc")).thenReturn("enc-2");
-                    when(rs.getString("taget_family_role")).thenReturn("CHILD");
+                    when(rs.getString("target_family_role")).thenReturn("CHILD");
                     when(rs.getString("doc_url")).thenReturn("https://doc.example/1");
                     when(rs.getTimestamp("created_time"))
                             .thenReturn(Timestamp.valueOf(LocalDateTime.of(2026, 2, 24, 9, 30)));

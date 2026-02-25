@@ -121,7 +121,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                     fa.family_id,
                     fa.apply_type,
                     fa.status,
-                    fa.taget_family_role,
+                    fa.target_family_role,
                     rm.name AS requester_name,
                     rs.phone_enc AS requester_phone_enc,
                     tm.name AS target_name,
@@ -232,7 +232,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 .requesterPhoneNumber(rs.getString("requester_phone_enc"))
                 .targetName(rs.getString("target_name"))
                 .targetPhoneNumber(rs.getString("target_phone_enc"))
-                .targetFamilyRole(FamilyRole.valueOf(rs.getString("taget_family_role")))
+                .targetFamilyRole(FamilyRole.valueOf(rs.getString("target_family_role")))
                 .relationDocumentUrl(rs.getString("doc_url"))
                 .requestedAt(rs.getTimestamp("created_time").toLocalDateTime())
                 .build();

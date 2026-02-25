@@ -15,7 +15,7 @@ public class FamilyApply {
     private final Long targetSubId;
     private final Long familyId;
     private final ApplyType applyType;
-    private final FamilyRole tagetFamilyRole;
+    private final FamilyRole targetFamilyRole;
     private final String docUrl;
     private final FamilyApplyStatus status;
     private final LocalDateTime createdTime;
