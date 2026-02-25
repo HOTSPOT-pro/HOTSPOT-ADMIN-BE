@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
+import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
@@ -25,6 +26,7 @@ import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
+import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
@@ -38,6 +40,9 @@ class FamilyControllerTest {
 
     @MockBean
     private GetFamilyListService getFamilyListService;
+
+    @MockBean
+    private GetFamilySummaryService getFamilySummaryService;
 
     @MockBean
     private SearchFamilyByPhoneService searchFamilyByPhoneService;
@@ -81,6 +86,29 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.hasNext").value(false))
                 .andExpect(jsonPath("$.data.familyList[0].familyId").value(1))
                 .andExpect(jsonPath("$.data.familyList[0].phoneNumber").value("010-****-0000"));
+    }
+
+    @Test
+    @DisplayName("가족 상세 상단 조회 성공")
+    void getFamilySummarySuccess() throws Exception {
+        FamilySummaryResponse response = FamilySummaryResponse.builder()
+                .familyId(9L)
+                .displayId("FAM-000009")
+                .representativeName("김대표")
+                .phoneNumber("010-****-5678")
+                .memberCount(5)
+                .build();
+
+        when(getFamilySummaryService.getFamilySummary(9L))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/admin/families/9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.familyId").value(9))
+                .andExpect(jsonPath("$.data.displayId").value("FAM-000009"))
+                .andExpect(jsonPath("$.data.representativeName").value("김대표"))
+                .andExpect(jsonPath("$.data.phoneNumber").value("010-****-5678"))
+                .andExpect(jsonPath("$.data.memberCount").value(5));
     }
 
     @Test

@@ -96,6 +96,33 @@ class FamilyRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("가족 ID로 상세 상단 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyByIdSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyListItem> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("family_id")).thenReturn(9L);
+                    when(rs.getString("representative_name")).thenReturn("이대표");
+                    when(rs.getString("phone_number_enc")).thenReturn("enc-9999");
+                    when(rs.getInt("member_count")).thenReturn(5);
+
+                    FamilyListItem row = mapper.mapRow(rs, 0);
+                    return List.of(row);
+                });
+
+        Optional<FamilyListItem> result = familyRepository.findFamilyById(9L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().familyId()).isEqualTo(9L);
+        assertThat(result.get().representativeName()).isEqualTo("이대표");
+        assertThat(result.get().phoneNumber()).isEqualTo("enc-9999");
+        assertThat(result.get().memberCount()).isEqualTo(5);
+    }
+
+    @Test
     @DisplayName("가족 목록 총 개수 조회 성공")
     void countFamilyListSuccess() {
         when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
