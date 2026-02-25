@@ -48,32 +48,30 @@ public class FamilyController {
 
     @GetMapping("/requests/{applyType}/{status}")
     public ResponseEntity<ApiResponse<FamilyRequestListResponse>> getFamilyRequests(
-            @PathVariable String applyType,
-            @PathVariable String status,
+            @PathVariable ApplyType applyType,
+            @PathVariable FamilyApplyStatus status,
             @Valid @ModelAttribute FamilyRequestListRequest request
     ) {
-        ApplyType parsedApplyType = ApplyType.from(applyType);
-        FamilyApplyStatus parsedStatus = FamilyApplyStatus.from(status);
         return ResponseEntity.ok(ApiResponse.success(
-                getFamilyRequestListService.getFamilyRequests(parsedApplyType, parsedStatus, request)
+                getFamilyRequestListService.getFamilyRequests(applyType, status, request)
         ));
     }
 
     @PatchMapping("/requests/{applyType}/{requestId}/approve")
     public ResponseEntity<ApiResponse<Void>> approveFamilyRequest(
-            @PathVariable String applyType,
+            @PathVariable ApplyType applyType,
             @PathVariable Long requestId
     ) {
-        processFamilyRequestService.approve(ApplyType.from(applyType), requestId);
+        processFamilyRequestService.approve(applyType, requestId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 
     @PatchMapping("/requests/{applyType}/{requestId}/reject")
     public ResponseEntity<ApiResponse<Void>> rejectFamilyRequest(
-            @PathVariable String applyType,
+            @PathVariable ApplyType applyType,
             @PathVariable Long requestId
     ) {
-        processFamilyRequestService.reject(ApplyType.from(applyType), requestId);
+        processFamilyRequestService.reject(applyType, requestId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 }
