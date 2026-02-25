@@ -16,8 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
+import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilyRequestListService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
