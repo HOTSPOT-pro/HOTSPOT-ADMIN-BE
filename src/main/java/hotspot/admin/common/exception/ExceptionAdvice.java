@@ -9,11 +9,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import hotspot.admin.common.exception.code.BaseErrorCode;
+import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.exception.code.GlobalErrorCode;
 import hotspot.admin.common.exception.code.PolicyErrorCode;
+import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.policy.controller.request.CreateTimePolicyRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +55,16 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     }
 
     /** 그 외 모든 예외 */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+        BaseErrorCode code = resolveTypeMismatchErrorCode(e);
+        ErrorResponse response =
+                new ErrorResponse(
+                        code.getHttpStatus().value(), code.getCustomCode(), code.getMessage());
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
+    }
+
+    /** 그 외 모든 예외 */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnhandledException(Exception e, WebRequest request) {
         log.error("[Exception] Unhandled: {}", e.getMessage(), e);
@@ -70,5 +84,16 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
             return PolicyErrorCode.INVALID_POLICY_SNAPSHOT;
         }
         return GlobalErrorCode.METHOD_ARGUMENT_NOT_VALID;
+    }
+
+    private BaseErrorCode resolveTypeMismatchErrorCode(MethodArgumentTypeMismatchException e) {
+        Class<?> requiredType = e.getRequiredType();
+        if (requiredType == ApplyType.class) {
+            return FamilyErrorCode.INVALID_APPLY_TYPE;
+        }
+        if (requiredType == FamilyApplyStatus.class) {
+            return FamilyErrorCode.INVALID_APPLY_STATUS;
+        }
+        return GlobalErrorCode.BAD_REQUEST;
     }
 }
