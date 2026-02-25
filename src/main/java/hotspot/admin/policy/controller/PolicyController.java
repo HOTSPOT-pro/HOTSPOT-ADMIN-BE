@@ -70,22 +70,22 @@ public class PolicyController {
 
     @DeleteMapping("/{policyType}/{policyId}")
     public ResponseEntity<ApiResponse<Void>> deletePolicy(
-            @PathVariable String policyType,
+            @PathVariable AdminPolicyType policyType,
             @PathVariable Long policyId
     ) {
-        deletePolicyService.deletePolicy(AdminPolicyType.from(policyType), policyId);
+        deletePolicyService.deletePolicy(policyType, policyId);
         return ResponseEntity.ok(ApiResponse.success());
     }
 
     @PatchMapping("/{policyType}/{policyId}/active")
     public ResponseEntity<ApiResponse<UpdatePolicyActiveResponse>> updatePolicyActive(
-            @PathVariable String policyType,
+            @PathVariable AdminPolicyType policyType,
             @PathVariable Long policyId,
             @Valid @RequestBody UpdatePolicyActiveRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(
                 updatePolicyActiveService.updatePolicyActive(
-                        AdminPolicyType.from(policyType),
+                        policyType,
                         policyId,
                         request.isActive()
                 )
