@@ -8,8 +8,6 @@ public record FamilyListItem(
         String displayId,
         String representativeName,
         String phoneNumber,
-        Integer memberCount,
-        Long usedData,
-        Long remainingData
+        Integer memberCount
 ) {
 }

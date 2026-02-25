@@ -3,6 +3,7 @@ package hotspot.admin.family.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.sql.ResultSet;
@@ -35,8 +36,8 @@ class FamilyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("가족 목록 슬라이스 조회 시 row 매핑이 정상 동작한다")
-    void findFamilySliceSuccess() throws Exception {
+    @DisplayName("가족 목록 페이지 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyListSuccess() throws Exception {
         when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
                     @SuppressWarnings("unchecked")
@@ -52,7 +53,7 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        List<FamilyListItem> result = familyRepository.findFamilySlice(31, 30L);
+        List<FamilyListItem> result = familyRepository.findFamilyList(20, 0);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).familyId()).isEqualTo(31L);
@@ -86,5 +87,27 @@ class FamilyRepositoryImplTest {
         assertThat(result.get().representativeName()).isEqualTo("박대표");
         assertThat(result.get().phoneNumber()).isEqualTo("enc-phone");
         assertThat(result.get().memberCount()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("가족 목록 총 개수 조회 성공")
+    void countFamilyListSuccess() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
+                .thenReturn(15L);
+
+        long total = familyRepository.countFamilyList();
+
+        assertThat(total).isEqualTo(15L);
+    }
+
+    @Test
+    @DisplayName("가족 목록 총 개수 null이면 0 반환")
+    void countFamilyListNullThenZero() {
+        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
+                .thenReturn(null);
+
+        long total = familyRepository.countFamilyList();
+
+        assertThat(total).isZero();
     }
 }

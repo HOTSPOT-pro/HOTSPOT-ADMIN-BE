@@ -52,8 +52,6 @@ class SearchFamilyByPhoneServiceTest {
                         .representativeName("대표자")
                         .phoneNumber("encrypted-phone")
                         .memberCount(3)
-                        .usedData(null)
-                        .remainingData(null)
                         .build()));
         when(phoneCryptoUtil.decryptPhone("encrypted-phone"))
                 .thenReturn("01012345678");

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,65 +40,62 @@ class GetFamilyListServiceTest {
     }
 
     @Test
-    @DisplayName("가족 목록 조회 성공 - hasNext true, nextCursor 계산")
+    @DisplayName("가족 목록 조회 성공 - 페이지 메타 계산")
     void getFamilyListSuccess() throws Exception {
         FamilyListRequest request = new FamilyListRequest();
-        request.setSize(30);
-        request.setCursor(0L);
+        request.setPage(0);
+        request.setSize(20);
 
-        List<FamilyListItem> rows = IntStream.rangeClosed(1, 31)
-                .mapToObj(i -> FamilyListItem.builder()
-                        .familyId((long) i)
-                        .representativeName("대표자" + i)
-                        .phoneNumber("enc-" + i)
+        List<FamilyListItem> rows = List.of(
+                FamilyListItem.builder()
+                        .familyId(1L)
+                        .representativeName("대표자1")
+                        .phoneNumber("enc-1")
                         .memberCount(2)
-                        .usedData(null)
-                        .remainingData(null)
-                        .build())
-                .toList();
+                        .build(),
+                FamilyListItem.builder()
+                        .familyId(2L)
+                        .representativeName("대표자2")
+                        .phoneNumber("enc-2")
+                        .memberCount(3)
+                        .build()
+        );
 
-        when(familyRepository.findFamilySlice(31, 0L))
+        when(familyRepository.countFamilyList())
+                .thenReturn(25L);
+        when(familyRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
         when(phoneCryptoUtil.decryptPhone(anyString()))
                 .thenReturn("01012340000");
 
         FamilyListResponse response = service.getFamilyList(request);
 
-        assertThat(response.size()).isEqualTo(30);
+        assertThat(response.page()).isEqualTo(0);
+        assertThat(response.size()).isEqualTo(20);
+        assertThat(response.totalElements()).isEqualTo(25L);
+        assertThat(response.totalPages()).isEqualTo(2);
         assertThat(response.hasNext()).isTrue();
-        assertThat(response.nextCursor()).isEqualTo(30L);
-        assertThat(response.familyList()).hasSize(30);
+        assertThat(response.familyList()).hasSize(2);
         assertThat(response.familyList().get(0).phoneNumber()).isEqualTo("010-****-0000");
-    }
-
-    @Test
-    @DisplayName("허용되지 않은 size는 예외")
-    void invalidSizeThenException() {
-        FamilyListRequest request = new FamilyListRequest();
-        request.setSize(10);
-
-        assertThatThrownBy(() -> service.getFamilyList(request))
-                .isInstanceOf(ApplicationException.class)
-                .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.INVALID_SIZE);
     }
 
     @Test
     @DisplayName("전화번호 복호화 실패 시 예외")
     void decryptFailThenException() throws Exception {
         FamilyListRequest request = new FamilyListRequest();
-        request.setSize(30);
-        request.setCursor(0L);
+        request.setPage(0);
+        request.setSize(20);
 
         List<FamilyListItem> rows = List.of(FamilyListItem.builder()
                 .familyId(1L)
                 .representativeName("대표자")
                 .phoneNumber("enc")
                 .memberCount(2)
-                .usedData(null)
-                .remainingData(null)
                 .build());
 
-        when(familyRepository.findFamilySlice(31, 0L))
+        when(familyRepository.countFamilyList())
+                .thenReturn(1L);
+        when(familyRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
         when(phoneCryptoUtil.decryptPhone("enc"))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));

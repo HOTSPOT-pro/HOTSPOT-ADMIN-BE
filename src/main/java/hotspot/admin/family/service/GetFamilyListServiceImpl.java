@@ -2,7 +2,6 @@ package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,40 +23,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GetFamilyListServiceImpl implements GetFamilyListService {
 
-    private static final Set<Integer> ALLOWED_SIZE = Set.of(30, 50, 100);
-
     private final FamilyRepository familyRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     @Transactional(readOnly = true)
     @Override
     public FamilyListResponse getFamilyList(FamilyListRequest request) {
-        validateSize(request.getSize());
+        int page = request.getPage();
+        int size = request.getSize();
+        long offset = (long) page * size;
 
-        long cursor = request.getCursor() == null ? 0L : request.getCursor();
-        List<FamilyListItem> rows = familyRepository.findFamilySlice(request.getSize() + 1, cursor);
-
-        boolean hasNext = rows.size() > request.getSize();
-        List<FamilyListItem> content = hasNext ? rows.subList(0, request.getSize()) : rows;
-        List<FamilyListItem> maskedContent = content.stream()
+        long totalElements = familyRepository.countFamilyList();
+        int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
+        boolean hasNext = page + 1 < totalPages;
+        List<FamilyListItem> maskedContent = familyRepository.findFamilyList(size, offset).stream()
                 .map(this::decryptAndMaskPhone)
                 .toList();
-        Long nextCursor = hasNext && !content.isEmpty()
-                ? content.get(content.size() - 1).familyId()
-                : null;
 
         return FamilyListResponse.builder()
-                .size(request.getSize())
+                .page(page)
+                .size(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
                 .hasNext(hasNext)
-                .nextCursor(nextCursor)
                 .familyList(maskedContent)
                 .build();
-    }
-
-    private void validateSize(Integer size) {
-        if (size == null || !ALLOWED_SIZE.contains(size)) {
-            throw new ApplicationException(FamilyErrorCode.INVALID_SIZE);
-        }
     }
 
     private FamilyListItem decryptAndMaskPhone(FamilyListItem item) {
@@ -68,23 +58,18 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
                     .representativeName(item.representativeName())
                     .phoneNumber(item.phoneNumber())
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         }
 
         try {
             String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
-            // [TODO] usedData/remainingData는 사용량 집계 연동 전까지 null 유지.
             return FamilyListItem.builder()
                     .familyId(item.familyId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);

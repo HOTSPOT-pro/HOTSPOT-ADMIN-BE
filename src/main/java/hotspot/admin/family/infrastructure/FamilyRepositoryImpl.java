@@ -19,7 +19,7 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
-    public List<FamilyListItem> findFamilySlice(int limitPlusOne, Long cursorFamilyId) {
+    public List<FamilyListItem> findFamilyList(int limit, long offset) {
         String sql = """
                 WITH family_agg AS (
                     SELECT
@@ -44,18 +44,30 @@ public class FamilyRepositoryImpl implements FamilyRepository {
                 )
                 SELECT family_id, representative_name, phone_number_enc, member_count
                 FROM family_agg
-                WHERE family_id > :cursorFamilyId
                 ORDER BY family_id ASC
                 LIMIT :limit
+                OFFSET :offset
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("cursorFamilyId", cursorFamilyId)
-                .addValue("limit", limitPlusOne)
+                .addValue("limit", limit)
+                .addValue("offset", offset)
                 .addValue("ownerRole", FamilyRole.OWNER.name())
                 .addValue("parentRole", FamilyRole.PARENT.name());
 
         return jdbcTemplate.query(sql, params, this::mapFamilyListItem);
+    }
+
+    @Override
+    public long countFamilyList() {
+        String sql = """
+                SELECT COUNT(*)::bigint
+                FROM family f
+                WHERE f.is_deleted = false
+                """;
+
+        Long total = jdbcTemplate.queryForObject(sql, new MapSqlParameterSource(), Long.class);
+        return total == null ? 0L : total;
     }
 
     @Override
@@ -106,14 +118,11 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     }
 
     private FamilyListItem mapFamilyListItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
-        // [TODO] usedData/remainingData는 데이터 사용량 집계 테이블(또는 뷰) 연동 후 채운다.
         return FamilyListItem.builder()
                 .familyId(rs.getLong("family_id"))
                 .representativeName(rs.getString("representative_name"))
                 .phoneNumber(rs.getString("phone_number_enc"))
                 .memberCount(rs.getInt("member_count"))
-                .usedData(null)
-                .remainingData(null)
                 .build();
     }
 }

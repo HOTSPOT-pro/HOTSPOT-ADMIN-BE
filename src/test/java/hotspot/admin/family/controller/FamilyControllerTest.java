@@ -43,14 +43,14 @@ class FamilyControllerTest {
                 .representativeName("강주민")
                 .phoneNumber("010-****-0000")
                 .memberCount(3)
-                .usedData(null)
-                .remainingData(null)
                 .build();
 
         FamilyListResponse response = FamilyListResponse.builder()
-                .size(30)
-                .nextCursor(30L)
-                .hasNext(true)
+                .page(0)
+                .size(20)
+                .totalElements(1L)
+                .totalPages(1)
+                .hasNext(false)
                 .familyList(List.of(item))
                 .build();
 
@@ -58,11 +58,14 @@ class FamilyControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(get("/api/v1/admin/families")
-                        .param("size", "30"))
+                        .param("page", "0")
+                        .param("size", "20"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.size").value(30))
-                .andExpect(jsonPath("$.data.nextCursor").value(30))
-                .andExpect(jsonPath("$.data.hasNext").value(true))
+                .andExpect(jsonPath("$.data.page").value(0))
+                .andExpect(jsonPath("$.data.size").value(20))
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.totalPages").value(1))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
                 .andExpect(jsonPath("$.data.familyList[0].familyId").value(1))
                 .andExpect(jsonPath("$.data.familyList[0].phoneNumber").value("010-****-0000"));
     }
@@ -75,8 +78,6 @@ class FamilyControllerTest {
                 .representativeName("김보호자")
                 .phoneNumber("010-****-1234")
                 .memberCount(4)
-                .usedData(null)
-                .remainingData(null)
                 .build();
 
         FamilyPhoneSearchResponse response = FamilyPhoneSearchResponse.builder()

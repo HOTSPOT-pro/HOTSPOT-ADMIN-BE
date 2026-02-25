@@ -57,23 +57,18 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
                     .representativeName(item.representativeName())
                     .phoneNumber(item.phoneNumber())
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         }
 
         try {
             String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
-            // [TODO] usedData/remainingData는 사용량 집계 연동 전까지 null 유지.
             return FamilyListItem.builder()
                     .familyId(item.familyId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)
                     .memberCount(item.memberCount())
-                    .usedData(item.usedData())
-                    .remainingData(item.remainingData())
                     .build();
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);
