@@ -13,6 +13,11 @@ public abstract class BaseException extends RuntimeException {
         this.code = code;
     }
 
+    protected BaseException(BaseErrorCode code, Throwable cause) {
+        super(code.getMessage(), cause);
+        this.code = code;
+    }
+
     public static <T extends BaseException> T from(BaseErrorCode code, Class<T> exceptionClass) {
         try {
             return exceptionClass.getConstructor(BaseErrorCode.class).newInstance(code);

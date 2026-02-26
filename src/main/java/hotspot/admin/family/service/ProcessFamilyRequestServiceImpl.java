@@ -5,10 +5,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
+import hotspot.admin.common.exception.code.OutboxErrorCode;
 import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.outbox.FamilyRequestOutboxPublisher;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
@@ -28,6 +31,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     private final FamilyApplyRepository familyApplyRepository;
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
+    private final FamilyRequestOutboxPublisher familyRequestOutboxPublisher;
 
     /** 가족 요청을 승인 상태로 전환한다. */
     @Override
@@ -46,7 +50,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         processRequest(applyType, requestId, FamilyApplyStatus.REJECTED);
     }
 
-    /** 대기중 요청만 목표 상태로 전환하며, 실패 시 원인을 예외로 구분한다. */
+    /** 대기중 요청만 목표 상태로 전환하고, 실패 시 원인을 구분해 예외를 던진다. */
     private void processRequest(
             ApplyType applyType,
             Long requestId,
@@ -61,7 +65,15 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
 
         if (updatedCount == 0) {
             handleNotUpdated(requestId, applyType);
+            return;
         }
+
+        FamilyApply familyApply = familyApplyRepository.findFamilyRequest(requestId, applyType)
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
+        String targetName = familyApplyRepository.findFamilyRequestTargetName(requestId, applyType)
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
+
+        publishOutbox(nextStatus, familyApply, targetName);
     }
 
     /** 업데이트 실패 시 요청 미존재/상태 불일치 원인을 구분해 예외를 던진다. */
@@ -72,7 +84,20 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_PENDING);
     }
 
-    /** ADD 승인 시 family_sub 삽입 후 family/family_sub 요약 값을 동기화한다. */
+    /** 다음 상태가 승인/반려인지에 따라 해당 Outbox 알림을 발행하고, 그 외 상태면 예외를 발생시킨다. */
+    private void publishOutbox(FamilyApplyStatus nextStatus, FamilyApply familyApply, String targetName) {
+        if (nextStatus == FamilyApplyStatus.APPROVED) {
+            familyRequestOutboxPublisher.publishApproved(familyApply, targetName);
+            return;
+        }
+        if (nextStatus == FamilyApplyStatus.REJECTED) {
+            familyRequestOutboxPublisher.publishRejected(familyApply, targetName);
+            return;
+        }
+        throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
+    }
+
+    /** ADD 승인 시 family_sub 삽입 및 family/family_sub 요약 값을 동기화한다. */
     private void applyAddApproval(Long requestId) {
         FamilyAddApprovalInfo request = familyApplyRepository.findAddApprovalInfo(requestId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));

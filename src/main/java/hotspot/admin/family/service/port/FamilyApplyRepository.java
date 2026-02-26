@@ -3,6 +3,7 @@ package hotspot.admin.family.service.port;
 import java.util.Optional;
 
 import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 
@@ -15,6 +16,10 @@ public interface FamilyApplyRepository {
     );
 
     boolean existsFamilyRequest(Long familyApplyId, ApplyType applyType);
+
+    Optional<FamilyApply> findFamilyRequest(Long familyApplyId, ApplyType applyType);
+
+    Optional<String> findFamilyRequestTargetName(Long familyApplyId, ApplyType applyType);
 
     Optional<FamilyAddApprovalInfo> findAddApprovalInfo(Long familyApplyId);
 }
