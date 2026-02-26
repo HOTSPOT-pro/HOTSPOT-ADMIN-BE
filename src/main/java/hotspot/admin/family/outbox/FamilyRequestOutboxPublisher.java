@@ -1,0 +1,59 @@
+package hotspot.admin.family.outbox;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import hotspot.admin.common.exception.ApplicationException;
+import hotspot.admin.common.exception.code.OutboxErrorCode;
+import hotspot.admin.family.domain.FamilyApply;
+import hotspot.admin.family.outbox.dto.FamilyRequestAlertEvent;
+import hotspot.admin.outbox.service.NotificationOutboxEventAppender;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class FamilyRequestOutboxPublisher {
+
+    private static final String AGGREGATE_TYPE = "user-alert";
+    private static final String TYPE_APPROVED = "APPROVED";
+    private static final String TYPE_REJECTED = "REJECTED";
+
+    private final NotificationOutboxEventAppender outboxEventAppender;
+
+    // 가족 요청이 승인되었음을 알리는 Outbox 이벤트 발행을 수행한다.
+    public void publishApproved(FamilyApply familyApply, String targetName) {
+        publish(TYPE_APPROVED, familyApply, targetName);
+    }
+
+    // 가족 요청이 반려되었음을 알리는 Outbox 이벤트 발행을 수행한다.
+    public void publishRejected(FamilyApply familyApply, String targetName) {
+        publish(TYPE_REJECTED, familyApply, targetName);
+    }
+
+    // 승인/반려 타입에 맞는 알림 이벤트를 생성해 Outbox에 적재하고, 실패 시 예외를 공통 처리한다.
+    private void publish(String type, FamilyApply familyApply, String targetName) {
+        try {
+            FamilyRequestAlertEvent event = new FamilyRequestAlertEvent(
+                    UUID.randomUUID().toString(),
+                    type,
+                    familyApply.getApplyType().name(),
+                    targetName,
+                    familyApply.getFamilyId(),
+                    LocalDateTime.now()
+            );
+
+            outboxEventAppender.append(
+                    AGGREGATE_TYPE,
+                    String.valueOf(familyApply.getFamilyApplyId()),
+                    type,
+                    event
+            );
+        } catch (ApplicationException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_PUBLISH_FAILED, ex);
+        }
+    }
+}
