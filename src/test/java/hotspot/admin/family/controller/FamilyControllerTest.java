@@ -22,6 +22,7 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyDetailStatusService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
+import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListItem;
@@ -60,6 +61,8 @@ class FamilyControllerTest {
     @MockBean
     private SearchFamilyByPhoneService searchFamilyByPhoneService;
 
+    @MockBean
+    private UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
     @Test
     @DisplayName("가족 목록 조회 성공")
     void getFamilyListSuccess() throws Exception {
@@ -246,4 +249,22 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.family.phoneNumber").value("010-****-1234"));
     }
 
+    @Test
+    @DisplayName("가족 우선순위 유형 변경 성공")
+    void updateFamilyPriorityTypeSuccess() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/v1/admin/families/5/priority")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "priorityType": "PRIORITY",
+                                  "memberPriorities": [
+                                    { "subId": 101, "priority": 1 },
+                                    { "subId": 102, "priority": 2 }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
 }
