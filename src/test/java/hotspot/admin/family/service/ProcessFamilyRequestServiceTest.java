@@ -1,10 +1,14 @@
 package hotspot.admin.family.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +21,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.outbox.FamilyRequestOutboxPublisher;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
@@ -37,6 +43,9 @@ class ProcessFamilyRequestServiceTest {
     @Mock
     private FamilySubRepository familySubRepository;
 
+    @Mock
+    private FamilyRequestOutboxPublisher familyRequestOutboxPublisher;
+
     private ProcessFamilyRequestServiceImpl service;
 
     @BeforeEach
@@ -44,19 +53,36 @@ class ProcessFamilyRequestServiceTest {
         service = new ProcessFamilyRequestServiceImpl(
                 familyApplyRepository,
                 familyRepository,
-                familySubRepository
+                familySubRepository,
+                familyRequestOutboxPublisher
         );
     }
 
     @Test
     @DisplayName("대기중 신청 요청 승인 성공")
     void approveSuccess() {
+        FamilyApply familyApply = FamilyApply.builder()
+                .familyApplyId(7L)
+                .requesterSubId(10L)
+                .targetSubId(100L)
+                .familyId(3L)
+                .applyType(ApplyType.ADD)
+                .targetFamilyRole(FamilyRole.CHILD)
+                .status(FamilyApplyStatus.APPROVED)
+                .createdTime(LocalDateTime.now())
+                .modifiedTime(LocalDateTime.now())
+                .build();
+
         when(familyApplyRepository.updateFamilyRequestStatus(
                 7L,
                 ApplyType.ADD,
                 FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED
         )).thenReturn(1);
+        when(familyApplyRepository.findFamilyRequest(7L, ApplyType.ADD))
+                .thenReturn(Optional.of(familyApply));
+        when(familyApplyRepository.findFamilyRequestTargetName(7L, ApplyType.ADD))
+                .thenReturn(Optional.of("target-name"));
         when(familyApplyRepository.findAddApprovalInfo(7L))
                 .thenReturn(Optional.of(
                         FamilyAddApprovalInfo.builder()
@@ -80,6 +106,7 @@ class ProcessFamilyRequestServiceTest {
                 FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED
         );
+        verify(familyRequestOutboxPublisher).publishApproved(eq(familyApply), eq("target-name"));
         verify(familySubRepository).saveFamilySub(3L, 100L, FamilyRole.CHILD, -1, 0L);
         verify(familyRepository).updateFamilySummary(3L, 3, 15728640L);
         verify(familySubRepository).updateDataLimit(3L, 15728640L);
@@ -89,15 +116,32 @@ class ProcessFamilyRequestServiceTest {
     @Test
     @DisplayName("REMOVE 승인 시에는 후속 테이블 업데이트를 수행하지 않는다")
     void approveRemoveNoFollowUp() {
+        FamilyApply familyApply = FamilyApply.builder()
+                .familyApplyId(5L)
+                .requesterSubId(20L)
+                .targetSubId(200L)
+                .familyId(6L)
+                .applyType(ApplyType.REMOVE)
+                .targetFamilyRole(FamilyRole.CHILD)
+                .status(FamilyApplyStatus.APPROVED)
+                .createdTime(LocalDateTime.now())
+                .modifiedTime(LocalDateTime.now())
+                .build();
+
         when(familyApplyRepository.updateFamilyRequestStatus(
                 5L,
                 ApplyType.REMOVE,
                 FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED
         )).thenReturn(1);
+        when(familyApplyRepository.findFamilyRequest(5L, ApplyType.REMOVE))
+                .thenReturn(Optional.of(familyApply));
+        when(familyApplyRepository.findFamilyRequestTargetName(5L, ApplyType.REMOVE))
+                .thenReturn(Optional.of("remove-target"));
 
         service.approve(ApplyType.REMOVE, 5L);
 
+        verify(familyRequestOutboxPublisher).publishApproved(eq(familyApply), eq("remove-target"));
         verifyNoInteractions(familyRepository, familySubRepository);
     }
 
@@ -116,6 +160,7 @@ class ProcessFamilyRequestServiceTest {
         assertThatThrownBy(() -> service.reject(ApplyType.REMOVE, 9L))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
+        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any());
     }
 
     @Test
@@ -133,5 +178,6 @@ class ProcessFamilyRequestServiceTest {
         assertThatThrownBy(() -> service.reject(ApplyType.REMOVE, 9L))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_REQUEST_NOT_PENDING);
+        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any());
     }
 }
