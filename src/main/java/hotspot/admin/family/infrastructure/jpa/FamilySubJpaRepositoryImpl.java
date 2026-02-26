@@ -25,8 +25,7 @@ public class FamilySubJpaRepositoryImpl implements FamilySubRepository {
     /** PRIORITY 유형에서 다음 순번 계산을 위해 최대 우선순위를 조회한다. */
     @Override
     public int findMaxPriority(Long familyId) {
-        Integer max = familySubJpaRepository.findMaxPriorityByFamilyId(familyId);
-        return max == null ? 0 : max;
+        return familySubJpaRepository.findMaxPriorityByFamilyId(familyId);
     }
 
     /** 가족 구성원을 family_sub에 추가한다. */

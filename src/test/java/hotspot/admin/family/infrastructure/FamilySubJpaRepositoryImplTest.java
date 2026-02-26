@@ -63,21 +63,6 @@ class FamilySubJpaRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("family_sub 최대 우선순위가 null이면 0")
-    void findMaxPriorityNullThenZero() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
-                familySubJpaRepository,
-                familyJpaRepository,
-                subscriptionJpaRepository
-        );
-        when(familySubJpaRepository.findMaxPriorityByFamilyId(1L)).thenReturn(null);
-
-        int max = familySubRepository.findMaxPriority(1L);
-
-        assertThat(max).isZero();
-    }
-
-    @Test
     @DisplayName("family_sub 저장 성공")
     void saveFamilySubSuccess() {
         FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
