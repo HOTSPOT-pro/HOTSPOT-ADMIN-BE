@@ -19,7 +19,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestService {
 
-    private static final long SHARED_DATA_PER_MEMBER_KB = 5L * 1024 * 1024;
+    private static final long KB_PER_GB = 1024L * 1024L;
+    private static final long SHARED_DATA_PER_MEMBER_GB = 5L;
+    private static final long SHARED_DATA_PER_MEMBER_KB = SHARED_DATA_PER_MEMBER_GB * KB_PER_GB;
+    private static final long INITIAL_DATA_LIMIT = 0L;
     private static final int UNUSED_PRIORITY_ORDER = -1;
 
     private final FamilyApplyRepository familyApplyRepository;
@@ -86,7 +89,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
                     targetSubId,
                     request.targetFamilyRole(),
                     insertPriority,
-                    0L
+                    INITIAL_DATA_LIMIT
             );
         }
 
