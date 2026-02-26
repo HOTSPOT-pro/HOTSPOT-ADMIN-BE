@@ -56,8 +56,8 @@ class FamilyRequestOutboxPublisherTest {
 
         FamilyRequestAlertEvent event = (FamilyRequestAlertEvent) payloadCaptor.getValue();
         assertThat(event.alertId()).isNotBlank();
-        assertThat(event.eventType()).isEqualTo("APPROVED");
-        assertThat(event.alertType()).isEqualTo("ADD");
+        assertThat(event.eventType()).isEqualTo("FAMILY_MEMBER_ADD");
+        assertThat(event.alertType()).isEqualTo("APPROVED");
         assertThat(event.targetName()).isEqualTo("target-name");
         assertThat(event.familyId()).isEqualTo(101L);
         assertThat(event.createdTime()).isNotNull();
@@ -79,8 +79,8 @@ class FamilyRequestOutboxPublisherTest {
         );
 
         FamilyRequestAlertEvent event = (FamilyRequestAlertEvent) payloadCaptor.getValue();
-        assertThat(event.eventType()).isEqualTo("REJECTED");
-        assertThat(event.alertType()).isEqualTo("REMOVE");
+        assertThat(event.eventType()).isEqualTo("FAMILY_MEMBER_ADD");
+        assertThat(event.alertType()).isEqualTo("REJECTED");
     }
 
     @Test

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyRequestOutboxPublisher {
 
     private static final String AGGREGATE_TYPE = "user-alert";
+    private static final String EVENT_TYPE_FAMILY_MEMBER_ADD = "FAMILY_MEMBER_ADD";
     private static final String TYPE_APPROVED = "APPROVED";
     private static final String TYPE_REJECTED = "REJECTED";
 
@@ -37,8 +38,8 @@ public class FamilyRequestOutboxPublisher {
         try {
             FamilyRequestAlertEvent event = new FamilyRequestAlertEvent(
                     UUID.randomUUID().toString(),
+                    EVENT_TYPE_FAMILY_MEMBER_ADD,
                     type,
-                    familyApply.getApplyType().name(),
                     targetName,
                     familyApply.getFamilyId(),
                     LocalDateTime.now()
