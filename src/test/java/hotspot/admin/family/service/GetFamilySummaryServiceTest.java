@@ -19,13 +19,13 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GetFamilySummaryServiceTest {
 
     @Mock
-    private FamilyRepository familyRepository;
+    private FamilyQueryRepository familyQueryRepository;
 
     @Mock
     private PhoneCryptoUtil phoneCryptoUtil;
@@ -34,7 +34,7 @@ class GetFamilySummaryServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GetFamilySummaryServiceImpl(familyRepository, phoneCryptoUtil);
+        service = new GetFamilySummaryServiceImpl(familyQueryRepository, phoneCryptoUtil);
     }
 
     @Test
@@ -47,7 +47,7 @@ class GetFamilySummaryServiceTest {
                 .memberCount(4)
                 .build();
 
-        when(familyRepository.findFamilyById(3L))
+        when(familyQueryRepository.findFamilyById(3L))
                 .thenReturn(Optional.of(row));
         when(phoneCryptoUtil.decryptPhone("enc-phone"))
                 .thenReturn("01012345678");
@@ -64,7 +64,7 @@ class GetFamilySummaryServiceTest {
     @Test
     @DisplayName("가족이 없으면 FAMILY_NOT_FOUND")
     void familyNotFound() {
-        when(familyRepository.findFamilyById(999L))
+        when(familyQueryRepository.findFamilyById(999L))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getFamilySummary(999L))
@@ -82,7 +82,7 @@ class GetFamilySummaryServiceTest {
                 .memberCount(2)
                 .build();
 
-        when(familyRepository.findFamilyById(8L))
+        when(familyQueryRepository.findFamilyById(8L))
                 .thenReturn(Optional.of(row));
         when(phoneCryptoUtil.decryptPhone("enc"))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));

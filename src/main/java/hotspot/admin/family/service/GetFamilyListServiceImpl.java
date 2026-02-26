@@ -16,14 +16,14 @@ import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class GetFamilyListServiceImpl implements GetFamilyListService {
 
-    private final FamilyRepository familyRepository;
+    private final FamilyQueryRepository familyQueryRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     /** 가족 목록을 페이지 단위로 조회하고 전화번호를 마스킹해 반환한다. */
@@ -34,10 +34,10 @@ public class GetFamilyListServiceImpl implements GetFamilyListService {
         int size = request.getSize();
         long offset = (long) page * size;
 
-        long totalElements = familyRepository.countFamilyList();
+        long totalElements = familyQueryRepository.countFamilyList();
         int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
         boolean hasNext = page + 1 < totalPages;
-        List<FamilyListItem> maskedContent = familyRepository.findFamilyList(size, offset).stream()
+        List<FamilyListItem> maskedContent = familyQueryRepository.findFamilyList(size, offset).stream()
                 .map(this::decryptAndMaskPhone)
                 .toList();
 

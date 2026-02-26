@@ -24,13 +24,13 @@ import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyApplyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GetFamilyRequestListServiceTest {
 
     @Mock
-    private FamilyRepository familyRepository;
+    private FamilyApplyQueryRepository familyApplyQueryRepository;
 
     @Mock
     private PhoneCryptoUtil phoneCryptoUtil;
@@ -39,7 +39,7 @@ class GetFamilyRequestListServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GetFamilyRequestListServiceImpl(familyRepository, phoneCryptoUtil);
+        service = new GetFamilyRequestListServiceImpl(familyApplyQueryRepository, phoneCryptoUtil);
     }
 
     @Test
@@ -61,9 +61,9 @@ class GetFamilyRequestListServiceTest {
         request.setPage(0);
         request.setSize(20);
 
-        when(familyRepository.countFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.PENDING))
+        when(familyApplyQueryRepository.countFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.PENDING))
                 .thenReturn(1L);
-        when(familyRepository.findFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.PENDING, 20, 0))
+        when(familyApplyQueryRepository.findFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.PENDING, 20, 0))
                 .thenReturn(List.of(row));
         when(phoneCryptoUtil.decryptPhone("enc-requester"))
                 .thenReturn("01011112222");
@@ -106,9 +106,9 @@ class GetFamilyRequestListServiceTest {
         request.setPage(0);
         request.setSize(20);
 
-        when(familyRepository.countFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED))
+        when(familyApplyQueryRepository.countFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED))
                 .thenReturn(1L);
-        when(familyRepository.findFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED, 20, 0))
+        when(familyApplyQueryRepository.findFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED, 20, 0))
                 .thenReturn(List.of(row));
         when(phoneCryptoUtil.decryptPhone("enc-requester"))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));

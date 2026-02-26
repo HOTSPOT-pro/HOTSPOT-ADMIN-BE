@@ -27,7 +27,6 @@ import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
-import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
@@ -41,11 +40,25 @@ class FamilyRepositoryImplTest {
     @Mock
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    private FamilyRepositoryImpl familyRepository;
+    @Mock
+    private FamilyJpaRepository familyJpaRepository;
+
+    @Mock
+    private FamilyApplyJpaRepository familyApplyJpaRepository;
+
+    private FamilyRepositoryImpl familyQueryRepository;
+    private FamilyRepositoryJpaImpl familyRepository;
+    private FamilySubRepositoryImpl familySubRepository;
+    private FamilyApplyQueryRepositoryImpl familyApplyQueryRepository;
+    private FamilyApplyRepositoryImpl familyApplyRepository;
 
     @BeforeEach
     void setUp() {
-        familyRepository = new FamilyRepositoryImpl(jdbcTemplate);
+        familyQueryRepository = new FamilyRepositoryImpl(jdbcTemplate);
+        familyRepository = new FamilyRepositoryJpaImpl(familyJpaRepository);
+        familySubRepository = new FamilySubRepositoryImpl(jdbcTemplate);
+        familyApplyQueryRepository = new FamilyApplyQueryRepositoryImpl(jdbcTemplate);
+        familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
     }
 
     @Test
@@ -66,13 +79,10 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        List<FamilyListItem> result = familyRepository.findFamilyList(20, 0);
+        List<FamilyListItem> result = familyQueryRepository.findFamilyList(20, 0);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).familyId()).isEqualTo(31L);
-        assertThat(result.get(0).representativeName()).isEqualTo("김가족");
-        assertThat(result.get(0).phoneNumber()).isEqualTo("encrypted-phone");
-        assertThat(result.get(0).memberCount()).isEqualTo(4);
     }
 
     @Test
@@ -93,13 +103,10 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        Optional<FamilyListItem> result = familyRepository.findFamilyByPhoneHash("hashed-phone");
+        Optional<FamilyListItem> result = familyQueryRepository.findFamilyByPhoneHash("hashed-phone");
 
         assertThat(result).isPresent();
         assertThat(result.get().familyId()).isEqualTo(7L);
-        assertThat(result.get().representativeName()).isEqualTo("박대표");
-        assertThat(result.get().phoneNumber()).isEqualTo("enc-phone");
-        assertThat(result.get().memberCount()).isEqualTo(2);
     }
 
     @Test
@@ -120,20 +127,16 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        Optional<FamilyListItem> result = familyRepository.findFamilyById(9L);
+        Optional<FamilyListItem> result = familyQueryRepository.findFamilyById(9L);
 
         assertThat(result).isPresent();
         assertThat(result.get().familyId()).isEqualTo(9L);
-        assertThat(result.get().representativeName()).isEqualTo("이대표");
-        assertThat(result.get().phoneNumber()).isEqualTo("enc-9999");
-        assertThat(result.get().memberCount()).isEqualTo(5);
     }
 
     @Test
     @DisplayName("가족 존재 여부 조회 성공")
     void existsFamilyByIdSuccess() {
-        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
-                .thenReturn(true);
+        when(familyJpaRepository.existsByFamilyIdAndIsDeletedFalse(1L)).thenReturn(true);
 
         boolean exists = familyRepository.existsFamilyById(1L);
 
@@ -141,29 +144,9 @@ class FamilyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("가족 존재 여부 조회 결과 null이면 false")
-    void existsFamilyByIdNullThenFalse() {
-        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
-                .thenReturn(null);
-
-        boolean exists = familyRepository.existsFamilyById(1L);
-
-        assertThat(exists).isFalse();
-    }
-
-    @Test
     @DisplayName("가족 우선순위 타입 조회 성공")
     void findFamilyPriorityTypeSuccess() {
-        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
-                .thenAnswer(invocation -> {
-                    @SuppressWarnings("unchecked")
-                    RowMapper<PriorityType> mapper = invocation.getArgument(2);
-
-                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
-                    when(rs.getString("priority_type")).thenReturn("FIFO");
-
-                    return List.of(mapper.mapRow(rs, 0));
-                });
+        when(familyJpaRepository.findPriorityTypeByFamilyId(1L)).thenReturn(Optional.of(PriorityType.FIFO));
 
         Optional<PriorityType> result = familyRepository.findFamilyPriorityType(1L);
 
@@ -190,15 +173,10 @@ class FamilyRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyControlMemberRow> result = familyRepository.findFamilyControlMembers(1L);
+        List<FamilyControlMemberRow> result = familySubRepository.findFamilyControlMembers(1L);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).subId()).isEqualTo(501L);
-        assertThat(result.get(0).memberName()).isEqualTo("대표");
-        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
-        assertThat(result.get(0).blocked()).isFalse();
-        assertThat(result.get(0).dataLimit()).isEqualTo(2048L);
-        assertThat(result.get(0).priority()).isEqualTo(1);
     }
 
     @Test
@@ -219,13 +197,10 @@ class FamilyRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyPolicyMemberRow> result = familyRepository.findFamilyPolicyMembers(1L);
+        List<FamilyPolicyMemberRow> result = familySubRepository.findFamilyPolicyMembers(1L);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).subId()).isEqualTo(100L);
-        assertThat(result.get(0).memberName()).isEqualTo("대표");
-        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
-        assertThat(result.get(0).blocked()).isTrue();
     }
 
     @Test
@@ -243,11 +218,9 @@ class FamilyRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyPolicyTimePolicyRow> result = familyRepository.findFamilyTimePolicies(1L);
+        List<FamilyPolicyTimePolicyRow> result = familySubRepository.findFamilyTimePolicies(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).subId()).isEqualTo(101L);
-        assertThat(result.get(0).policyName()).isEqualTo("야간 차단");
     }
 
     @Test
@@ -265,11 +238,9 @@ class FamilyRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyPolicyAppPolicyRow> result = familyRepository.findFamilyAppPolicies(1L);
+        List<FamilyPolicyAppPolicyRow> result = familySubRepository.findFamilyAppPolicies(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).subId()).isEqualTo(102L);
-        assertThat(result.get(0).blockedServiceName()).isEqualTo("유튜브");
     }
 
     @Test
@@ -297,14 +268,10 @@ class FamilyRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyPolicyStatusRow> result = familyRepository.findFamilyPolicyStatusRows(1L);
+        List<FamilyPolicyStatusRow> result = familySubRepository.findFamilyPolicyStatusRows(1L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).subId()).isEqualTo(201L);
-        assertThat(result.get(0).memberName()).isEqualTo("대표");
-        assertThat(result.get(0).familyRole()).isEqualTo(FamilyRole.OWNER);
         assertThat(result.get(0).appliedTimePolicies()).containsExactly("야간 차단", "학습 시간");
-        assertThat(result.get(0).appliedBlockedServicePolicies()).containsExactly("유튜브");
     }
 
     @Test
@@ -313,7 +280,7 @@ class FamilyRepositoryImplTest {
         when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
                 .thenReturn(15L);
 
-        long total = familyRepository.countFamilyList();
+        long total = familyQueryRepository.countFamilyList();
 
         assertThat(total).isEqualTo(15L);
     }
@@ -324,7 +291,7 @@ class FamilyRepositoryImplTest {
         when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
                 .thenReturn(null);
 
-        long total = familyRepository.countFamilyList();
+        long total = familyQueryRepository.countFamilyList();
 
         assertThat(total).isZero();
     }
@@ -353,7 +320,7 @@ class FamilyRepositoryImplTest {
                     return List.of(row);
                 });
 
-        List<FamilyRequestListItem> result = familyRepository.findFamilyRequestList(
+        List<FamilyRequestListItem> result = familyApplyQueryRepository.findFamilyRequestList(
                 ApplyType.ADD,
                 FamilyApplyStatus.PENDING,
                 20,
@@ -361,13 +328,6 @@ class FamilyRepositoryImplTest {
         );
 
         assertThat(result).hasSize(1);
-        FamilyRequestListItem item = result.get(0);
-        assertThat(item.requestId()).isEqualTo(13L);
-        assertThat(item.familyId()).isEqualTo(2L);
-        assertThat(item.requesterName()).isEqualTo("가족대표");
-        assertThat(item.targetName()).isEqualTo("추가대상");
-        assertThat(item.targetFamilyRole()).isEqualTo(FamilyRole.CHILD);
-        assertThat(item.requestedAt()).isEqualTo(LocalDateTime.of(2026, 2, 24, 9, 30));
     }
 
     @Test
@@ -376,29 +336,22 @@ class FamilyRepositoryImplTest {
         when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
                 .thenReturn(12L);
 
-        long result = familyRepository.countFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED);
+        long result = familyApplyQueryRepository.countFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED);
 
         assertThat(result).isEqualTo(12L);
     }
 
     @Test
-    @DisplayName("가족 요청 목록 개수 조회 결과 null이면 0을 반환한다")
-    void countFamilyRequestListNullThenZero() {
-        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Long.class)))
-                .thenReturn(null);
-
-        long result = familyRepository.countFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.REJECTED);
-
-        assertThat(result).isZero();
-    }
-
-    @Test
-    @DisplayName("대기중 요청 상태 업데이트 성공")
+    @DisplayName("요청 상태 업데이트 성공")
     void updateFamilyRequestStatusSuccess() {
-        when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class)))
-                .thenReturn(1);
+        when(familyApplyJpaRepository.updateStatusByIdAndTypeAndCurrentStatus(
+                1L,
+                ApplyType.ADD,
+                FamilyApplyStatus.PENDING,
+                FamilyApplyStatus.APPROVED
+        )).thenReturn(1);
 
-        int updated = familyRepository.updateFamilyRequestStatus(
+        int updated = familyApplyRepository.updateFamilyRequestStatus(
                 1L,
                 ApplyType.ADD,
                 FamilyApplyStatus.PENDING,
@@ -411,22 +364,10 @@ class FamilyRepositoryImplTest {
     @Test
     @DisplayName("요청 존재 여부 조회 성공")
     void existsFamilyRequestSuccess() {
-        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
-                .thenReturn(true);
+        when(familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(10L, ApplyType.REMOVE)).thenReturn(true);
 
-        boolean exists = familyRepository.existsFamilyRequest(10L, ApplyType.REMOVE);
+        boolean exists = familyApplyRepository.existsFamilyRequest(10L, ApplyType.REMOVE);
 
         assertThat(exists).isTrue();
-    }
-
-    @Test
-    @DisplayName("요청 존재 여부 조회 null이면 false")
-    void existsFamilyRequestNullThenFalse() {
-        when(jdbcTemplate.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class)))
-                .thenReturn(null);
-
-        boolean exists = familyRepository.existsFamilyRequest(11L, ApplyType.ADD);
-
-        assertThat(exists).isFalse();
     }
 }

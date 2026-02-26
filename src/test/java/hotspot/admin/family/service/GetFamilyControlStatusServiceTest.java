@@ -21,6 +21,7 @@ import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilySubRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GetFamilyControlStatusServiceTest {
@@ -28,11 +29,14 @@ class GetFamilyControlStatusServiceTest {
     @Mock
     private FamilyRepository familyRepository;
 
+    @Mock
+    private FamilySubRepository familySubRepository;
+
     private GetFamilyControlStatusServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new GetFamilyControlStatusServiceImpl(familyRepository);
+        service = new GetFamilyControlStatusServiceImpl(familyRepository, familySubRepository);
     }
 
     @Test
@@ -40,7 +44,7 @@ class GetFamilyControlStatusServiceTest {
     void getFamilyControlStatusPrioritySuccess() {
         when(familyRepository.findFamilyPriorityType(1L))
                 .thenReturn(Optional.of(PriorityType.PRIORITY));
-        when(familyRepository.findFamilyControlMembers(1L))
+        when(familySubRepository.findFamilyControlMembers(1L))
                 .thenReturn(List.of(
                         FamilyControlMemberRow.builder()
                                 .subId(10L)
@@ -83,7 +87,7 @@ class GetFamilyControlStatusServiceTest {
     void fifoThenPriorityMinusOne() {
         when(familyRepository.findFamilyPriorityType(2L))
                 .thenReturn(Optional.of(PriorityType.FIFO));
-        when(familyRepository.findFamilyControlMembers(2L))
+        when(familySubRepository.findFamilyControlMembers(2L))
                 .thenReturn(List.of(
                         FamilyControlMemberRow.builder()
                                 .subId(20L)
