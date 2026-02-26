@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
@@ -17,7 +18,7 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     private final FamilyApplyJpaRepository familyApplyJpaRepository;
 
-    /** 대기중 요청을 목표 상태(승인/반려)로 조건부 업데이트한다. */
+    /** 대기중 가족 요청만 목표 상태(승인/반려)로 조건부 업데이트한다. */
     @Override
     public int updateFamilyRequestStatus(
             Long familyApplyId,
@@ -39,14 +40,27 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
         return familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(familyApplyId, applyType);
     }
 
-    /** ADD 요청의 승인 후처리에 필요한 최소 정보를 조회한다. */
+    /** 요청 ID와 요청 유형으로 가족 요청 도메인 객체를 조회한다. */
+    @Override
+    public Optional<FamilyApply> findFamilyRequest(Long familyApplyId, ApplyType applyType) {
+        return familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(familyApplyId, applyType)
+                .map(FamilyApplyEntity::entityToDomain);
+    }
+
+    /** 요청 ID와 요청 유형으로 대상 이름을 조회한다. */
+    @Override
+    public Optional<String> findFamilyRequestTargetName(Long familyApplyId, ApplyType applyType) {
+        return familyApplyJpaRepository.findTargetNameByFamilyApplyIdAndApplyType(familyApplyId, applyType);
+    }
+
+    /** ADD 요청 승인 후처리에 필요한 최소 정보를 조회한다. */
     @Override
     public Optional<FamilyAddApprovalInfo> findAddApprovalInfo(Long familyApplyId) {
         return familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(familyApplyId, ApplyType.ADD)
                 .map(this::toAddApprovalInfo);
     }
 
-    /** family_apply 엔티티를 승인 후처리용 정보 DTO로 변환한다. */
+    /** family_apply 엔티티를 승인 후처리용 DTO로 변환한다. */
     private FamilyAddApprovalInfo toAddApprovalInfo(FamilyApplyEntity entity) {
         return FamilyAddApprovalInfo.builder()
                 .familyId(entity.getFamily().getFamilyId())
