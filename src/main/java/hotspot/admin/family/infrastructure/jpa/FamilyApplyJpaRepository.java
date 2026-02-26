@@ -35,20 +35,20 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
     boolean existsByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
 
-    /** 요청 ID와 요청 유형으로 요청 엔티티를 조회한다. */
-    Optional<FamilyApplyEntity> findByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
-
-    /** 요청 ID와 요청 유형으로 대상 이름을 조회한다. */
+    /** 요청 ID와 요청 유형으로 Outbox 생성에 필요한 정보를 단건 조회한다. */
     @Query("""
-            SELECT m.name
+            SELECT fa
             FROM FamilyApplyEntity fa
-            JOIN fa.targetSubscription s
-            JOIN s.member m
+            JOIN FETCH fa.targetSubscription s
+            JOIN FETCH s.member m
             WHERE fa.familyApplyId = :familyApplyId
               AND fa.applyType = :applyType
             """)
-    Optional<String> findTargetNameByFamilyApplyIdAndApplyType(
+    Optional<FamilyApplyEntity> findOutboxSourceByFamilyApplyIdAndApplyType(
             @Param("familyApplyId") Long familyApplyId,
             @Param("applyType") ApplyType applyType
     );
+
+    /** 요청 ID와 요청 유형으로 요청 엔티티를 조회한다. */
+    Optional<FamilyApplyEntity> findByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
 }
