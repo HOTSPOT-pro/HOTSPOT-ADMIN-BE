@@ -13,6 +13,7 @@ import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.outbox.FamilyRequestOutboxPublisher;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
+import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
@@ -68,12 +69,10 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
             return;
         }
 
-        FamilyApply familyApply = familyApplyRepository.findFamilyRequest(requestId, applyType)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
-        String targetName = familyApplyRepository.findFamilyRequestTargetName(requestId, applyType)
+        FamilyRequestOutboxInfo outboxInfo = familyApplyRepository.findFamilyRequestOutboxInfo(requestId, applyType)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
 
-        publishOutbox(nextStatus, familyApply, targetName);
+        publishOutbox(nextStatus, outboxInfo.familyApply(), outboxInfo.targetName());
     }
 
     /** 업데이트 실패 시 요청 미존재/상태 불일치 원인을 구분해 예외를 던진다. */
