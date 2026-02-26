@@ -8,4 +8,6 @@ public interface FamilyRepository {
     boolean existsFamilyById(Long familyId);
 
     Optional<PriorityType> findFamilyPriorityType(Long familyId);
+
+    int updateFamilySummary(Long familyId, int familyNum, long familyDataAmount);
 }

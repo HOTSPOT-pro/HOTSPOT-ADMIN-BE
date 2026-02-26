@@ -1,4 +1,6 @@
-package hotspot.admin.family.infrastructure;
+package hotspot.admin.family.infrastructure.jpa;
+
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -32,4 +34,7 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
 
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
     boolean existsByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
+
+    /** 요청 ID와 요청 유형으로 요청 엔티티를 조회한다. */
+    Optional<FamilyApplyEntity> findByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
 }

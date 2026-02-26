@@ -1,4 +1,4 @@
-package hotspot.admin.family.infrastructure;
+package hotspot.admin.family.infrastructure.jpa;
 
 import java.util.Optional;
 
@@ -24,5 +24,11 @@ public class FamilyRepositoryJpaImpl implements FamilyRepository {
     @Override
     public Optional<PriorityType> findFamilyPriorityType(Long familyId) {
         return familyJpaRepository.findPriorityTypeByFamilyId(familyId);
+    }
+
+    /** 가족 구성원 수와 가족 공유 데이터량을 갱신한다. */
+    @Override
+    public int updateFamilySummary(Long familyId, int familyNum, long familyDataAmount) {
+        return familyJpaRepository.updateFamilySummary(familyId, familyNum, familyDataAmount);
     }
 }

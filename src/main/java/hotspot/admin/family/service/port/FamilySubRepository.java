@@ -1,21 +1,17 @@
 package hotspot.admin.family.service.port;
 
-import java.util.List;
-
-import hotspot.admin.family.service.dto.FamilyControlMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
-import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
-import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.domain.FamilyRole;
 
 public interface FamilySubRepository {
-    List<FamilyControlMemberRow> findFamilyControlMembers(Long familyId);
+    boolean existsFamilySub(Long familyId, Long subId);
 
-    List<FamilyPolicyMemberRow> findFamilyPolicyMembers(Long familyId);
+    int findMaxPriority(Long familyId);
 
-    List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId);
+    void saveFamilySub(Long familyId, Long subId, FamilyRole familyRole, int priority, long dataLimit);
 
-    List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId);
+    int countActiveMembers(Long familyId);
 
-    List<FamilyPolicyStatusRow> findFamilyPolicyStatusRows(Long familyId);
+    int updateDataLimit(Long familyId, long dataLimit);
+
+    int updatePriority(Long familyId, int priority);
 }
