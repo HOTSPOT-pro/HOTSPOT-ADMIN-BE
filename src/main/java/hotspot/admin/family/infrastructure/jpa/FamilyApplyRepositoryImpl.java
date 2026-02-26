@@ -5,10 +5,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.ApplyType;
-import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
+import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -40,17 +40,11 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
         return familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(familyApplyId, applyType);
     }
 
-    /** 요청 ID와 요청 유형으로 가족 요청 도메인 객체를 조회한다. */
+    /** 요청 ID와 요청 유형으로 Outbox 생성에 필요한 정보를 조회한다. */
     @Override
-    public Optional<FamilyApply> findFamilyRequest(Long familyApplyId, ApplyType applyType) {
-        return familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(familyApplyId, applyType)
-                .map(FamilyApplyEntity::entityToDomain);
-    }
-
-    /** 요청 ID와 요청 유형으로 대상 이름을 조회한다. */
-    @Override
-    public Optional<String> findFamilyRequestTargetName(Long familyApplyId, ApplyType applyType) {
-        return familyApplyJpaRepository.findTargetNameByFamilyApplyIdAndApplyType(familyApplyId, applyType);
+    public Optional<FamilyRequestOutboxInfo> findFamilyRequestOutboxInfo(Long familyApplyId, ApplyType applyType) {
+        return familyApplyJpaRepository.findOutboxSourceByFamilyApplyIdAndApplyType(familyApplyId, applyType)
+                .map(this::toFamilyRequestOutboxInfo);
     }
 
     /** ADD 요청 승인 후처리에 필요한 최소 정보를 조회한다. */
@@ -67,5 +61,12 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
                 .targetSubId(entity.getTargetSubscription().getSubId())
                 .targetFamilyRole(entity.getTargetFamilyRole())
                 .build();
+    }
+
+    private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {
+        return new FamilyRequestOutboxInfo(
+                entity.entityToDomain(),
+                entity.getTargetSubscription().getMember().getName()
+        );
     }
 }
