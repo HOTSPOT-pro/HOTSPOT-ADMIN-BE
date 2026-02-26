@@ -20,6 +20,7 @@ public class FamilyApplyQueryRepositoryImpl implements FamilyApplyQueryRepositor
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    /** 가족 요청 목록(결합/해제)을 상태 기준으로 페이지 조회한다. */
     @Override
     public List<FamilyRequestListItem> findFamilyRequestList(
             ApplyType applyType,
@@ -62,6 +63,7 @@ public class FamilyApplyQueryRepositoryImpl implements FamilyApplyQueryRepositor
         return jdbcTemplate.query(sql, params, this::mapFamilyRequestItem);
     }
 
+    /** 가족 요청 목록 총 건수를 조회한다. */
     @Override
     public long countFamilyRequestList(ApplyType applyType, FamilyApplyStatus status) {
         String sql = """
@@ -80,6 +82,7 @@ public class FamilyApplyQueryRepositoryImpl implements FamilyApplyQueryRepositor
         return total == null ? 0L : total;
     }
 
+    /** 요청 목록 조회 결과 행을 응답 DTO로 변환한다. */
     private FamilyRequestListItem mapFamilyRequestItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         LocalDateTime requestedAt = rs.getTimestamp("created_time").toLocalDateTime();
         return FamilyRequestListItem.builder()

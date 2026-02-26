@@ -18,6 +18,7 @@ public class FamilyRepositoryImpl implements FamilyQueryRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    /** 가족 목록 화면용 상단 정보(대표자/전화/인원수)를 페이지 단위로 조회한다. */
     @Override
     public List<FamilyListItem> findFamilyList(int limit, long offset) {
         String sql = """
@@ -58,6 +59,7 @@ public class FamilyRepositoryImpl implements FamilyQueryRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyListItem);
     }
 
+    /** 삭제되지 않은 가족 총 건수를 조회한다. */
     @Override
     public long countFamilyList() {
         String sql = """
@@ -70,6 +72,7 @@ public class FamilyRepositoryImpl implements FamilyQueryRepository {
         return total == null ? 0L : total;
     }
 
+    /** 전화번호 해시로 가족 1건을 검색한다. */
     @Override
     public Optional<FamilyListItem> findFamilyByPhoneHash(String phoneHash) {
         String sql = """
@@ -117,6 +120,7 @@ public class FamilyRepositoryImpl implements FamilyQueryRepository {
         return result.stream().findFirst();
     }
 
+    /** 가족 상세 상단 표시용 요약 정보를 가족 ID로 조회한다. */
     @Override
     public Optional<FamilyListItem> findFamilyById(Long familyId) {
         String sql = """
@@ -156,6 +160,7 @@ public class FamilyRepositoryImpl implements FamilyQueryRepository {
         return result.stream().findFirst();
     }
 
+    /** JDBC 결과 행을 가족 목록/상단 응답 행으로 변환한다. */
     private FamilyListItem mapFamilyListItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         return FamilyListItem.builder()
                 .familyId(rs.getLong("family_id"))

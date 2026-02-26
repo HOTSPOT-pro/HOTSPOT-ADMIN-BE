@@ -13,6 +13,7 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     private final FamilyApplyJpaRepository familyApplyJpaRepository;
 
+    /** 대기중 요청을 목표 상태(승인/반려)로 조건부 업데이트한다. */
     @Override
     public int updateFamilyRequestStatus(
             Long familyApplyId,
@@ -28,6 +29,7 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
         );
     }
 
+    /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
     @Override
     public boolean existsFamilyRequest(Long familyApplyId, ApplyType applyType) {
         return familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(familyApplyId, applyType);

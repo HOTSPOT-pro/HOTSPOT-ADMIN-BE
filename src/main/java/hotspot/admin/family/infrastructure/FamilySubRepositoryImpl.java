@@ -25,6 +25,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    /** 제어 탭 구성원 목록(역할/차단/한도/우선순위)을 조회한다. */
     @Override
     public List<FamilyControlMemberRow> findFamilyControlMembers(Long familyId) {
         String sql = """
@@ -60,6 +61,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyControlMemberRow);
     }
 
+    /** 정책 탭 구성원 기본 정보(이름/전화/역할/차단)를 조회한다. */
     @Override
     public List<FamilyPolicyMemberRow> findFamilyPolicyMembers(Long familyId) {
         String sql = """
@@ -93,6 +95,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyPolicyMemberRow);
     }
 
+    /** 구성원별 적용 시간대 정책명을 조회한다. */
     @Override
     public List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId) {
         String sql = """
@@ -113,6 +116,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyTimePolicyRow);
     }
 
+    /** 구성원별 적용 차단 서비스 정책명을 조회한다. */
     @Override
     public List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId) {
         String sql = """
@@ -136,6 +140,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyRow);
     }
 
+    /** 정책 탭 화면용 통합 행을 한 번의 조회로 구성한다. */
     @Override
     public List<FamilyPolicyStatusRow> findFamilyPolicyStatusRows(Long familyId) {
         String sql = """
@@ -189,6 +194,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyPolicyStatusRow);
     }
 
+    /** 정책 탭 구성원 기본 행을 DTO로 변환한다. */
     private FamilyPolicyMemberRow mapFamilyPolicyMemberRow(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         return FamilyPolicyMemberRow.builder()
@@ -200,6 +206,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
                 .build();
     }
 
+    /** 제어 탭 구성원 행을 DTO로 변환한다. */
     private FamilyControlMemberRow mapFamilyControlMemberRow(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         return FamilyControlMemberRow.builder()
@@ -212,6 +219,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
                 .build();
     }
 
+    /** 시간대 정책 행을 DTO로 변환한다. */
     private FamilyPolicyTimePolicyRow mapFamilyTimePolicyRow(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         return FamilyPolicyTimePolicyRow.builder()
@@ -220,6 +228,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
                 .build();
     }
 
+    /** 차단 서비스 정책 행을 DTO로 변환한다. */
     private FamilyPolicyAppPolicyRow mapFamilyAppPolicyRow(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         return FamilyPolicyAppPolicyRow.builder()
@@ -228,6 +237,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
                 .build();
     }
 
+    /** 정책 탭 통합 행을 DTO로 변환한다. */
     private FamilyPolicyStatusRow mapFamilyPolicyStatusRow(java.sql.ResultSet rs, int rowNum) throws SQLException {
         return FamilyPolicyStatusRow.builder()
                 .subId(rs.getLong("sub_id"))
@@ -240,6 +250,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
                 .build();
     }
 
+    /** PostgreSQL text[] 배열을 Java List<String>으로 변환한다. */
     private List<String> toStringList(Array sqlArray) throws SQLException {
         if (sqlArray == null) {
             return Collections.emptyList();

@@ -10,6 +10,7 @@ import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 
 public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntity, Long> {
+    /** 요청 ID/유형/현재 상태가 일치할 때만 상태를 갱신한다. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
             value = """
@@ -29,5 +30,6 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
             @Param("newStatus") FamilyApplyStatus newStatus
     );
 
+    /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
     boolean existsByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
 }
