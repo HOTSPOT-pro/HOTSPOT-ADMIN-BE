@@ -13,6 +13,7 @@ import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,6 +24,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
     private static final int UNUSED_PRIORITY_ORDER = -1;
 
     private final FamilyRepository familyRepository;
+    private final FamilySubQueryRepository familySubQueryRepository;
 
     /** 가족 우선순위 유형과 구성원별 제어 상태를 제어 탭 응답 형태로 변환한다. */
     @Transactional(readOnly = true)
@@ -31,7 +33,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
         PriorityType priorityType = familyRepository.findFamilyPriorityType(familyId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
-        List<FamilyControlMemberItem> members = familyRepository.findFamilyControlMembers(familyId).stream()
+        List<FamilyControlMemberItem> members = familySubQueryRepository.findFamilyControlMembers(familyId).stream()
                 .map(member -> toMemberItem(member, priorityType))
                 .toList();
 

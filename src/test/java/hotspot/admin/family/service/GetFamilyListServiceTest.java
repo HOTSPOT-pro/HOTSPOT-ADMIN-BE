@@ -21,13 +21,13 @@ import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GetFamilyListServiceTest {
 
     @Mock
-    private FamilyRepository familyRepository;
+    private FamilyQueryRepository familyQueryRepository;
 
     @Mock
     private PhoneCryptoUtil phoneCryptoUtil;
@@ -36,7 +36,7 @@ class GetFamilyListServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GetFamilyListServiceImpl(familyRepository, phoneCryptoUtil);
+        service = new GetFamilyListServiceImpl(familyQueryRepository, phoneCryptoUtil);
     }
 
     @Test
@@ -61,9 +61,9 @@ class GetFamilyListServiceTest {
                         .build()
         );
 
-        when(familyRepository.countFamilyList())
+        when(familyQueryRepository.countFamilyList())
                 .thenReturn(25L);
-        when(familyRepository.findFamilyList(20, 0))
+        when(familyQueryRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
         when(phoneCryptoUtil.decryptPhone(anyString()))
                 .thenReturn("01012340000");
@@ -93,9 +93,9 @@ class GetFamilyListServiceTest {
                 .memberCount(2)
                 .build());
 
-        when(familyRepository.countFamilyList())
+        when(familyQueryRepository.countFamilyList())
                 .thenReturn(1L);
-        when(familyRepository.findFamilyList(20, 0))
+        when(familyQueryRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
         when(phoneCryptoUtil.decryptPhone("enc"))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));

@@ -15,14 +15,14 @@ import hotspot.admin.common.util.PhoneMaskingUtil;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneService {
 
-    private final FamilyRepository familyRepository;
+    private final FamilyQueryRepository familyQueryRepository;
     private final PhoneHashUtil phoneHashUtil;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
@@ -31,7 +31,7 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
     @Override
     public FamilyPhoneSearchResponse searchByPhone(String phoneNumber) {
         String phoneHash = createPhoneHash(phoneNumber);
-        FamilyListItem family = familyRepository.findFamilyByPhoneHash(phoneHash)
+        FamilyListItem family = familyQueryRepository.findFamilyByPhoneHash(phoneHash)
                 .map(this::decryptAndMaskPhone)
                 .orElse(null);
 

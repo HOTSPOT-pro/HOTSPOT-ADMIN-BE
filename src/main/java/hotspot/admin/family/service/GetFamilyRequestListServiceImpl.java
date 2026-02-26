@@ -18,7 +18,7 @@ import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyApplyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,7 +27,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
 
     private static final String FAMILY_NAME_SUFFIX = " 가족";
 
-    private final FamilyRepository familyRepository;
+    private final FamilyApplyQueryRepository familyApplyQueryRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     /** 가족 요청 목록을 페이지 단위로 조회하고 화면 표시용 필드를 구성한다. */
@@ -42,11 +42,12 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
         int size = request.getSize();
         long offset = (long) page * size;
 
-        long totalElements = familyRepository.countFamilyRequestList(applyType, status);
+        long totalElements = familyApplyQueryRepository.countFamilyRequestList(applyType, status);
         int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
         boolean hasNext = page + 1 < totalPages;
 
-        List<FamilyRequestListItem> requests = familyRepository.findFamilyRequestList(applyType, status, size, offset)
+        List<FamilyRequestListItem> requests = familyApplyQueryRepository.findFamilyRequestList(
+                applyType, status, size, offset)
                 .stream()
                 .map(this::decryptAndMaskPhones)
                 .toList();

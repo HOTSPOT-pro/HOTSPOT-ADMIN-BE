@@ -14,21 +14,21 @@ import hotspot.admin.common.util.PhoneMaskingUtil;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class GetFamilySummaryServiceImpl implements GetFamilySummaryService {
 
-    private final FamilyRepository familyRepository;
+    private final FamilyQueryRepository familyQueryRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     /** 가족 상세 상단에 노출할 요약 정보를 조회하고 전화번호를 마스킹한다. */
     @Transactional(readOnly = true)
     @Override
     public FamilySummaryResponse getFamilySummary(Long familyId) {
-        FamilyListItem family = familyRepository.findFamilyById(familyId)
+        FamilyListItem family = familyQueryRepository.findFamilyById(familyId)
                 .map(this::decryptAndMaskPhone)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 

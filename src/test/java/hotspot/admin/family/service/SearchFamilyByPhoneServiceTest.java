@@ -20,13 +20,13 @@ import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.common.util.PhoneHashUtil;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
-import hotspot.admin.family.service.port.FamilyRepository;
+import hotspot.admin.family.service.port.FamilyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class SearchFamilyByPhoneServiceTest {
 
     @Mock
-    private FamilyRepository familyRepository;
+    private FamilyQueryRepository familyQueryRepository;
 
     @Mock
     private PhoneHashUtil phoneHashUtil;
@@ -38,7 +38,7 @@ class SearchFamilyByPhoneServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new SearchFamilyByPhoneServiceImpl(familyRepository, phoneHashUtil, phoneCryptoUtil);
+        service = new SearchFamilyByPhoneServiceImpl(familyQueryRepository, phoneHashUtil, phoneCryptoUtil);
     }
 
     @Test
@@ -46,7 +46,7 @@ class SearchFamilyByPhoneServiceTest {
     void searchByPhoneSuccess() throws Exception {
         when(phoneHashUtil.hashPhone("010-1234-5678"))
                 .thenReturn("hashed-phone");
-        when(familyRepository.findFamilyByPhoneHash("hashed-phone"))
+        when(familyQueryRepository.findFamilyByPhoneHash("hashed-phone"))
                 .thenReturn(Optional.of(FamilyListItem.builder()
                         .familyId(10L)
                         .representativeName("대표자")
