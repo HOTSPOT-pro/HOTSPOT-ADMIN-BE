@@ -27,6 +27,7 @@ import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.outbox.FamilyRequestOutboxPublisher;
 import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
+import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
@@ -79,10 +80,8 @@ class ProcessFamilyRequestServiceTest {
                 FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED
         )).thenReturn(1);
-        when(familyApplyRepository.findFamilyRequest(7L, ApplyType.ADD))
-                .thenReturn(Optional.of(familyApply));
-        when(familyApplyRepository.findFamilyRequestTargetName(7L, ApplyType.ADD))
-                .thenReturn(Optional.of("target-name"));
+        when(familyApplyRepository.findFamilyRequestOutboxInfo(7L, ApplyType.ADD))
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "target-name")));
         when(familyApplyRepository.findAddApprovalInfo(7L))
                 .thenReturn(Optional.of(
                         FamilyAddApprovalInfo.builder()
@@ -134,10 +133,8 @@ class ProcessFamilyRequestServiceTest {
                 FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED
         )).thenReturn(1);
-        when(familyApplyRepository.findFamilyRequest(5L, ApplyType.REMOVE))
-                .thenReturn(Optional.of(familyApply));
-        when(familyApplyRepository.findFamilyRequestTargetName(5L, ApplyType.REMOVE))
-                .thenReturn(Optional.of("remove-target"));
+        when(familyApplyRepository.findFamilyRequestOutboxInfo(5L, ApplyType.REMOVE))
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "remove-target")));
 
         service.approve(ApplyType.REMOVE, 5L);
 
