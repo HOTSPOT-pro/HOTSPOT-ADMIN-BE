@@ -7,7 +7,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +21,9 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyDetailStatusService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
+import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
+import hotspot.admin.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
@@ -39,6 +43,7 @@ public class FamilyController implements FamilyApi {
     private final GetFamilyPolicyStatusService getFamilyPolicyStatusService;
     private final GetFamilyPolicyDetailStatusService getFamilyPolicyDetailStatusService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
+    private final UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
     @Override
@@ -81,6 +86,20 @@ public class FamilyController implements FamilyApi {
         return ResponseEntity.ok(ApiResponse.success(
                 getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(familyId, subId)
         ));
+    }
+
+    /** 가족 제어 기능의 우선순위 유형(FIFO/PRIORITY)을 변경한다. */
+    @PatchMapping("/{familyId}/priority")
+    public ResponseEntity<ApiResponse<Void>> updateFamilyPriority(
+            @PathVariable Long familyId,
+            @Valid @RequestBody UpdateFamilyPriorityRequest request
+    ) {
+        updateFamilyPriorityTypeService.updatePriorityType(
+                familyId,
+                request.priorityType(),
+                request.memberPriorities()
+        );
+        return ResponseEntity.ok(ApiResponse.success());
     }
 
     /** 전화번호로 가족을 검색한다. */
