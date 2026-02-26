@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.OutboxErrorCode;
+import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.outbox.dto.FamilyRequestAlertEvent;
 import hotspot.admin.outbox.service.NotificationOutboxEventAppender;
@@ -18,6 +19,7 @@ public class FamilyRequestOutboxPublisher {
 
     private static final String AGGREGATE_TYPE = "user-alert";
     private static final String EVENT_TYPE_FAMILY_MEMBER_ADD = "FAMILY_MEMBER_ADD";
+    private static final String EVENT_TYPE_FAMILY_MEMBER_REMOVE = "FAMILY_MEMBER_REMOVE";
     private static final String TYPE_APPROVED = "APPROVED";
     private static final String TYPE_REJECTED = "REJECTED";
 
@@ -38,7 +40,7 @@ public class FamilyRequestOutboxPublisher {
         try {
             FamilyRequestAlertEvent event = new FamilyRequestAlertEvent(
                     UUID.randomUUID().toString(),
-                    EVENT_TYPE_FAMILY_MEMBER_ADD,
+                    resolveEventType(familyApply.getApplyType()),
                     type,
                     targetName,
                     familyApply.getFamilyId(),
@@ -56,5 +58,15 @@ public class FamilyRequestOutboxPublisher {
         } catch (Exception ex) {
             throw new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_PUBLISH_FAILED, ex);
         }
+    }
+
+    private String resolveEventType(ApplyType applyType) {
+        if (applyType == ApplyType.ADD) {
+            return EVENT_TYPE_FAMILY_MEMBER_ADD;
+        }
+        if (applyType == ApplyType.REMOVE) {
+            return EVENT_TYPE_FAMILY_MEMBER_REMOVE;
+        }
+        throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
     }
 }
