@@ -37,4 +37,17 @@ public interface FamilyJpaRepository extends JpaRepository<FamilyEntity, Long> {
             @Param("familyNum") Integer familyNum,
             @Param("familyDataAmount") Long familyDataAmount
     );
+
+    /** 가족 우선순위 유형(FIFO/PRIORITY)을 갱신한다. */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE FamilyEntity f
+            SET f.priorityType = :priorityType
+            WHERE f.familyId = :familyId
+              AND f.isDeleted = false
+            """)
+    int updatePriorityTypeByFamilyId(
+            @Param("familyId") Long familyId,
+            @Param("priorityType") PriorityType priorityType
+    );
 }

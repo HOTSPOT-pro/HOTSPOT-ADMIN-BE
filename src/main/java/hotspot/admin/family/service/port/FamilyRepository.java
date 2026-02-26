@@ -12,4 +12,6 @@ public interface FamilyRepository {
     Long createFamily(int familyNum, long familyDataAmount, PriorityType priorityType);
 
     int updateFamilySummary(Long familyId, int familyNum, long familyDataAmount);
+
+    int updateFamilyPriorityType(Long familyId, PriorityType priorityType);
 }

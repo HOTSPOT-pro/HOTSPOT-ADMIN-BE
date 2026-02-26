@@ -41,4 +41,17 @@ public interface FamilySubJpaRepository extends JpaRepository<FamilySubEntity, L
             WHERE fs.family.familyId = :familyId
             """)
     int updatePriorityByFamilyId(@Param("familyId") Long familyId, @Param("priority") Integer priority);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE FamilySubEntity fs
+            SET fs.priority = :priority
+            WHERE fs.family.familyId = :familyId
+              AND fs.subscription.subId = :subId
+            """)
+    int updatePriorityByFamilyIdAndSubId(
+            @Param("familyId") Long familyId,
+            @Param("subId") Long subId,
+            @Param("priority") Integer priority
+    );
 }

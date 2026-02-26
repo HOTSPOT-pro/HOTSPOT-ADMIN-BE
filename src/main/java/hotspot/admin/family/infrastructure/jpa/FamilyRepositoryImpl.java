@@ -44,4 +44,10 @@ public class FamilyRepositoryImpl implements FamilyRepository {
     public int updateFamilySummary(Long familyId, int familyNum, long familyDataAmount) {
         return familyJpaRepository.updateFamilySummary(familyId, familyNum, familyDataAmount);
     }
+
+    /** 가족 우선순위 유형(FIFO/PRIORITY)을 갱신한다. */
+    @Override
+    public int updateFamilyPriorityType(Long familyId, PriorityType priorityType) {
+        return familyJpaRepository.updatePriorityTypeByFamilyId(familyId, priorityType);
+    }
 }
