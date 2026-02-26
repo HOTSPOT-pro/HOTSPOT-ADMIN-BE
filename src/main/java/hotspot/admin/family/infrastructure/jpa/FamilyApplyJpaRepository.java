@@ -39,8 +39,10 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     @Query("""
             SELECT fa
             FROM FamilyApplyEntity fa
+            JOIN FETCH fa.requesterSubscription rs
             JOIN FETCH fa.targetSubscription s
             JOIN FETCH s.member m
+            JOIN FETCH fa.family f
             WHERE fa.familyApplyId = :familyApplyId
               AND fa.applyType = :applyType
             """)
