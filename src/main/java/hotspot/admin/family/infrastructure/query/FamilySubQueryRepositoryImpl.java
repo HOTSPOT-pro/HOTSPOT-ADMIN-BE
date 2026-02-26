@@ -1,4 +1,4 @@
-package hotspot.admin.family.infrastructure;
+package hotspot.admin.family.infrastructure.query;
 
 import java.sql.Array;
 import java.sql.SQLException;
@@ -16,12 +16,12 @@ import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
-import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class FamilySubRepositoryImpl implements FamilySubRepository {
+public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 

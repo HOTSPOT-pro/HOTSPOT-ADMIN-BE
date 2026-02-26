@@ -21,7 +21,7 @@ import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.port.FamilyRepository;
-import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.family.service.port.FamilySubQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class GetFamilyPolicyStatusServiceTest {
@@ -30,7 +30,7 @@ class GetFamilyPolicyStatusServiceTest {
     private FamilyRepository familyRepository;
 
     @Mock
-    private FamilySubRepository familySubRepository;
+    private FamilySubQueryRepository familySubQueryRepository;
 
     @Mock
     private PhoneCryptoUtil phoneCryptoUtil;
@@ -39,14 +39,14 @@ class GetFamilyPolicyStatusServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new GetFamilyPolicyStatusServiceImpl(familyRepository, familySubRepository, phoneCryptoUtil);
+        service = new GetFamilyPolicyStatusServiceImpl(familyRepository, familySubQueryRepository, phoneCryptoUtil);
     }
 
     @Test
     @DisplayName("가족 정책 적용 현황 조회 성공")
     void getFamilyPolicyStatusSuccess() throws Exception {
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
-        when(familySubRepository.findFamilyPolicyStatusRows(1L))
+        when(familySubQueryRepository.findFamilyPolicyStatusRows(1L))
                 .thenReturn(List.of(
                         FamilyPolicyStatusRow.builder()
                                 .subId(10L)
@@ -94,7 +94,7 @@ class GetFamilyPolicyStatusServiceTest {
     @DisplayName("전화번호 복호화 실패 시 예외")
     void decryptFailThenException() throws Exception {
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
-        when(familySubRepository.findFamilyPolicyStatusRows(1L))
+        when(familySubQueryRepository.findFamilyPolicyStatusRows(1L))
                 .thenReturn(List.of(FamilyPolicyStatusRow.builder()
                         .subId(1L)
                         .memberName("대표")

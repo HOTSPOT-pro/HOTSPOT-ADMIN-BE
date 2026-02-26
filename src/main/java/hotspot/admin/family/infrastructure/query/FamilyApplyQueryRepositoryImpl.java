@@ -1,4 +1,4 @@
-package hotspot.admin.family.infrastructure;
+package hotspot.admin.family.infrastructure.query;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -14,7 +14,7 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.port.FamilyRepository;
-import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusService {
 
     private final FamilyRepository familyRepository;
-    private final FamilySubRepository familySubRepository;
+    private final FamilySubQueryRepository familySubQueryRepository;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     /** 구성원별 적용 정책(시간대/차단 서비스)과 차단 상태를 묶어 반환한다. */
@@ -33,7 +33,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
             throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
         }
 
-        return familySubRepository.findFamilyPolicyStatusRows(familyId).stream()
+        return familySubQueryRepository.findFamilyPolicyStatusRows(familyId).stream()
                 .map(this::toMemberItem)
                 .toList();
     }

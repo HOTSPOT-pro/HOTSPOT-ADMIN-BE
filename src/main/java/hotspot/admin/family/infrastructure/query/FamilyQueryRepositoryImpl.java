@@ -1,4 +1,4 @@
-package hotspot.admin.family.infrastructure;
+package hotspot.admin.family.infrastructure.query;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class FamilyRepositoryImpl implements FamilyQueryRepository {
+public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 

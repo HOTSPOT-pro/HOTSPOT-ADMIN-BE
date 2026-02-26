@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.Array;
@@ -27,12 +28,27 @@ import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
+import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
+import hotspot.admin.family.infrastructure.jpa.FamilyApplyJpaRepository;
+import hotspot.admin.family.infrastructure.jpa.FamilyApplyRepositoryImpl;
+import hotspot.admin.family.infrastructure.jpa.FamilyJpaRepository;
+import hotspot.admin.family.infrastructure.jpa.FamilyRepositoryJpaImpl;
+import hotspot.admin.family.infrastructure.jpa.FamilySubJpaRepository;
+import hotspot.admin.family.infrastructure.jpa.FamilySubJpaRepositoryImpl;
+import hotspot.admin.family.infrastructure.query.FamilyApplyQueryRepositoryImpl;
+import hotspot.admin.family.infrastructure.query.FamilyQueryRepositoryImpl;
+import hotspot.admin.family.infrastructure.query.FamilySubQueryRepositoryImpl;
+import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
 import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
+import hotspot.admin.subscription.infrastructure.entity.SubscriptionEntity;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyRepositoryImplTest {
@@ -46,19 +62,31 @@ class FamilyRepositoryImplTest {
     @Mock
     private FamilyApplyJpaRepository familyApplyJpaRepository;
 
-    private FamilyRepositoryImpl familyQueryRepository;
+    @Mock
+    private FamilySubJpaRepository familySubJpaRepository;
+
+    @Mock
+    private SubscriptionJpaRepository subscriptionJpaRepository;
+
+    private FamilyQueryRepositoryImpl familyQueryRepository;
     private FamilyRepositoryJpaImpl familyRepository;
-    private FamilySubRepositoryImpl familySubRepository;
+    private FamilySubQueryRepositoryImpl familySubRepository;
     private FamilyApplyQueryRepositoryImpl familyApplyQueryRepository;
     private FamilyApplyRepositoryImpl familyApplyRepository;
+    private FamilySubJpaRepositoryImpl familySubJpaRepositoryImpl;
 
     @BeforeEach
     void setUp() {
-        familyQueryRepository = new FamilyRepositoryImpl(jdbcTemplate);
+        familyQueryRepository = new FamilyQueryRepositoryImpl(jdbcTemplate);
         familyRepository = new FamilyRepositoryJpaImpl(familyJpaRepository);
-        familySubRepository = new FamilySubRepositoryImpl(jdbcTemplate);
+        familySubRepository = new FamilySubQueryRepositoryImpl(jdbcTemplate);
         familyApplyQueryRepository = new FamilyApplyQueryRepositoryImpl(jdbcTemplate);
         familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
+        familySubJpaRepositoryImpl = new FamilySubJpaRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
     }
 
     @Test
@@ -152,6 +180,16 @@ class FamilyRepositoryImplTest {
 
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(PriorityType.FIFO);
+    }
+
+    @Test
+    @DisplayName("가족 요약 정보 업데이트 성공")
+    void updateFamilySummarySuccess() {
+        when(familyJpaRepository.updateFamilySummary(1L, 4, 20971520L)).thenReturn(1);
+
+        int updated = familyRepository.updateFamilySummary(1L, 4, 20971520L);
+
+        assertThat(updated).isEqualTo(1);
     }
 
     @Test
@@ -369,5 +407,107 @@ class FamilyRepositoryImplTest {
         boolean exists = familyApplyRepository.existsFamilyRequest(10L, ApplyType.REMOVE);
 
         assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("요청 승인 후처리 정보 조회 성공")
+    void findAddApprovalInfoSuccess() {
+        FamilyEntity family = FamilyEntity.builder()
+                .familyId(3L)
+                .build();
+        SubscriptionEntity targetSubscription = SubscriptionEntity.builder()
+                .subId(10L)
+                .build();
+        FamilyApplyEntity entity = FamilyApplyEntity.builder()
+                .familyApplyId(1L)
+                .family(family)
+                .targetSubscription(targetSubscription)
+                .targetFamilyRole(FamilyRole.CHILD)
+                .applyType(ApplyType.ADD)
+                .build();
+
+        when(familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(1L, ApplyType.ADD))
+                .thenReturn(Optional.of(entity));
+
+        Optional<FamilyAddApprovalInfo> result = familyApplyRepository.findAddApprovalInfo(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().familyId()).isEqualTo(3L);
+        assertThat(result.get().targetSubId()).isEqualTo(10L);
+        assertThat(result.get().targetFamilyRole()).isEqualTo(FamilyRole.CHILD);
+    }
+
+    @Test
+    @DisplayName("family_sub 존재 여부 조회 성공")
+    void existsFamilySubSuccess() {
+        when(familySubJpaRepository.existsByFamilyFamilyIdAndSubscriptionSubId(1L, 2L))
+                .thenReturn(true);
+
+        boolean exists = familySubJpaRepositoryImpl.existsFamilySub(1L, 2L);
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    @DisplayName("family_sub 최대 우선순위 조회 성공")
+    void findMaxPrioritySuccess() {
+        when(familySubJpaRepository.findMaxPriorityByFamilyId(1L)).thenReturn(7);
+
+        int max = familySubJpaRepositoryImpl.findMaxPriority(1L);
+
+        assertThat(max).isEqualTo(7);
+    }
+
+    @Test
+    @DisplayName("family_sub 최대 우선순위가 null이면 0")
+    void findMaxPriorityNullThenZero() {
+        when(familySubJpaRepository.findMaxPriorityByFamilyId(1L)).thenReturn(null);
+
+        int max = familySubJpaRepositoryImpl.findMaxPriority(1L);
+
+        assertThat(max).isZero();
+    }
+
+    @Test
+    @DisplayName("family_sub 저장 성공")
+    void saveFamilySubSuccess() {
+        FamilyEntity family = FamilyEntity.builder().familyId(3L).build();
+        SubscriptionEntity subscription = SubscriptionEntity.builder().subId(100L).build();
+        when(familyJpaRepository.getReferenceById(3L)).thenReturn(family);
+        when(subscriptionJpaRepository.getReferenceById(100L)).thenReturn(subscription);
+
+        familySubJpaRepositoryImpl.saveFamilySub(3L, 100L, FamilyRole.CHILD, 2, 0L);
+
+        verify(familySubJpaRepository).save(any());
+    }
+
+    @Test
+    @DisplayName("활성 구성원 수 조회 성공")
+    void countActiveMembersSuccess() {
+        when(familySubJpaRepository.countActiveMembersByFamilyId(3L)).thenReturn(4);
+
+        int count = familySubJpaRepositoryImpl.countActiveMembers(3L);
+
+        assertThat(count).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("family_sub 데이터 한도 업데이트 성공")
+    void updateDataLimitSuccess() {
+        when(familySubJpaRepository.updateDataLimitByFamilyId(3L, 1024L)).thenReturn(3);
+
+        int updated = familySubJpaRepositoryImpl.updateDataLimit(3L, 1024L);
+
+        assertThat(updated).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("family_sub 우선순위 업데이트 성공")
+    void updatePrioritySuccess() {
+        when(familySubJpaRepository.updatePriorityByFamilyId(3L, -1)).thenReturn(3);
+
+        int updated = familySubJpaRepositoryImpl.updatePriority(3L, -1);
+
+        assertThat(updated).isEqualTo(3);
     }
 }
