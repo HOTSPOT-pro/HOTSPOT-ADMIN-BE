@@ -61,12 +61,17 @@ public class FamilyRequestOutboxPublisher {
     }
 
     private String resolveEventType(ApplyType applyType) {
-        if (applyType == ApplyType.ADD) {
-            return EVENT_TYPE_FAMILY_MEMBER_ADD;
+        if (applyType == null) {
+            throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
         }
-        if (applyType == ApplyType.REMOVE) {
-            return EVENT_TYPE_FAMILY_MEMBER_REMOVE;
+
+        switch (applyType) {
+            case ADD:
+                return EVENT_TYPE_FAMILY_MEMBER_ADD;
+            case REMOVE:
+                return EVENT_TYPE_FAMILY_MEMBER_REMOVE;
+            default:
+                throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
         }
-        throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
     }
 }
