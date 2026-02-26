@@ -12,7 +12,7 @@ import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 
 public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntity, Long> {
-    /** 요청 ID/유형/현재 상태가 일치할 때만 상태를 갱신한다. */
+    /** 대기중 가족 요청만 목표 상태(승인/반려)로 조건부 업데이트한다. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(
             value = """
@@ -37,4 +37,18 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
 
     /** 요청 ID와 요청 유형으로 요청 엔티티를 조회한다. */
     Optional<FamilyApplyEntity> findByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
+
+    /** 요청 ID와 요청 유형으로 대상 이름을 조회한다. */
+    @Query("""
+            SELECT m.name
+            FROM FamilyApplyEntity fa
+            JOIN fa.targetSubscription s
+            JOIN s.member m
+            WHERE fa.familyApplyId = :familyApplyId
+              AND fa.applyType = :applyType
+            """)
+    Optional<String> findTargetNameByFamilyApplyIdAndApplyType(
+            @Param("familyApplyId") Long familyApplyId,
+            @Param("applyType") ApplyType applyType
+    );
 }
