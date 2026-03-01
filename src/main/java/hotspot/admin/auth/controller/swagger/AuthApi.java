@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Admin Auth", description = "관리자 인증 API")
@@ -22,7 +21,7 @@ public interface AuthApi {
     @Operation(
             summary = "관리자 로그인",
             description = "관리자 계정으로 로그인하여 JWT 토큰을 발급받습니다.",
-            security = @SecurityRequirement(name = "")
+            security = {}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
