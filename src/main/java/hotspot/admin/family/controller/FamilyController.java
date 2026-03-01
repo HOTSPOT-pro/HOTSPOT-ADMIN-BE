@@ -29,6 +29,7 @@ import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
+import hotspot.admin.family.controller.swagger.FamilyApi;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/families")
-public class FamilyController {
+public class FamilyController implements FamilyApi {
     private final GetFamilyListService getFamilyListService;
     private final GetFamilySummaryService getFamilySummaryService;
     private final GetFamilyControlStatusService getFamilyControlStatusService;
@@ -46,6 +47,7 @@ public class FamilyController {
     private final ProcessFamilyRequestService processFamilyRequestService;
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
+    @Override
     @GetMapping()
     public ResponseEntity<ApiResponse<FamilyListResponse>> getFamilyList(
             @Valid @ModelAttribute FamilyListRequest request) {
@@ -53,6 +55,7 @@ public class FamilyController {
     }
 
     /** 가족 상세 상단 요약(대표자/전화번호/구성원 수)을 조회한다. */
+    @Override
     @GetMapping("/{familyId}")
     public ResponseEntity<ApiResponse<FamilySummaryResponse>> getFamilySummary(
             @PathVariable Long familyId) {
@@ -60,6 +63,7 @@ public class FamilyController {
     }
 
     /** 가족 상세 제어 기능 탭(우선순위 유형 + 구성원별 제어 상태)을 조회한다. */
+    @Override
     @GetMapping("/{familyId}/control-status")
     public ResponseEntity<ApiResponse<FamilyControlStatusResponse>> getFamilyControlStatus(
             @PathVariable Long familyId) {
@@ -67,6 +71,7 @@ public class FamilyController {
     }
 
     /** 가족 상세 정책 적용 탭(구성원별 시간/서비스 정책 적용 현황)을 조회한다. */
+    @Override
     @GetMapping("/{familyId}/policy-status")
     public ResponseEntity<ApiResponse<List<FamilyPolicyMemberStatusItem>>> getFamilyPolicyStatus(
             @PathVariable Long familyId) {
@@ -74,6 +79,7 @@ public class FamilyController {
     }
 
     /** 전화번호로 가족을 검색한다. */
+    @Override
     @GetMapping("/search/phone")
     public ResponseEntity<ApiResponse<FamilyPhoneSearchResponse>> searchFamilyByPhone(
             @RequestParam String phoneNumber) {
@@ -81,6 +87,7 @@ public class FamilyController {
     }
 
     /** 가족 요청(결합/해제) 목록을 상태별로 조회한다. */
+    @Override
     @GetMapping("/requests/{applyType}/{status}")
     public ResponseEntity<ApiResponse<FamilyRequestListResponse>> getFamilyRequests(
             @PathVariable ApplyType applyType,
@@ -93,6 +100,7 @@ public class FamilyController {
     }
 
     /** 가족 요청을 승인 처리한다. */
+    @Override
     @PatchMapping("/requests/{applyType}/{requestId}/approve")
     public ResponseEntity<ApiResponse<Void>> approveFamilyRequest(
             @PathVariable ApplyType applyType,
@@ -103,6 +111,7 @@ public class FamilyController {
     }
 
     /** 가족 요청을 반려 처리한다. */
+    @Override
     @PatchMapping("/requests/{applyType}/{requestId}/reject")
     public ResponseEntity<ApiResponse<Void>> rejectFamilyRequest(
             @PathVariable ApplyType applyType,
