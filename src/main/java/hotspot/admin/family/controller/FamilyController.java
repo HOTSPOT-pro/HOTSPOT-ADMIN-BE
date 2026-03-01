@@ -32,8 +32,10 @@ import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.controller.swagger.FamilyApi;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/families")
 public class FamilyController implements FamilyApi {
     private final GetFamilyListService getFamilyListService;
@@ -43,24 +45,6 @@ public class FamilyController implements FamilyApi {
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
     private final GetFamilyRequestListService getFamilyRequestListService;
     private final ProcessFamilyRequestService processFamilyRequestService;
-
-    public FamilyController(
-            GetFamilyListService getFamilyListService,
-            GetFamilySummaryService getFamilySummaryService,
-            GetFamilyControlStatusService getFamilyControlStatusService,
-            GetFamilyPolicyStatusService getFamilyPolicyStatusService,
-            SearchFamilyByPhoneService searchFamilyByPhoneService,
-            GetFamilyRequestListService getFamilyRequestListService,
-            ProcessFamilyRequestService processFamilyRequestService
-    ) {
-        this.getFamilyListService = getFamilyListService;
-        this.getFamilySummaryService = getFamilySummaryService;
-        this.getFamilyControlStatusService = getFamilyControlStatusService;
-        this.getFamilyPolicyStatusService = getFamilyPolicyStatusService;
-        this.searchFamilyByPhoneService = searchFamilyByPhoneService;
-        this.getFamilyRequestListService = getFamilyRequestListService;
-        this.processFamilyRequestService = processFamilyRequestService;
-    }
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
     @Override
