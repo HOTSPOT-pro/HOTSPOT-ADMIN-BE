@@ -27,19 +27,21 @@ import hotspot.admin.policy.controller.response.CreateAppPolicyResponse;
 import hotspot.admin.policy.controller.response.CreateTimePolicyResponse;
 import hotspot.admin.policy.controller.response.TimePolicyListResponse;
 import hotspot.admin.policy.controller.response.UpdatePolicyActiveResponse;
+import hotspot.admin.policy.controller.swagger.PolicyApi;
 import hotspot.admin.policy.domain.AdminPolicyType;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/policies")
-public class PolicyController {
+public class PolicyController implements PolicyApi {
 
     private final GetPolicyListService getPolicyListService;
     private final CreatePolicyService createPolicyService;
     private final UpdatePolicyActiveService updatePolicyActiveService;
     private final DeletePolicyService deletePolicyService;
 
+    @Override
     @GetMapping("/time")
     public ResponseEntity<ApiResponse<TimePolicyListResponse>> getTimePolicies(
             @Valid @ModelAttribute PolicyListRequest request
@@ -47,6 +49,7 @@ public class PolicyController {
         return ResponseEntity.ok(ApiResponse.success(getPolicyListService.getTimePolicies(request)));
     }
 
+    @Override
     @GetMapping("/app")
     public ResponseEntity<ApiResponse<AppPolicyListResponse>> getAppPolicies(
             @Valid @ModelAttribute PolicyListRequest request
@@ -54,6 +57,7 @@ public class PolicyController {
         return ResponseEntity.ok(ApiResponse.success(getPolicyListService.getAppPolicies(request)));
     }
 
+    @Override
     @PostMapping("/time")
     public ResponseEntity<ApiResponse<CreateTimePolicyResponse>> createTimePolicy(
             @Valid @RequestBody CreateTimePolicyRequest request
@@ -61,6 +65,7 @@ public class PolicyController {
         return ResponseEntity.ok(ApiResponse.success(createPolicyService.createTimePolicy(request)));
     }
 
+    @Override
     @PostMapping("/app")
     public ResponseEntity<ApiResponse<CreateAppPolicyResponse>> createAppPolicy(
             @Valid @RequestBody CreateAppPolicyRequest request
@@ -68,6 +73,7 @@ public class PolicyController {
         return ResponseEntity.ok(ApiResponse.success(createPolicyService.createAppPolicy(request)));
     }
 
+    @Override
     @DeleteMapping("/{policyType}/{policyId}")
     public ResponseEntity<ApiResponse<Void>> deletePolicy(
             @PathVariable AdminPolicyType policyType,
@@ -77,6 +83,7 @@ public class PolicyController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    @Override
     @PatchMapping("/{policyType}/{policyId}/active")
     public ResponseEntity<ApiResponse<UpdatePolicyActiveResponse>> updatePolicyActive(
             @PathVariable AdminPolicyType policyType,
