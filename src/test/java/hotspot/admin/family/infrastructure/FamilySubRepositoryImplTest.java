@@ -15,12 +15,12 @@ import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.infrastructure.jpa.FamilyJpaRepository;
 import hotspot.admin.family.infrastructure.jpa.FamilySubJpaRepository;
-import hotspot.admin.family.infrastructure.jpa.FamilySubJpaRepositoryImpl;
+import hotspot.admin.family.infrastructure.jpa.FamilySubRepositoryImpl;
 import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
 import hotspot.admin.subscription.infrastructure.entity.SubscriptionEntity;
 
 @ExtendWith(MockitoExtension.class)
-class FamilySubJpaRepositoryImplTest {
+class FamilySubRepositoryImplTest {
 
     @Mock
     private FamilySubJpaRepository familySubJpaRepository;
@@ -34,7 +34,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("family_sub 존재 여부 조회 성공")
     void existsFamilySubSuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository
@@ -50,7 +50,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("family_sub 최대 우선순위 조회 성공")
     void findMaxPrioritySuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository
@@ -65,7 +65,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("family_sub 저장 성공")
     void saveFamilySubSuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository
@@ -83,7 +83,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("활성 구성원 수 조회 성공")
     void countActiveMembersSuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository
@@ -98,7 +98,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("family_sub 데이터 한도 업데이트 성공")
     void updateDataLimitSuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository
@@ -113,7 +113,7 @@ class FamilySubJpaRepositoryImplTest {
     @Test
     @DisplayName("family_sub 우선순위 업데이트 성공")
     void updatePrioritySuccess() {
-        FamilySubJpaRepositoryImpl familySubRepository = new FamilySubJpaRepositoryImpl(
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
                 familySubJpaRepository,
                 familyJpaRepository,
                 subscriptionJpaRepository

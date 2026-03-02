@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class FamilySubJpaRepositoryImpl implements FamilySubRepository {
+public class FamilySubRepositoryImpl implements FamilySubRepository {
 
     private final FamilySubJpaRepository familySubJpaRepository;
     private final FamilyJpaRepository familyJpaRepository;
