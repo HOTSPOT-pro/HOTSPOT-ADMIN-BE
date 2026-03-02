@@ -10,7 +10,7 @@ jwt:
   expiration: 86400000 # 1 day in milliseconds
 
 server:
-  port: 8080
+  port: 8081
 
   # 프론트 주소
   domain:
