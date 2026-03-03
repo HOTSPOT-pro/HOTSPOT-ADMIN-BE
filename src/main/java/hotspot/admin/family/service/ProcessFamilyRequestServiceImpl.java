@@ -52,9 +52,14 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     @Transactional
     public void approve(ApplyType applyType, Long requestId) {
         processRequestStatus(applyType, requestId, FamilyApplyStatus.APPROVED);
-        Long familyId = applyApprovedSideEffect(applyType, requestId);
+        applyApprovedSideEffect(applyType, requestId);
         FamilyRequestOutboxInfo outboxInfo = loadOutboxInfo(requestId, applyType);
-        publishOutbox(FamilyApplyStatus.APPROVED, outboxInfo.familyApply(), outboxInfo.targetNames(), familyId);
+        publishOutbox(
+                FamilyApplyStatus.APPROVED,
+                outboxInfo.familyApply(),
+                outboxInfo.targetNames(),
+                outboxInfo.familyApply().getFamilyId()
+        );
     }
 
     /** 가족 요청을 반려 상태로 전환한다. */
@@ -121,7 +126,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     }
 
     /** 승인된 요청 타입에 따라 family/family_sub 반영을 수행한다. */
-    private Long applyApprovedSideEffect(ApplyType applyType, Long requestId) {
+    private void applyApprovedSideEffect(ApplyType applyType, Long requestId) {
         List<FamilyApprovalTargetInfo> approvals =
                 familyApplyQueryRepository.findApprovalTargetInfos(requestId, applyType);
         if (approvals.isEmpty()) {
@@ -129,25 +134,26 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         }
 
         if (applyType == ApplyType.CREATE) {
-            return applyCreateApproval(requestId, approvals);
+            applyCreateApproval(requestId, approvals);
+            return;
         }
 
         Long familyId = requireFamilyId(approvals.get(0).familyId());
         if (applyType == ApplyType.ADD) {
             applyAddApproval(familyId, approvals);
-            return familyId;
+            return;
         }
 
         if (applyType == ApplyType.REMOVE) {
             applyRemoveApproval(familyId, approvals);
-            return familyId;
+            return;
         }
 
         throw new ApplicationException(FamilyErrorCode.INVALID_APPLY_TYPE);
     }
 
     /** CREATE 승인 시 신규 family를 만들고 대상자들을 family_sub로 생성한다. */
-    private Long applyCreateApproval(Long requestId, List<FamilyApprovalTargetInfo> approvals) {
+    private void applyCreateApproval(Long requestId, List<FamilyApprovalTargetInfo> approvals) {
         Long requesterSubId = familyApplyRepository.findRequesterSubId(requestId, ApplyType.CREATE)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
 
@@ -191,8 +197,6 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         if (updated == 0) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
         }
-
-        return familyId;
     }
 
     /** ADD 승인 시 family_sub 삽입 및 family/family_sub 요약 값을 동기화한다. */
