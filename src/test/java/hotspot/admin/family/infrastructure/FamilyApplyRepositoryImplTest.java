@@ -33,9 +33,9 @@ class FamilyApplyRepositoryImplTest {
         FamilyApplyRepositoryImpl familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
         when(familyApplyJpaRepository.updateStatusByIdAndTypeAndCurrentStatus(
                 1L,
-                ApplyType.ADD,
-                FamilyApplyStatus.PENDING,
-                FamilyApplyStatus.APPROVED
+                ApplyType.ADD.name(),
+                FamilyApplyStatus.PENDING.name(),
+                FamilyApplyStatus.APPROVED.name()
         )).thenReturn(1);
 
         int updated = familyApplyRepository.updateFamilyRequestStatus(
