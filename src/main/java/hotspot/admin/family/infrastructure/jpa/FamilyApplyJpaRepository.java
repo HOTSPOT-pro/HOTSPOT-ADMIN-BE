@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import hotspot.admin.family.domain.ApplyType;
-import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 
 public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntity, Long> {
