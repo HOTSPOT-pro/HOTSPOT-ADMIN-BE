@@ -190,7 +190,7 @@ class ProcessFamilyRequestServiceTest {
     }
 
     @Test
-    @DisplayName("?�기중 ?�청 반려 ?�공")
+    @DisplayName("대기중 요청 반려 성공")
     void rejectSuccess() {
         FamilyApply familyApply = FamilyApply.builder()
                 .familyApplyId(8L)
