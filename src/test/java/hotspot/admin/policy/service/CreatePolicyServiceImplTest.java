@@ -56,7 +56,8 @@ class CreatePolicyServiceImplTest {
                         .endTime("07:00")
                         .build()
         );
-        when(blockPolicyRepository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).thenReturn(false);
+        when(blockPolicyRepository.existsTemplateByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED))
+                .thenReturn(false);
         when(blockPolicyRepository.save(org.mockito.ArgumentMatchers.any(BlockPolicy.class)))
                 .thenReturn(BlockPolicy.builder()
                         .blockPolicyId(3L)
@@ -87,7 +88,8 @@ class CreatePolicyServiceImplTest {
                         .endTime("07:00")
                         .build()
         );
-        when(blockPolicyRepository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).thenReturn(true);
+        when(blockPolicyRepository.existsTemplateByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED))
+                .thenReturn(true);
 
         assertThatThrownBy(() -> service.createTimePolicy(request))
                 .isInstanceOf(ApplicationException.class)

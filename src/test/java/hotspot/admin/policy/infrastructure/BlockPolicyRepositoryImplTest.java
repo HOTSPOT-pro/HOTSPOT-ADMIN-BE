@@ -85,10 +85,11 @@ class BlockPolicyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("정책명+유형 중복 존재 여부 조회")
-    void existsByPolicyNameAndPolicyType() {
-        when(blockPolicyJpaRepository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).thenReturn(true);
-        assertThat(repository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).isTrue();
+    @DisplayName("관리자 템플릿 정책명+유형 중복 존재 여부 조회")
+    void existsTemplateByPolicyNameAndPolicyType() {
+        when(blockPolicyJpaRepository.existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull("수면모드", PolicyType.SCHEDULED))
+                .thenReturn(true);
+        assertThat(repository.existsTemplateByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).isTrue();
     }
 
     @Test

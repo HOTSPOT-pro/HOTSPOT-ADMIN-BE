@@ -42,5 +42,5 @@ public interface BlockPolicyJpaRepository extends JpaRepository<BlockPolicyEntit
     )
     int softDeleteById(@Param("policyId") Long policyId);
 
-    boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType);
+    boolean existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull(String policyName, PolicyType policyType);
 }

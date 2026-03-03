@@ -31,8 +31,8 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     }
 
     @Override
-    public boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
-        return blockPolicyJpaRepository.existsByPolicyNameAndPolicyType(policyName, policyType);
+    public boolean existsTemplateByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
+        return blockPolicyJpaRepository.existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull(policyName, policyType);
     }
 
     @Override
