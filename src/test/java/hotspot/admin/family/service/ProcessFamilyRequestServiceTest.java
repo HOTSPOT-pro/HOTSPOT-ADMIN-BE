@@ -73,7 +73,7 @@ class ProcessFamilyRequestServiceTest {
         FamilyApply familyApply = FamilyApply.builder()
                 .familyApplyId(17L)
                 .requesterSubId(30L)
-                .familyId(null)
+                .familyId(99L)
                 .applyType(ApplyType.CREATE)
                 .status(FamilyApplyStatus.APPROVED)
                 .createdTime(LocalDateTime.now())
