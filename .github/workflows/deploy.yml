@@ -1,60 +1,74 @@
 name: ADMIN-BE CD (dev)
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - develop
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: ap-northeast-2
+      CLUSTER: hotspot-cluster
+      SERVICE: AdminServiceStack-AdminService91E7C329-VzmtgN5AkQjt
+      TASK_DEF_NAME: AdminServiceStackAdminTaskDefCDDAE11B
+      ECR_REPO: hotspot-admin
+      CONTAINER_NAME: AdminContainer
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Gradle Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build
+      - name: Build & Push Image
         run: |
-          chmod +x ./gradlew
-          ./gradlew build -x test
+          IMAGE_TAG=${{ github.sha }}
 
-      - name: Docker build & push
+          docker buildx create --use
+          docker buildx build \
+            --platform linux/amd64 \
+            -t 121834501390.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:$IMAGE_TAG \
+            --push .
+
+      - name: Get Current Task Definition
         run: |
-          echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login \
-            -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/admin-be:dev .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/admin-be:dev
+          aws ecs describe-task-definition \
+            --task-definition $TASK_DEF_NAME \
+            --query taskDefinition > task-def.json
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/admin-be:dev
-            docker stop admin-be || true
-            docker rm admin-be || true
-            docker run -d \
-              --name admin-be \
-              -p 8081:8081 \
-              --env-file /srv/hotspot/.env \
-              --env-file /srv/hotspot/.env.admin \
-              --restart always \
-              ${{ secrets.DOCKERHUB_USERNAME }}/admin-be:dev
-            
-            docker image prune -f
+      - name: Render New Task Definition
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          IMAGE_URI=121834501390.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:$IMAGE_TAG
+
+          jq --arg IMAGE "$IMAGE_URI" \
+            '.containerDefinitions[0].image = $IMAGE
+             | del(.taskDefinitionArn)
+             | del(.revision)
+             | del(.status)
+             | del(.requiresAttributes)
+             | del(.compatibilities)
+             | del(.registeredAt)
+             | del(.registeredBy)' \
+            task-def.json > new-task-def.json
+
+      - name: Register New Revision
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json
+
+      - name: Update ECS Service
+        run: |
+          aws ecs update-service \
+            --cluster $CLUSTER \
+            --service $SERVICE \
+            --task-definition $TASK_DEF_NAME \
+            --force-new-deployment
