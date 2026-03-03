@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,21 +16,15 @@ import hotspot.admin.common.ApiResponse;
 import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
 import hotspot.admin.family.controller.port.GetFamilyListService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
-import hotspot.admin.family.controller.port.GetFamilyRequestListService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
-import hotspot.admin.family.controller.port.ProcessFamilyRequestService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
-import hotspot.admin.family.controller.request.FamilyRequestListRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
-import hotspot.admin.family.controller.response.FamilyRequestListResponse;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.controller.swagger.FamilyApi;
-import hotspot.admin.family.domain.ApplyType;
-import hotspot.admin.family.domain.FamilyApplyStatus;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -43,8 +36,6 @@ public class FamilyController implements FamilyApi {
     private final GetFamilyControlStatusService getFamilyControlStatusService;
     private final GetFamilyPolicyStatusService getFamilyPolicyStatusService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
-    private final GetFamilyRequestListService getFamilyRequestListService;
-    private final ProcessFamilyRequestService processFamilyRequestService;
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
     @Override
@@ -84,40 +75,5 @@ public class FamilyController implements FamilyApi {
     public ResponseEntity<ApiResponse<FamilyPhoneSearchResponse>> searchFamilyByPhone(
             @RequestParam String phoneNumber) {
         return ResponseEntity.ok(ApiResponse.success(searchFamilyByPhoneService.searchByPhone(phoneNumber)));
-    }
-
-    /** 가족 요청(결합/해제) 목록을 상태별로 조회한다. */
-    @Override
-    @GetMapping("/requests/{applyType}/{status}")
-    public ResponseEntity<ApiResponse<FamilyRequestListResponse>> getFamilyRequests(
-            @PathVariable ApplyType applyType,
-            @PathVariable FamilyApplyStatus status,
-            @Valid @ModelAttribute FamilyRequestListRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success(
-                getFamilyRequestListService.getFamilyRequests(applyType, status, request)
-        ));
-    }
-
-    /** 가족 요청을 승인 처리한다. */
-    @Override
-    @PatchMapping("/requests/{applyType}/{requestId}/approve")
-    public ResponseEntity<ApiResponse<Void>> approveFamilyRequest(
-            @PathVariable ApplyType applyType,
-            @PathVariable Long requestId
-    ) {
-        processFamilyRequestService.approve(applyType, requestId);
-        return ResponseEntity.ok(ApiResponse.success());
-    }
-
-    /** 가족 요청을 반려 처리한다. */
-    @Override
-    @PatchMapping("/requests/{applyType}/{requestId}/reject")
-    public ResponseEntity<ApiResponse<Void>> rejectFamilyRequest(
-            @PathVariable ApplyType applyType,
-            @PathVariable Long requestId
-    ) {
-        processFamilyRequestService.reject(applyType, requestId);
-        return ResponseEntity.ok(ApiResponse.success());
     }
 }
