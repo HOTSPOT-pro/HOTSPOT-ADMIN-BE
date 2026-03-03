@@ -1,13 +1,14 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.ApplyType;
+import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
-import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,26 +48,34 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
                 .map(this::toFamilyRequestOutboxInfo);
     }
 
-    /** ADD 요청 승인 후처리에 필요한 최소 정보를 조회한다. */
-    @Override
-    public Optional<FamilyAddApprovalInfo> findAddApprovalInfo(Long familyApplyId) {
-        return familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(familyApplyId, ApplyType.ADD)
-                .map(this::toAddApprovalInfo);
-    }
-
-    /** family_apply 엔티티를 승인 후처리용 DTO로 변환한다. */
-    private FamilyAddApprovalInfo toAddApprovalInfo(FamilyApplyEntity entity) {
-        return FamilyAddApprovalInfo.builder()
-                .familyId(entity.getFamily().getFamilyId())
-                .targetSubId(entity.getTargetSubscription().getSubId())
-                .targetFamilyRole(entity.getTargetFamilyRole())
-                .build();
-    }
-
     private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {
+        // FamilyApply 구조 리팩토링에 의한 임시 수정
+        String targetNames = familyApplyJpaRepository.findTargetNamesByFamilyApplyId(entity.getFamilyApplyId());
+        if (targetNames == null || targetNames.isBlank()) {
+            targetNames = "-";
+        }
+        FamilyApply familyApply = FamilyApply.builder()
+                .familyApplyId(entity.getFamilyApplyId())
+                .requesterSubId(entity.getRequesterSubscription().getSubId())
+                .targetSubId(null)
+                .familyId(entity.getFamily() == null ? null : entity.getFamily().getFamilyId())
+                .applyType(entity.getApplyType())
+                .targetFamilyRole(null)
+                .docUrl(entity.getDocUrl())
+                .status(entity.getStatus())
+                .targets(Collections.emptyList())
+                .createdTime(entity.getCreatedTime())
+                .modifiedTime(entity.getModifiedTime())
+                .build();
+
         return new FamilyRequestOutboxInfo(
-                entity.entityToDomain(),
-                entity.getTargetSubscription().getMember().getName()
+                familyApply,
+                targetNames
         );
+
+//        return new FamilyRequestOutboxInfo(
+//                entity.entityToDomain(),
+//                entity.getTargetSubscription().getMember().getName()
+//        );
     }
 }

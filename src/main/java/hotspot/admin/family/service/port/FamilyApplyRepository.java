@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
-import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 
 public interface FamilyApplyRepository {
@@ -19,5 +18,4 @@ public interface FamilyApplyRepository {
 
     Optional<FamilyRequestOutboxInfo> findFamilyRequestOutboxInfo(Long familyApplyId, ApplyType applyType);
 
-    Optional<FamilyAddApprovalInfo> findAddApprovalInfo(Long familyApplyId);
 }
