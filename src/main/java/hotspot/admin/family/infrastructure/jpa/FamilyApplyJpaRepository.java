@@ -27,9 +27,9 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     )
     int updateStatusByIdAndTypeAndCurrentStatus(
             @Param("familyApplyId") Long familyApplyId,
-            @Param("applyType") ApplyType applyType,
-            @Param("currentStatus") FamilyApplyStatus currentStatus,
-            @Param("newStatus") FamilyApplyStatus newStatus
+            @Param("applyType") String applyType,
+            @Param("currentStatus") String currentStatus,
+            @Param("newStatus") String newStatus
     );
 
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
