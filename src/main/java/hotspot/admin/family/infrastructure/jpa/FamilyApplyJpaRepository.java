@@ -15,17 +15,13 @@ import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntity, Long> {
     /** 대기중 가족 요청만 목표 상태(승인/반려)로 조건부 업데이트한다. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-            value = """
-                    UPDATE family_apply
-                    SET status = :newStatus,
-                        modified_time = now()
-                    WHERE family_apply_id = :familyApplyId
-                      AND apply_type = :applyType
-                      AND status = :currentStatus
-                    """,
-            nativeQuery = true
-    )
+    @Query("""
+            UPDATE FamilyApplyEntity fa
+            SET fa.status = :newStatus
+            WHERE fa.familyApplyId = :familyApplyId
+              AND fa.applyType = :applyType
+              AND fa.status = :currentStatus
+            """)
     int updateStatusByIdAndTypeAndCurrentStatus(
             @Param("familyApplyId") Long familyApplyId,
             @Param("applyType") ApplyType applyType,
