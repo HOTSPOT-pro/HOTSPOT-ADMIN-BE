@@ -244,21 +244,6 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         familyRemoveScheduleRepository.saveAll(newSchedules);
     }
 
-    /** family 및 family_sub의 요약 수치(family_num/data_limit/priority)를 동기화한다. */
-    private void syncFamilySummary(Long familyId) {
-        PriorityType priorityType = familyRepository.findFamilyPriorityType(familyId)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
-
-        int memberCount = familySubRepository.countActiveMembers(familyId);
-        long familyDataAmount = memberCount * SHARED_DATA_PER_MEMBER_KB;
-        familyRepository.updateFamilySummary(familyId, memberCount, familyDataAmount);
-        familySubRepository.updateDataLimit(familyId, familyDataAmount);
-
-        if (priorityType == PriorityType.FIFO) {
-            familySubRepository.updatePriority(familyId, UNUSED_PRIORITY_ORDER);
-        }
-    }
-
     private Long requireFamilyId(Long familyId) {
         if (familyId == null) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
