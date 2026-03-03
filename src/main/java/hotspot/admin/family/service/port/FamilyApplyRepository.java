@@ -16,6 +16,8 @@ public interface FamilyApplyRepository {
 
     boolean existsFamilyRequest(Long familyApplyId, ApplyType applyType);
 
+    Optional<Long> findRequesterSubId(Long familyApplyId, ApplyType applyType);
+
     Optional<FamilyRequestOutboxInfo> findFamilyRequestOutboxInfo(Long familyApplyId, ApplyType applyType);
 
 }

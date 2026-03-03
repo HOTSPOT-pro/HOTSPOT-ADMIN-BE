@@ -35,6 +35,19 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
     boolean existsByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);
 
+    /** 요청 ID와 요청 유형으로 신청자 subId를 조회한다. */
+    @Query("""
+            SELECT rs.subId
+            FROM FamilyApplyEntity fa
+            JOIN fa.requesterSubscription rs
+            WHERE fa.familyApplyId = :familyApplyId
+              AND fa.applyType = :applyType
+            """)
+    Optional<Long> findRequesterSubIdByFamilyApplyIdAndApplyType(
+            @Param("familyApplyId") Long familyApplyId,
+            @Param("applyType") ApplyType applyType
+    );
+
     /** 요청 ID와 요청 유형으로 Outbox 생성에 필요한 정보를 단건 조회한다. */
     @Query("""
             SELECT fa
