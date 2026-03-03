@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import hotspot.admin.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.OutboxErrorCode;
-import hotspot.admin.outbox.infrastructure.NotificationOutboxEventJpaRepository;
-import hotspot.admin.outbox.infrastructure.entity.NotificationOutboxEventEntity;
+import hotspot.admin.outbox.notificationOutbox.infrastructure.NotificationOutboxEventJpaRepository;
+import hotspot.admin.outbox.notificationOutbox.infrastructure.entity.NotificationOutboxEventEntity;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationOutboxEventAppenderTest {
