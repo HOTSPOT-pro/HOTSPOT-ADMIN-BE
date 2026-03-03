@@ -1,5 +1,6 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -52,11 +53,15 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
                 .map(this::toFamilyRequestOutboxInfo);
     }
 
+    @Override
+    public int updateFamilyId(Long familyApplyId, ApplyType applyType, Long familyId) {
+        return familyApplyJpaRepository.updateFamilyIdByIdAndType(familyApplyId, applyType, familyId);
+    }
+
     private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {
-        // FamilyApply 구조 리팩토링에 의한 임시 수정
-        String targetNames = familyApplyJpaRepository.findTargetNamesByFamilyApplyId(entity.getFamilyApplyId());
-        if (targetNames == null || targetNames.isBlank()) {
-            targetNames = "-";
+        List<String> targetNames = familyApplyJpaRepository.findTargetNamesByFamilyApplyId(entity.getFamilyApplyId());
+        if (targetNames == null) {
+            targetNames = List.of();
         }
 
         return new FamilyRequestOutboxInfo(
