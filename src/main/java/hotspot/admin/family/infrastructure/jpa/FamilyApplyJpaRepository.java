@@ -1,5 +1,6 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -26,6 +27,23 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
             @Param("applyType") ApplyType applyType,
             @Param("currentStatus") FamilyApplyStatus currentStatus,
             @Param("newStatus") FamilyApplyStatus newStatus
+    );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            value = """
+                    UPDATE family_apply
+                    SET family_id = :familyId,
+                        modified_time = now()
+                    WHERE family_apply_id = :familyApplyId
+                      AND apply_type = :applyType
+                    """,
+            nativeQuery = true
+    )
+    int updateFamilyIdByIdAndType(
+            @Param("familyApplyId") Long familyApplyId,
+            @Param("applyType") ApplyType applyType,
+            @Param("familyId") Long familyId
     );
 
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
@@ -64,15 +82,16 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     /** 요청 대상자의 이름 목록을 조회한다. */
     @Query(
             value = """
-                    SELECT STRING_AGG(m.name, ', ' ORDER BY m.name)
+                    SELECT m.name
                     FROM family_apply_target fat
                     JOIN subscription s ON s.sub_id = fat.target_sub_id
                     JOIN member m ON m.member_id = s.member_id
                     WHERE fat.family_apply_id = :familyApplyId
+                    ORDER BY fat.family_apply_target_id
                     """,
             nativeQuery = true
     )
-    String findTargetNamesByFamilyApplyId(@Param("familyApplyId") Long familyApplyId);
+    List<String> findTargetNamesByFamilyApplyId(@Param("familyApplyId") Long familyApplyId);
 
     /** 요청 ID와 요청 유형으로 요청 엔티티를 조회한다. */
     Optional<FamilyApplyEntity> findByFamilyApplyIdAndApplyType(Long familyApplyId, ApplyType applyType);

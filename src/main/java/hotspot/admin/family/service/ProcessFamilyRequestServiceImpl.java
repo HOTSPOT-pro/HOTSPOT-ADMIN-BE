@@ -51,19 +51,33 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     @Override
     @Transactional
     public void approve(ApplyType applyType, Long requestId) {
-        processRequest(applyType, requestId, FamilyApplyStatus.APPROVED);
+        processRequestStatus(applyType, requestId, FamilyApplyStatus.APPROVED);
         applyApprovedSideEffect(applyType, requestId);
+        FamilyRequestOutboxInfo outboxInfo = loadOutboxInfo(requestId, applyType);
+        publishOutbox(
+                FamilyApplyStatus.APPROVED,
+                outboxInfo.familyApply(),
+                outboxInfo.targetNames(),
+                outboxInfo.familyApply().getFamilyId()
+        );
     }
 
     /** 가족 요청을 반려 상태로 전환한다. */
     @Override
     @Transactional
     public void reject(ApplyType applyType, Long requestId) {
-        processRequest(applyType, requestId, FamilyApplyStatus.REJECTED);
+        processRequestStatus(applyType, requestId, FamilyApplyStatus.REJECTED);
+        FamilyRequestOutboxInfo outboxInfo = loadOutboxInfo(requestId, applyType);
+        publishOutbox(
+                FamilyApplyStatus.REJECTED,
+                outboxInfo.familyApply(),
+                outboxInfo.targetNames(),
+                outboxInfo.familyApply().getFamilyId()
+        );
     }
 
     /** 대기중 요청만 목표 상태로 전환하고, 실패 시 원인을 구분해 예외를 던진다. */
-    private void processRequest(
+    private void processRequestStatus(
             ApplyType applyType,
             Long requestId,
             FamilyApplyStatus nextStatus
@@ -77,13 +91,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
 
         if (updatedCount == 0) {
             handleNotUpdated(requestId, applyType);
-            return;
         }
-
-        FamilyRequestOutboxInfo outboxInfo = familyApplyRepository.findFamilyRequestOutboxInfo(requestId, applyType)
-                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
-
-        publishOutbox(nextStatus, outboxInfo.familyApply(), outboxInfo.targetName());
     }
 
     /** 업데이트 실패 시 요청 미존재/상태 불일치 원인을 구분해 예외를 던진다. */
@@ -95,13 +103,23 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     }
 
     /** 다음 상태가 승인/반려인지에 따라 해당 Outbox 알림을 발행하고, 그 외 상태면 예외를 발생시킨다. */
-    private void publishOutbox(FamilyApplyStatus nextStatus, FamilyApply familyApply, String targetName) {
+    private FamilyRequestOutboxInfo loadOutboxInfo(Long requestId, ApplyType applyType) {
+        return familyApplyRepository.findFamilyRequestOutboxInfo(requestId, applyType)
+                .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND));
+    }
+
+    private void publishOutbox(
+            FamilyApplyStatus nextStatus,
+            FamilyApply familyApply,
+            List<String> targetNames,
+            Long familyId
+    ) {
         if (nextStatus == FamilyApplyStatus.APPROVED) {
-            familyRequestOutboxPublisher.publishApproved(familyApply, targetName);
+            familyRequestOutboxPublisher.publishApproved(familyApply, targetNames, familyId);
             return;
         }
         if (nextStatus == FamilyApplyStatus.REJECTED) {
-            familyRequestOutboxPublisher.publishRejected(familyApply, targetName);
+            familyRequestOutboxPublisher.publishRejected(familyApply, targetNames, familyId);
             return;
         }
         throw new ApplicationException(OutboxErrorCode.FAMILY_REQUEST_EVENT_BUILD_FAILED);
@@ -173,6 +191,11 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
                     UNUSED_PRIORITY_ORDER,
                     familyDataAmount
             );
+        }
+
+        int updated = familyApplyRepository.updateFamilyId(requestId, ApplyType.CREATE, familyId);
+        if (updated == 0) {
+            throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
         }
     }
 
