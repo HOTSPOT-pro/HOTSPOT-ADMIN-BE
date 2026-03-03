@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
-import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +39,12 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
         return familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(familyApplyId, applyType);
     }
 
+    /** 요청 ID와 요청 유형으로 신청자 subId를 조회한다. */
+    @Override
+    public Optional<Long> findRequesterSubId(Long familyApplyId, ApplyType applyType) {
+        return familyApplyJpaRepository.findRequesterSubIdByFamilyApplyIdAndApplyType(familyApplyId, applyType);
+    }
+
     /** 요청 ID와 요청 유형으로 Outbox 생성에 필요한 정보를 조회한다. */
     @Override
     public Optional<FamilyRequestOutboxInfo> findFamilyRequestOutboxInfo(Long familyApplyId, ApplyType applyType) {
@@ -47,26 +52,16 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
                 .map(this::toFamilyRequestOutboxInfo);
     }
 
-    /** ADD 요청 승인 후처리에 필요한 최소 정보를 조회한다. */
-    @Override
-    public Optional<FamilyAddApprovalInfo> findAddApprovalInfo(Long familyApplyId) {
-        return familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(familyApplyId, ApplyType.ADD)
-                .map(this::toAddApprovalInfo);
-    }
-
-    /** family_apply 엔티티를 승인 후처리용 DTO로 변환한다. */
-    private FamilyAddApprovalInfo toAddApprovalInfo(FamilyApplyEntity entity) {
-        return FamilyAddApprovalInfo.builder()
-                .familyId(entity.getFamily().getFamilyId())
-                .targetSubId(entity.getTargetSubscription().getSubId())
-                .targetFamilyRole(entity.getTargetFamilyRole())
-                .build();
-    }
-
     private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {
+        // FamilyApply 구조 리팩토링에 의한 임시 수정
+        String targetNames = familyApplyJpaRepository.findTargetNamesByFamilyApplyId(entity.getFamilyApplyId());
+        if (targetNames == null || targetNames.isBlank()) {
+            targetNames = "-";
+        }
+
         return new FamilyRequestOutboxInfo(
                 entity.entityToDomain(),
-                entity.getTargetSubscription().getMember().getName()
+                targetNames
         );
     }
 }

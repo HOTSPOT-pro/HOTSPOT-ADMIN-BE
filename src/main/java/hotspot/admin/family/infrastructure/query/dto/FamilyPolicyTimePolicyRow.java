@@ -1,4 +1,4 @@
-package hotspot.admin.family.service.dto;
+package hotspot.admin.family.infrastructure.query.dto;
 
 import lombok.Builder;
 

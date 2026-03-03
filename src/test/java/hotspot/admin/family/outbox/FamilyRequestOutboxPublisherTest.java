@@ -22,7 +22,6 @@ import hotspot.admin.common.exception.code.OutboxErrorCode;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
-import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.outbox.dto.FamilyRequestAlertEvent;
 import hotspot.admin.outbox.service.NotificationOutboxEventAppender;
 
@@ -109,10 +108,8 @@ class FamilyRequestOutboxPublisherTest {
         return FamilyApply.builder()
                 .familyApplyId(familyApplyId)
                 .requesterSubId(10L)
-                .targetSubId(20L)
                 .familyId(familyId)
                 .applyType(applyType)
-                .targetFamilyRole(FamilyRole.CHILD)
                 .docUrl(null)
                 .status(FamilyApplyStatus.PENDING)
                 .createdTime(LocalDateTime.now())

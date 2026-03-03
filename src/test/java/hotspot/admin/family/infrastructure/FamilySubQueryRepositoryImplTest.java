@@ -19,11 +19,11 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import hotspot.admin.family.infrastructure.query.FamilySubQueryRepositoryImpl;
-import hotspot.admin.family.service.dto.FamilyControlMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
-import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
-import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyStatusRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
 
 @ExtendWith(MockitoExtension.class)
 class FamilySubQueryRepositoryImplTest {

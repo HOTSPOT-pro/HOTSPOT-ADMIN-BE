@@ -12,11 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.infrastructure.jpa.FamilyJpaRepository;
-import hotspot.admin.family.infrastructure.jpa.FamilyRepositoryJpaImpl;
+import hotspot.admin.family.infrastructure.jpa.FamilyRepositoryImpl;
 
 @ExtendWith(MockitoExtension.class)
-class FamilyRepositoryJpaImplTest {
+class FamilyRepositoryImplTest {
 
     @Mock
     private FamilyJpaRepository familyJpaRepository;
@@ -24,7 +25,7 @@ class FamilyRepositoryJpaImplTest {
     @Test
     @DisplayName("가족 존재 여부 조회 성공")
     void existsFamilyByIdSuccess() {
-        FamilyRepositoryJpaImpl familyRepository = new FamilyRepositoryJpaImpl(familyJpaRepository);
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
         when(familyJpaRepository.existsByFamilyIdAndIsDeletedFalse(1L)).thenReturn(true);
 
         boolean exists = familyRepository.existsFamilyById(1L);
@@ -35,7 +36,7 @@ class FamilyRepositoryJpaImplTest {
     @Test
     @DisplayName("가족 우선순위 타입 조회 성공")
     void findFamilyPriorityTypeSuccess() {
-        FamilyRepositoryJpaImpl familyRepository = new FamilyRepositoryJpaImpl(familyJpaRepository);
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
         when(familyJpaRepository.findPriorityTypeByFamilyId(1L)).thenReturn(Optional.of(PriorityType.FIFO));
 
         Optional<PriorityType> result = familyRepository.findFamilyPriorityType(1L);
@@ -45,9 +46,27 @@ class FamilyRepositoryJpaImplTest {
     }
 
     @Test
+    @DisplayName("가족 생성 성공")
+    void createFamilySuccess() {
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
+        when(familyJpaRepository.save(org.mockito.ArgumentMatchers.any(FamilyEntity.class)))
+                .thenReturn(FamilyEntity.builder()
+                        .familyId(55L)
+                        .familyNum(3)
+                        .familyDataAmount(15728640L)
+                        .priorityType(PriorityType.FIFO)
+                        .isDeleted(false)
+                        .build());
+
+        Long familyId = familyRepository.createFamily(3, 15728640L, PriorityType.FIFO);
+
+        assertThat(familyId).isEqualTo(55L);
+    }
+
+    @Test
     @DisplayName("가족 요약 정보 업데이트 성공")
     void updateFamilySummarySuccess() {
-        FamilyRepositoryJpaImpl familyRepository = new FamilyRepositoryJpaImpl(familyJpaRepository);
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
         when(familyJpaRepository.updateFamilySummary(1L, 4, 20971520L)).thenReturn(1);
 
         int updated = familyRepository.updateFamilySummary(1L, 4, 20971520L);

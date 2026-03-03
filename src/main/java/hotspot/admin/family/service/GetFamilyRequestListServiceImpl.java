@@ -1,7 +1,10 @@
 package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +19,10 @@ import hotspot.admin.family.controller.port.GetFamilyRequestListService;
 import hotspot.admin.family.controller.request.FamilyRequestListRequest;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
+import hotspot.admin.family.controller.response.FamilyRequestTargetItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
+import hotspot.admin.family.infrastructure.query.dto.FamilyRequestListRow;
 import hotspot.admin.family.service.port.FamilyApplyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -46,11 +51,9 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
         int totalPages = totalElements == 0 ? 0 : (int) Math.ceil((double) totalElements / size);
         boolean hasNext = page + 1 < totalPages;
 
-        List<FamilyRequestListItem> requests = familyApplyQueryRepository.findFamilyRequestList(
-                applyType, status, size, offset)
-                .stream()
-                .map(this::decryptAndMaskPhones)
-                .toList();
+        List<FamilyRequestListItem> requests = toRequestItems(
+                familyApplyQueryRepository.findFamilyRequestList(applyType, status, size, offset)
+        );
 
         return FamilyRequestListResponse.builder()
                 .page(page)
@@ -64,25 +67,48 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
                 .build();
     }
 
-    /** 요청자/대상자 전화번호 마스킹 및 표시용 ID/이름을 채워 응답 항목으로 변환한다. */
-    private FamilyRequestListItem decryptAndMaskPhones(FamilyRequestListItem item) {
-        String requesterPhone = decryptAndMask(item.requesterPhoneNumber());
-        String targetPhone = decryptAndMask(item.targetPhoneNumber());
-        String familyName = item.requesterName() == null ? null : item.requesterName() + FAMILY_NAME_SUFFIX;
+    /** 요청 행 목록을 요청 단위로 그룹핑해 대상자 다건 응답 형태로 변환한다. */
+    private List<FamilyRequestListItem> toRequestItems(List<FamilyRequestListRow> rows) {
+        Map<Long, RequestAccumulator> grouped = new LinkedHashMap<>();
 
+        for (FamilyRequestListRow row : rows) {
+            RequestAccumulator acc = grouped.computeIfAbsent(row.requestId(), key -> new RequestAccumulator(
+                    row.requestId(),
+                    row.familyId(),
+                    row.requestSubId(),
+                    row.requesterName(),
+                    decryptAndMask(row.requesterPhoneNumberEnc()),
+                    row.relationDocumentUrl(),
+                    row.requestedAt()
+            ));
+
+            if (row.targetName() != null || row.targetPhoneNumberEnc() != null || row.targetFamilyRole() != null) {
+                acc.targets.add(FamilyRequestTargetItem.builder()
+                        .targetSubId(row.targetSubId())
+                        .targetName(row.targetName())
+                        .targetPhoneNumber(decryptAndMask(row.targetPhoneNumberEnc()))
+                        .targetFamilyRole(row.targetFamilyRole())
+                        .build());
+            }
+        }
+
+        return grouped.values().stream().map(this::toRequestItem).toList();
+    }
+
+    private FamilyRequestListItem toRequestItem(RequestAccumulator acc) {
+        String familyName = acc.requesterName == null ? null : acc.requesterName + FAMILY_NAME_SUFFIX;
         return FamilyRequestListItem.builder()
-                .requestId(item.requestId())
-                .requestDisplayId(DisplayIdFormatter.format(DisplayIdType.FAMILY_REQUEST, item.requestId()))
-                .familyId(item.familyId())
-                .familyDisplayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
+                .requestId(acc.requestId)
+                .requestDisplayId(DisplayIdFormatter.format(DisplayIdType.FAMILY_REQUEST, acc.requestId))
+                .familyId(acc.familyId)
+                .familyDisplayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, acc.familyId))
                 .familyName(familyName)
-                .requesterName(item.requesterName())
-                .requesterPhoneNumber(requesterPhone)
-                .targetName(item.targetName())
-                .targetPhoneNumber(targetPhone)
-                .targetFamilyRole(item.targetFamilyRole())
-                .relationDocumentUrl(item.relationDocumentUrl())
-                .requestedAt(item.requestedAt())
+                .requestSubId(acc.requestSubId)
+                .requesterName(acc.requesterName)
+                .requesterPhoneNumber(acc.requesterPhoneNumber)
+                .targets(acc.targets)
+                .relationDocumentUrl(acc.relationDocumentUrl)
+                .requestedAt(acc.requestedAt)
                 .build();
     }
 
@@ -97,6 +123,35 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
             return PhoneMaskingUtil.maskMiddle(decrypted);
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);
+        }
+    }
+
+    private static final class RequestAccumulator {
+        private final Long requestId;
+        private final Long familyId;
+        private final Long requestSubId;
+        private final String requesterName;
+        private final String requesterPhoneNumber;
+        private final String relationDocumentUrl;
+        private final java.time.LocalDateTime requestedAt;
+        private final List<FamilyRequestTargetItem> targets = new ArrayList<>();
+
+        private RequestAccumulator(
+                Long requestId,
+                Long familyId,
+                Long requestSubId,
+                String requesterName,
+                String requesterPhoneNumber,
+                String relationDocumentUrl,
+                java.time.LocalDateTime requestedAt
+        ) {
+            this.requestId = requestId;
+            this.familyId = familyId;
+            this.requestSubId = requestSubId;
+            this.requesterName = requesterName;
+            this.requesterPhoneNumber = requesterPhoneNumber;
+            this.relationDocumentUrl = relationDocumentUrl;
+            this.requestedAt = requestedAt;
         }
     }
 }

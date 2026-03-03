@@ -21,9 +21,11 @@ import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.family.controller.request.FamilyRequestListRequest;
 import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.controller.response.FamilyRequestListResponse;
+import hotspot.admin.family.controller.response.FamilyRequestTargetItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.infrastructure.query.dto.FamilyRequestListRow;
 import hotspot.admin.family.service.port.FamilyApplyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,13 +47,15 @@ class GetFamilyRequestListServiceTest {
     @Test
     @DisplayName("가족 요청 목록 조회 시 요청자/대상자 전화번호를 마스킹한다")
     void getFamilyRequestsSuccess() throws Exception {
-        FamilyRequestListItem row = FamilyRequestListItem.builder()
+        FamilyRequestListRow row = FamilyRequestListRow.builder()
                 .requestId(5L)
                 .familyId(19L)
+                .requestSubId(100L)
                 .requesterName("요청자")
-                .requesterPhoneNumber("enc-requester")
+                .requesterPhoneNumberEnc("enc-requester")
+                .targetSubId(101L)
                 .targetName("대상자")
-                .targetPhoneNumber("enc-target")
+                .targetPhoneNumberEnc("enc-target")
                 .targetFamilyRole(FamilyRole.PARENT)
                 .relationDocumentUrl("https://doc.example")
                 .requestedAt(LocalDateTime.of(2026, 2, 24, 10, 30))
@@ -83,20 +87,24 @@ class GetFamilyRequestListServiceTest {
         assertThat(item.familyDisplayId()).isEqualTo("FAM-000019");
         assertThat(item.familyName()).isEqualTo("요청자 가족");
         assertThat(item.requesterPhoneNumber()).isEqualTo("010-****-2222");
-        assertThat(item.targetPhoneNumber()).isEqualTo("010-****-4444");
-        assertThat(item.targetFamilyRole()).isEqualTo(FamilyRole.PARENT);
+        assertThat(item.targets()).hasSize(1);
+        FamilyRequestTargetItem target = item.targets().get(0);
+        assertThat(target.targetPhoneNumber()).isEqualTo("010-****-4444");
+        assertThat(target.targetFamilyRole()).isEqualTo(FamilyRole.PARENT);
     }
 
     @Test
     @DisplayName("전화번호 복호화 실패 시 예외를 던진다")
     void decryptFailThenException() throws Exception {
-        FamilyRequestListItem row = FamilyRequestListItem.builder()
+        FamilyRequestListRow row = FamilyRequestListRow.builder()
                 .requestId(1L)
                 .familyId(1L)
+                .requestSubId(10L)
                 .requesterName("요청자")
-                .requesterPhoneNumber("enc-requester")
+                .requesterPhoneNumberEnc("enc-requester")
+                .targetSubId(11L)
                 .targetName("대상자")
-                .targetPhoneNumber("enc-target")
+                .targetPhoneNumberEnc("enc-target")
                 .targetFamilyRole(FamilyRole.CHILD)
                 .relationDocumentUrl("https://doc.example")
                 .requestedAt(LocalDateTime.of(2026, 2, 24, 10, 30))

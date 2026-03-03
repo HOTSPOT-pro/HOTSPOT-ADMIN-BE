@@ -5,12 +5,13 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.service.port.FamilyRepository;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class FamilyRepositoryJpaImpl implements FamilyRepository {
+public class FamilyRepositoryImpl implements FamilyRepository {
 
     private final FamilyJpaRepository familyJpaRepository;
 
@@ -24,6 +25,18 @@ public class FamilyRepositoryJpaImpl implements FamilyRepository {
     @Override
     public Optional<PriorityType> findFamilyPriorityType(Long familyId) {
         return familyJpaRepository.findPriorityTypeByFamilyId(familyId);
+    }
+
+    /** 가족을 신규 생성하고 생성된 familyId를 반환한다. */
+    @Override
+    public Long createFamily(int familyNum, long familyDataAmount, PriorityType priorityType) {
+        FamilyEntity saved = familyJpaRepository.save(FamilyEntity.builder()
+                .familyNum(familyNum)
+                .familyDataAmount(familyDataAmount)
+                .priorityType(priorityType)
+                .isDeleted(false)
+                .build());
+        return saved.getFamilyId();
     }
 
     /** 가족 구성원 수와 가족 공유 데이터량을 갱신한다. */

@@ -19,7 +19,7 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
-import hotspot.admin.family.service.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 

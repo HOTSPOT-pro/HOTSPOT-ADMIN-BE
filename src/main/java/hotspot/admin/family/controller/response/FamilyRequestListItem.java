@@ -1,8 +1,8 @@
 package hotspot.admin.family.controller.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import hotspot.admin.family.domain.FamilyRole;
 import lombok.Builder;
 
 @Builder
@@ -12,11 +12,10 @@ public record FamilyRequestListItem(
         Long familyId,
         String familyDisplayId,
         String familyName,
+        Long requestSubId,
         String requesterName,
         String requesterPhoneNumber,
-        String targetName,
-        String targetPhoneNumber,
-        FamilyRole targetFamilyRole,
+        List<FamilyRequestTargetItem> targets,
         String relationDocumentUrl,
         LocalDateTime requestedAt
 ) {

@@ -11,7 +11,7 @@ import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.domain.PriorityType;
-import hotspot.admin.family.service.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
