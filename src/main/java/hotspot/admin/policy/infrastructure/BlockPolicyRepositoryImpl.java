@@ -20,7 +20,7 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
 
     @Override
     public Page<BlockPolicy> findAll(Pageable pageable) {
-        return blockPolicyJpaRepository.findAll(pageable)
+        return blockPolicyJpaRepository.findAllByFamilyIdIsNull(pageable)
                 .map(BlockPolicyEntity::entityToDomain);
     }
 

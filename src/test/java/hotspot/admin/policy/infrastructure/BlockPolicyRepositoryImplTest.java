@@ -48,7 +48,7 @@ class BlockPolicyRepositoryImplTest {
                 .build();
 
         Page<BlockPolicyEntity> page = new PageImpl<>(List.of(entity));
-        when(blockPolicyJpaRepository.findAll(PageRequest.of(0, 20))).thenReturn(page);
+        when(blockPolicyJpaRepository.findAllByFamilyIdIsNull(PageRequest.of(0, 20))).thenReturn(page);
 
         Page<BlockPolicy> result = repository.findAll(PageRequest.of(0, 20));
         assertThat(result.getContent()).hasSize(1);
