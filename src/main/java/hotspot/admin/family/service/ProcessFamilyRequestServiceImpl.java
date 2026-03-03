@@ -109,7 +109,8 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
 
     /** 승인된 요청 타입에 따라 family/family_sub 반영을 수행한다. */
     private void applyApprovedSideEffect(ApplyType applyType, Long requestId) {
-        List<FamilyApprovalTargetInfo> approvals = familyApplyQueryRepository.findApprovalTargetInfos(requestId, applyType);
+        List<FamilyApprovalTargetInfo> approvals =
+                familyApplyQueryRepository.findApprovalTargetInfos(requestId, applyType);
         if (approvals.isEmpty()) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
         }

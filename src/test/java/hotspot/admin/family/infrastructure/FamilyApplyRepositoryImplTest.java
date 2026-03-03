@@ -13,12 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
-import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.infrastructure.jpa.FamilyApplyJpaRepository;
 import hotspot.admin.family.infrastructure.jpa.FamilyApplyRepositoryImpl;
-import hotspot.admin.family.service.dto.FamilyAddApprovalInfo;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.member.infrastructure.entity.MemberEntity;
 import hotspot.admin.subscription.infrastructure.entity.SubscriptionEntity;
@@ -62,32 +60,16 @@ class FamilyApplyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("요청 승인 후처리 정보 조회 성공")
-    void findAddApprovalInfoSuccess() {
+    @DisplayName("요청자 subId 조회 성공")
+    void findRequesterSubIdSuccess() {
         FamilyApplyRepositoryImpl familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
-        FamilyEntity family = FamilyEntity.builder()
-                .familyId(3L)
-                .build();
-        SubscriptionEntity targetSubscription = SubscriptionEntity.builder()
-                .subId(10L)
-                .build();
-        FamilyApplyEntity entity = FamilyApplyEntity.builder()
-                .familyApplyId(1L)
-                .family(family)
-                .targetSubscription(targetSubscription)
-                .targetFamilyRole(FamilyRole.CHILD)
-                .applyType(ApplyType.ADD)
-                .build();
+        when(familyApplyJpaRepository.findRequesterSubIdByFamilyApplyIdAndApplyType(1L, ApplyType.ADD))
+                .thenReturn(Optional.of(10L));
 
-        when(familyApplyJpaRepository.findByFamilyApplyIdAndApplyType(1L, ApplyType.ADD))
-                .thenReturn(Optional.of(entity));
-
-        Optional<FamilyAddApprovalInfo> result = familyApplyRepository.findAddApprovalInfo(1L);
+        Optional<Long> result = familyApplyRepository.findRequesterSubId(1L, ApplyType.ADD);
 
         assertThat(result).isPresent();
-        assertThat(result.get().familyId()).isEqualTo(3L);
-        assertThat(result.get().targetSubId()).isEqualTo(10L);
-        assertThat(result.get().targetFamilyRole()).isEqualTo(FamilyRole.CHILD);
+        assertThat(result.get()).isEqualTo(10L);
     }
 
     @Test
@@ -102,7 +84,7 @@ class FamilyApplyRepositoryImplTest {
                 .build();
         MemberEntity targetMember = MemberEntity.builder()
                 .memberId(2L)
-                .name("target-name")
+                .name("target")
                 .birth("900102")
                 .build();
 
@@ -121,15 +103,15 @@ class FamilyApplyRepositoryImplTest {
         FamilyApplyEntity entity = FamilyApplyEntity.builder()
                 .familyApplyId(44L)
                 .requesterSubscription(requesterSubscription)
-                .targetSubscription(targetSubscription)
                 .family(family)
                 .applyType(ApplyType.ADD)
-                .targetFamilyRole(FamilyRole.CHILD)
                 .status(FamilyApplyStatus.PENDING)
                 .build();
 
         when(familyApplyJpaRepository.findOutboxSourceByFamilyApplyIdAndApplyType(44L, ApplyType.ADD))
                 .thenReturn(Optional.of(entity));
+        when(familyApplyJpaRepository.findTargetNamesByFamilyApplyId(44L))
+                .thenReturn("target-name");
 
         Optional<FamilyRequestOutboxInfo> result = familyApplyRepository.findFamilyRequestOutboxInfo(
                 44L,
@@ -140,7 +122,7 @@ class FamilyApplyRepositoryImplTest {
         assertThat(result.get().targetName()).isEqualTo("target-name");
         assertThat(result.get().familyApply().getFamilyApplyId()).isEqualTo(44L);
         assertThat(result.get().familyApply().getRequesterSubId()).isEqualTo(11L);
-        assertThat(result.get().familyApply().getTargetSubId()).isEqualTo(22L);
+        assertThat(result.get().familyApply().getTargetSubId()).isNull();
         assertThat(result.get().familyApply().getFamilyId()).isEqualTo(33L);
     }
 }

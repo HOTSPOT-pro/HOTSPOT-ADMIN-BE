@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.admin.family.domain.PriorityType;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.infrastructure.jpa.FamilyJpaRepository;
 import hotspot.admin.family.infrastructure.jpa.FamilyRepositoryImpl;
 
@@ -42,6 +43,24 @@ class FamilyRepositoryImplTest {
 
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(PriorityType.FIFO);
+    }
+
+    @Test
+    @DisplayName("가족 생성 성공")
+    void createFamilySuccess() {
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
+        when(familyJpaRepository.save(org.mockito.ArgumentMatchers.any(FamilyEntity.class)))
+                .thenReturn(FamilyEntity.builder()
+                        .familyId(55L)
+                        .familyNum(3)
+                        .familyDataAmount(15728640L)
+                        .priorityType(PriorityType.FIFO)
+                        .isDeleted(false)
+                        .build());
+
+        Long familyId = familyRepository.createFamily(3, 15728640L, PriorityType.FIFO);
+
+        assertThat(familyId).isEqualTo(55L);
     }
 
     @Test

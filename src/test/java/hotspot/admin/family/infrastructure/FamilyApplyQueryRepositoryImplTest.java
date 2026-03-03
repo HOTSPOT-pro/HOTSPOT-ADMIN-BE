@@ -20,10 +20,10 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import hotspot.admin.family.controller.response.FamilyRequestListItem;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.query.FamilyApplyQueryRepositoryImpl;
+import hotspot.admin.family.infrastructure.query.dto.FamilyRequestListRow;
 
 @ExtendWith(MockitoExtension.class)
 class FamilyApplyQueryRepositoryImplTest {
@@ -38,11 +38,13 @@ class FamilyApplyQueryRepositoryImplTest {
         when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
                     @SuppressWarnings("unchecked")
-                    RowMapper<FamilyRequestListItem> mapper = invocation.getArgument(2);
+                    RowMapper<FamilyRequestListRow> mapper = invocation.getArgument(2);
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("family_apply_id")).thenReturn(13L);
-                    when(rs.getLong("family_id")).thenReturn(2L);
+                    when(rs.getObject("family_id", Long.class)).thenReturn(2L);
+                    when(rs.getObject("requester_sub_id", Long.class)).thenReturn(21L);
+                    when(rs.getObject("target_sub_id", Long.class)).thenReturn(22L);
                     when(rs.getString("requester_name")).thenReturn("가족대표");
                     when(rs.getString("requester_phone_enc")).thenReturn("enc-1");
                     when(rs.getString("target_name")).thenReturn("추가대상");
@@ -52,11 +54,11 @@ class FamilyApplyQueryRepositoryImplTest {
                     when(rs.getTimestamp("created_time"))
                             .thenReturn(Timestamp.valueOf(LocalDateTime.of(2026, 2, 24, 9, 30)));
 
-                    FamilyRequestListItem row = mapper.mapRow(rs, 0);
+                    FamilyRequestListRow row = mapper.mapRow(rs, 0);
                     return List.of(row);
                 });
 
-        List<FamilyRequestListItem> result = familyApplyQueryRepository.findFamilyRequestList(
+        List<FamilyRequestListRow> result = familyApplyQueryRepository.findFamilyRequestList(
                 ApplyType.ADD,
                 FamilyApplyStatus.PENDING,
                 20,
