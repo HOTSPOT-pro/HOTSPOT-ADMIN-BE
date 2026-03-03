@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class FamilyRepositoryJpaImpl implements FamilyRepository {
+public class FamilyRepositoryImpl implements FamilyRepository {
 
     private final FamilyJpaRepository familyJpaRepository;
 
