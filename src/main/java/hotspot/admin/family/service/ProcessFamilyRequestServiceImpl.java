@@ -149,17 +149,13 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
                     .build());
         }
 
-        List<FamilyApprovalTargetInfo> distinctMembers = members.stream()
-                .filter(item -> item.targetSubId() != null)
-                .collect(java.util.stream.Collectors.collectingAndThen(
-                        java.util.stream.Collectors.toMap(
-                                FamilyApprovalTargetInfo::targetSubId,
-                                item -> item,
-                                (existing, ignored) -> existing,
-                                java.util.LinkedHashMap::new
-                        ),
-                        map -> new ArrayList<>(map.values())
-                ));
+        List<FamilyApprovalTargetInfo> distinctMembers = new ArrayList<>();
+        Set<Long> seenSubIds = new java.util.HashSet<>();
+        for (FamilyApprovalTargetInfo member : members) {
+            if (member.targetSubId() != null && seenSubIds.add(member.targetSubId())) {
+                distinctMembers.add(member);
+            }
+        }
 
         int memberCount = distinctMembers.size();
         long familyDataAmount = memberCount * SHARED_DATA_PER_MEMBER_KB;
