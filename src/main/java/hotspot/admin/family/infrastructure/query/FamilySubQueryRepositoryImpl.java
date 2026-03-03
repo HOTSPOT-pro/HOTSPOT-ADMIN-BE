@@ -101,11 +101,15 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
         String sql = """
                 SELECT DISTINCT
                     ps.sub_id,
-                    ps.date_snapshot->>'policyName' AS policy_name
+                    bp.policy_name
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                JOIN policy_sub ps ON ps.sub_id = s.sub_id AND ps.is_deleted = false
+                JOIN policy_sub ps ON ps.sub_id = s.sub_id AND ps.is_active = true
+                JOIN block_policy bp
+                  ON bp.block_policy_id = ps.block_policy_id
+                 AND bp.is_active = true
+                 AND bp.is_deleted = false
                 WHERE fs.family_id = :familyId
                 ORDER BY ps.sub_id, policy_name
                 """;
@@ -157,12 +161,16 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
                 JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
                 LEFT JOIN LATERAL (
-                    SELECT array_agg(DISTINCT ps.date_snapshot->>'policyName'
-                            ORDER BY ps.date_snapshot->>'policyName') AS time_policy_names
+                    SELECT array_agg(DISTINCT bp.policy_name
+                            ORDER BY bp.policy_name) AS time_policy_names
                     FROM policy_sub ps
+                    JOIN block_policy bp
+                      ON bp.block_policy_id = ps.block_policy_id
+                     AND bp.is_active = true
+                     AND bp.is_deleted = false
                     WHERE ps.sub_id = s.sub_id
-                      AND ps.is_deleted = false
-                      AND COALESCE(ps.date_snapshot->>'policyName', '') <> ''
+                      AND ps.is_active = true
+                      AND COALESCE(bp.policy_name, '') <> ''
                 ) tp ON true
                 LEFT JOIN LATERAL (
                     SELECT array_agg(DISTINCT abs.blocked_service_name

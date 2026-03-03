@@ -45,6 +45,9 @@ public class BlockPolicyEntity extends BaseEntity {
     @Column(name = "policy_description", length = 255, nullable = false)
     private String policyDescription;
 
+    @Column(name = "family_id")
+    private Long familyId;
+
     @Column(name = "policy_type", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private PolicyType policyType;
@@ -66,6 +69,7 @@ public class BlockPolicyEntity extends BaseEntity {
                 .blockPolicyId(blockPolicy.getBlockPolicyId())
                 .policyName(blockPolicy.getPolicyName())
                 .policyDescription(blockPolicy.getPolicyDescription())
+                .familyId(blockPolicy.getFamilyId())
                 .policyType(blockPolicy.getPolicyType())
                 .policySnapshot(blockPolicy.getPolicySnapshot())
                 .isActive(blockPolicy.getIsActive())
@@ -78,6 +82,7 @@ public class BlockPolicyEntity extends BaseEntity {
                 .blockPolicyId(blockPolicyId)
                 .policyName(policyName)
                 .policyDescription(policyDescription)
+                .familyId(familyId)
                 .policyType(policyType)
                 .policySnapshot(policySnapshot)
                 .isActive(isActive)

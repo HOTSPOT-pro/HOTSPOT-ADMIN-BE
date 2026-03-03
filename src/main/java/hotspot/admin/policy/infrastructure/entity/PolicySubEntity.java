@@ -10,13 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-import org.hibernate.type.SqlTypes;
-
 import hotspot.admin.common.BaseEntity;
-import hotspot.admin.policy.domain.DateSnapshot;
 import hotspot.admin.policy.domain.PolicySub;
 import hotspot.admin.subscription.infrastructure.entity.SubscriptionEntity;
 import lombok.AccessLevel;
@@ -31,8 +25,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "policy_sub")
-@SQLDelete(sql = "UPDATE policy_sub SET is_deleted = true WHERE policy_sub_id = ?")
-@Where(clause = "is_deleted = false")
 public class PolicySubEntity extends BaseEntity {
 
     @Id
@@ -47,27 +39,27 @@ public class PolicySubEntity extends BaseEntity {
     @Column(name = "sub_id", nullable = false, insertable = false, updatable = false)
     private Long subId;
 
-    @Column(name = "policy_id", nullable = false)
-    private Long policyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "block_policy_id", nullable = false)
+    private BlockPolicyEntity blockPolicy;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "date_snapshot", columnDefinition = "jsonb", nullable = false)
-    private DateSnapshot dateSnapshot;
+    @Column(name = "block_policy_id", nullable = false, insertable = false, updatable = false)
+    private Long blockPolicyId;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isActive = true;
 
     public static PolicySubEntity domainToEntity(
             PolicySub policySub,
-            SubscriptionEntity subscriptionEntity
+            SubscriptionEntity subscriptionEntity,
+            BlockPolicyEntity blockPolicyEntity
     ) {
         return PolicySubEntity.builder()
                 .policySubId(policySub.getPolicySubId())
                 .subscription(subscriptionEntity)
-                .policyId(policySub.getPolicyId())
-                .dateSnapshot(policySub.getDateSnapshot())
-                .isDeleted(policySub.getIsDeleted())
+                .blockPolicy(blockPolicyEntity)
+                .isActive(policySub.getIsActive())
                 .build();
     }
 
@@ -75,9 +67,8 @@ public class PolicySubEntity extends BaseEntity {
         return PolicySub.builder()
                 .policySubId(policySubId)
                 .subId(subId)
-                .policyId(policyId)
-                .dateSnapshot(dateSnapshot)
-                .isDeleted(isDeleted)
+                .blockPolicyId(blockPolicyId)
+                .isActive(isActive)
                 .createdTime(getCreatedTime())
                 .modifiedTime(getModifiedTime())
                 .build();
