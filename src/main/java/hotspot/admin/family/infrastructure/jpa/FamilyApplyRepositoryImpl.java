@@ -60,9 +60,6 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {
         List<String> targetNames = familyApplyJpaRepository.findTargetNamesByFamilyApplyId(entity.getFamilyApplyId());
-        if (targetNames == null) {
-            targetNames = List.of();
-        }
 
         return new FamilyRequestOutboxInfo(
                 entity.entityToDomain(),
