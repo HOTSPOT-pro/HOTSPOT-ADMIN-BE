@@ -11,11 +11,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
-import hotspot.admin.family.service.dto.FamilyControlMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyAppPolicyRow;
-import hotspot.admin.family.service.dto.FamilyPolicyMemberRow;
-import hotspot.admin.family.service.dto.FamilyPolicyStatusRow;
-import hotspot.admin.family.service.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppPolicyRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyStatusRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
 
