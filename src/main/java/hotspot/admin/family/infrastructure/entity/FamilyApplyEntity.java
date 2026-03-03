@@ -87,14 +87,11 @@ public class FamilyApplyEntity extends BaseEntity {
                 ? Collections.emptyList()
                 : targets.stream().map(FamilyApplyTargetEntity::toDomain).toList();
 
-        FamilyApplyTarget firstTarget = targetDomains.isEmpty() ? null : targetDomains.get(0);
         return FamilyApply.builder()
                 .familyApplyId(familyApplyId)
                 .requesterSubId(requesterSubscription.getSubId())
-                .targetSubId(firstTarget == null ? null : firstTarget.getTargetSubId())
                 .familyId(family == null ? null : family.getFamilyId())
                 .applyType(applyType)
-                .targetFamilyRole(firstTarget == null ? null : firstTarget.getTargetFamilyRole())
                 .docUrl(docUrl)
                 .status(status)
                 .targets(targetDomains)

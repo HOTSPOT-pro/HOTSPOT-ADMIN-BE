@@ -82,19 +82,9 @@ class FamilyApplyRepositoryImplTest {
                 .name("requester")
                 .birth("900101")
                 .build();
-        MemberEntity targetMember = MemberEntity.builder()
-                .memberId(2L)
-                .name("target")
-                .birth("900102")
-                .build();
-
         SubscriptionEntity requesterSubscription = SubscriptionEntity.builder()
                 .subId(11L)
                 .member(requesterMember)
-                .build();
-        SubscriptionEntity targetSubscription = SubscriptionEntity.builder()
-                .subId(22L)
-                .member(targetMember)
                 .build();
         FamilyEntity family = FamilyEntity.builder()
                 .familyId(33L)
@@ -122,7 +112,7 @@ class FamilyApplyRepositoryImplTest {
         assertThat(result.get().targetName()).isEqualTo("target-name");
         assertThat(result.get().familyApply().getFamilyApplyId()).isEqualTo(44L);
         assertThat(result.get().familyApply().getRequesterSubId()).isEqualTo(11L);
-        assertThat(result.get().familyApply().getTargetSubId()).isNull();
+        assertThat(result.get().familyApply().getTargets()).isEmpty();
         assertThat(result.get().familyApply().getFamilyId()).isEqualTo(33L);
     }
 }

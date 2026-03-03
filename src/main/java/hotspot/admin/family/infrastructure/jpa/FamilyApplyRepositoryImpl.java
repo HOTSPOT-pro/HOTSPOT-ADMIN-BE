@@ -1,12 +1,10 @@
 package hotspot.admin.family.infrastructure.jpa;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.ApplyType;
-import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
@@ -60,28 +58,10 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
         if (targetNames == null || targetNames.isBlank()) {
             targetNames = "-";
         }
-        FamilyApply familyApply = FamilyApply.builder()
-                .familyApplyId(entity.getFamilyApplyId())
-                .requesterSubId(entity.getRequesterSubscription().getSubId())
-                .targetSubId(null)
-                .familyId(entity.getFamily() == null ? null : entity.getFamily().getFamilyId())
-                .applyType(entity.getApplyType())
-                .targetFamilyRole(null)
-                .docUrl(entity.getDocUrl())
-                .status(entity.getStatus())
-                .targets(Collections.emptyList())
-                .createdTime(entity.getCreatedTime())
-                .modifiedTime(entity.getModifiedTime())
-                .build();
 
         return new FamilyRequestOutboxInfo(
-                familyApply,
+                entity.entityToDomain(),
                 targetNames
         );
-
-//        return new FamilyRequestOutboxInfo(
-//                entity.entityToDomain(),
-//                entity.getTargetSubscription().getMember().getName()
-//        );
     }
 }
