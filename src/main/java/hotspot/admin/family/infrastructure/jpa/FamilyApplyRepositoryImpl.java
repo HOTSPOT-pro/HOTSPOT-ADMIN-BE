@@ -27,9 +27,9 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
     ) {
         return familyApplyJpaRepository.updateStatusByIdAndTypeAndCurrentStatus(
                 familyApplyId,
-                applyType.name(),
-                currentStatus.name(),
-                newStatus.name()
+                applyType,
+                currentStatus,
+                newStatus
         );
     }
 
