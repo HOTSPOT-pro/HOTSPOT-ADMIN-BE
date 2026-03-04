@@ -24,6 +24,7 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
+import hotspot.admin.family.controller.port.UpdateFamilyMemberPolicyStatusService;
 import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
@@ -68,6 +69,9 @@ class FamilyControllerTest {
 
     @MockBean
     private UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
+
+    @MockBean
+    private UpdateFamilyMemberPolicyStatusService updateFamilyMemberPolicyStatusService;
     @Test
     @DisplayName("가족 목록 조회 성공")
     void getFamilyListSuccess() throws Exception {
@@ -286,6 +290,40 @@ class FamilyControllerTest {
                                   "dataLimitGb": 1,
                                   "isBlocked": true,
                                   "isParent": true
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 구성원 시간 정책 적용 상태 수정 성공")
+    void updateFamilyMemberTimePolicyStatusSuccess() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/families/5/members/101/policy-status/time")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "policies": [
+                                    { "policyId": 1, "isActive": true },
+                                    { "policyId": 2, "isActive": false }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 구성원 앱 정책 적용 상태 수정 성공")
+    void updateFamilyMemberAppPolicyStatusSuccess() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/families/5/members/101/policy-status/app")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "policies": [
+                                    { "policyId": 11, "isActive": true },
+                                    { "policyId": 12, "isActive": false }
+                                  ]
                                 }
                                 """))
                 .andExpect(status().isOk())
