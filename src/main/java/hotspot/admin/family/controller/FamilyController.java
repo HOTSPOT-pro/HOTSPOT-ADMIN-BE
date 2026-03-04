@@ -22,9 +22,11 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
+import hotspot.admin.family.controller.port.UpdateFamilyMemberPolicyStatusService;
 import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.request.UpdateFamilyMemberControlStatusRequest;
+import hotspot.admin.family.controller.request.UpdateFamilyMemberPolicyStatusRequest;
 import hotspot.admin.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
@@ -46,6 +48,7 @@ public class FamilyController implements FamilyApi {
     private final GetFamilyPolicyDetailStatusService getFamilyPolicyDetailStatusService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
     private final UpdateFamilyMemberControlStatusService updateFamilyMemberControlStatusService;
+    private final UpdateFamilyMemberPolicyStatusService updateFamilyMemberPolicyStatusService;
     private final UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
@@ -107,6 +110,23 @@ public class FamilyController implements FamilyApi {
         return ResponseEntity.ok(ApiResponse.success(
                 getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(familyId, subId)
         ));
+    }
+
+    /** 가족 상세 정책 적용 탭에서 특정 구성원의 시간/앱 정책 적용 여부를 수정한다. */
+    @Override
+    @PatchMapping("/{familyId}/members/{subId}/policy-status")
+    public ResponseEntity<ApiResponse<Void>> updateFamilyMemberPolicyStatus(
+            @PathVariable Long familyId,
+            @PathVariable Long subId,
+            @Valid @RequestBody UpdateFamilyMemberPolicyStatusRequest request
+    ) {
+        updateFamilyMemberPolicyStatusService.updateMemberPolicyStatus(
+                familyId,
+                subId,
+                request.timePolicies(),
+                request.appPolicies()
+        );
+        return ResponseEntity.ok(ApiResponse.success());
     }
 
     /** 가족 제어 기능의 우선순위 유형(FIFO/PRIORITY)을 변경한다. */
