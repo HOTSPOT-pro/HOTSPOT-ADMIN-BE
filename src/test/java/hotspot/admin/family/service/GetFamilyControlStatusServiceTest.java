@@ -77,8 +77,8 @@ class GetFamilyControlStatusServiceTest {
         assertThat(response.priorityType()).isEqualTo(PriorityType.PRIORITY);
         assertThat(response.members()).hasSize(3);
         assertThat(response.members().get(0).subId()).isEqualTo(10L);
-        assertThat(response.members().get(0).dataLimitMb()).isEqualTo(2L);
-        assertThat(response.members().get(1).dataLimitMb()).isEqualTo(1L);
+        assertThat(response.members().get(0).dataLimitGb()).isEqualTo(2048D / (1024D * 1024D));
+        assertThat(response.members().get(1).dataLimitGb()).isEqualTo(1024D / (1024D * 1024D));
         assertThat(response.members().get(0).priorityOrder()).isEqualTo(1);
     }
 

@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatusService {
 
-    private static final long KB_PER_MB = 1024L;
+    private static final double KB_PER_GB = 1024D * 1024D;
     private static final int UNUSED_PRIORITY_ORDER = -1;
 
     private final FamilyRepository familyRepository;
@@ -50,7 +50,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .memberName(member.memberName())
                 .familyRole(member.familyRole())
                 .blocked(Boolean.TRUE.equals(member.blocked()))
-                .dataLimitMb(toMb(member.dataLimit()))
+                .dataLimitGb(toGb(member.dataLimit()))
                 .priorityOrder(resolvePriorityOrder(member.priority(), priorityType))
                 .build();
     }
@@ -63,11 +63,11 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
         return priority == null ? UNUSED_PRIORITY_ORDER : priority;
     }
 
-    /** 데이터 한도(KB)를 MB 단위로 변환한다. */
-    private Long toMb(Long dataLimit) {
+    /** 데이터 한도(KB)를 GB 단위로 변환한다. */
+    private Double toGb(Long dataLimit) {
         if (dataLimit == null) {
             return null;
         }
-        return dataLimit / KB_PER_MB;
+        return dataLimit / KB_PER_GB;
     }
 }

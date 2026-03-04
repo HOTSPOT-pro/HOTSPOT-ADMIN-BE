@@ -128,7 +128,7 @@ class FamilyControllerTest {
                                 .memberName("홍대표")
                                 .familyRole(FamilyRole.OWNER)
                                 .blocked(false)
-                                .dataLimitMb(1024L)
+                                .dataLimitGb(0.0009765625D)
                                 .priorityOrder(-1)
                                 .build(),
                         FamilyControlMemberItem.builder()
@@ -136,7 +136,7 @@ class FamilyControllerTest {
                                 .memberName("홍부모")
                                 .familyRole(FamilyRole.PARENT)
                                 .blocked(true)
-                                .dataLimitMb(512L)
+                                .dataLimitGb(0.00048828125D)
                                 .priorityOrder(-1)
                                 .build()
                 ))
