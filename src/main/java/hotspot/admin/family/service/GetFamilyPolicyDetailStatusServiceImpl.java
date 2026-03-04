@@ -25,23 +25,13 @@ import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimeOptionRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
-import hotspot.admin.policy.domain.PolicyDay;
 import hotspot.admin.policy.domain.PolicySnapshot;
+import hotspot.admin.policy.util.PolicyScheduleLabelFormatter;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDetailStatusService {
-
-    private static final Set<PolicyDay> WEEKDAYS = Set.of(
-            PolicyDay.MON,
-            PolicyDay.TUE,
-            PolicyDay.WED,
-            PolicyDay.THU,
-            PolicyDay.FRI
-    );
-    private static final Set<PolicyDay> WEEKEND = Set.of(PolicyDay.SAT, PolicyDay.SUN);
-    private static final Set<PolicyDay> EVERYDAY = Set.of(PolicyDay.values());
 
     private final FamilyRepository familyRepository;
     private final FamilySubQueryRepository familySubQueryRepository;
@@ -116,7 +106,9 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
                         .policyName(option.policyName())
                         .policyDescription(option.policyDescription())
                         .policyType(option.policyType())
-                        .policyScheduleLabel(toPolicyScheduleLabel(parsePolicySnapshot(option.policySnapshotJson())))
+                        .policyScheduleLabel(PolicyScheduleLabelFormatter.toPolicyScheduleLabel(
+                                parsePolicySnapshot(option.policySnapshotJson())
+                        ))
                         .isActive(appliedPolicyIds.contains(option.policyId()))
                         .build())
                 .toList();
@@ -144,60 +136,6 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
         } catch (JsonProcessingException e) {
             return null;
         }
-    }
-
-    private String toPolicyScheduleLabel(PolicySnapshot snapshot) {
-        if (snapshot == null) {
-            return null;
-        }
-
-        Integer durationMinutes = snapshot.getDurationMinutes();
-        if (durationMinutes != null && durationMinutes > 0) {
-            if (durationMinutes % 60 == 0) {
-                return (durationMinutes / 60) + "시간";
-            }
-            return durationMinutes + "분";
-        }
-
-        String startTime = snapshot.getStartTime();
-        String endTime = snapshot.getEndTime();
-        if (startTime == null || endTime == null) {
-            return null;
-        }
-
-        List<PolicyDay> days = snapshot.getDays();
-        if (days == null || days.isEmpty()) {
-            return startTime + "~" + endTime;
-        }
-
-        Set<PolicyDay> daySet = Set.copyOf(days);
-        if (daySet.equals(EVERYDAY)) {
-            return "매일 " + startTime + "~" + endTime;
-        }
-        if (daySet.equals(WEEKDAYS)) {
-            return "주중 " + startTime + "~" + endTime;
-        }
-        if (daySet.equals(WEEKEND)) {
-            return "주말 " + startTime + "~" + endTime;
-        }
-
-        String dayLabel = daySet.stream()
-                .sorted()
-                .map(this::toKoreanDayShort)
-                .collect(Collectors.joining(","));
-        return dayLabel + " " + startTime + "~" + endTime;
-    }
-
-    private String toKoreanDayShort(PolicyDay day) {
-        return switch (day) {
-            case MON -> "월";
-            case TUE -> "화";
-            case WED -> "수";
-            case THU -> "목";
-            case FRI -> "금";
-            case SAT -> "토";
-            case SUN -> "일";
-        };
     }
 
     private String decryptAndMaskPhone(String encryptedPhone) {
