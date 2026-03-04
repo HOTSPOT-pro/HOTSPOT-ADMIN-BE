@@ -28,6 +28,7 @@ import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyAppItem;
+import hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilyPolicyTimeItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
@@ -185,8 +186,7 @@ class FamilyControllerTest {
     @Test
     @DisplayName("가족 정책 상세 조회 성공")
     void getFamilyPolicyDetailStatusSuccess() throws Exception {
-        hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem member = hotspot.admin.family.controller
-                .response.FamilyPolicyMemberDetailItem.builder()
+        FamilyPolicyMemberDetailItem member = FamilyPolicyMemberDetailItem.builder()
                 .memberName("홍길동")
                 .phoneNumber("010-****-1111")
                 .familyRole(FamilyRole.OWNER)
