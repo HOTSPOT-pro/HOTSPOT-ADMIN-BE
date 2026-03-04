@@ -3,6 +3,7 @@ package hotspot.admin.family.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,6 +23,7 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyDetailStatusService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
+import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
 import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
@@ -60,6 +62,9 @@ class FamilyControllerTest {
 
     @MockBean
     private SearchFamilyByPhoneService searchFamilyByPhoneService;
+
+    @MockBean
+    private UpdateFamilyMemberControlStatusService updateFamilyMemberControlStatusService;
 
     @MockBean
     private UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
@@ -131,7 +136,7 @@ class FamilyControllerTest {
                                 .subId(101L)
                                 .memberName("홍대표")
                                 .familyRole(FamilyRole.OWNER)
-                                .blocked(false)
+                                .isBlocked(false)
                                 .dataLimitGb(0.0009765625D)
                                 .priorityOrder(-1)
                                 .build(),
@@ -139,7 +144,7 @@ class FamilyControllerTest {
                                 .subId(102L)
                                 .memberName("홍부모")
                                 .familyRole(FamilyRole.PARENT)
-                                .blocked(true)
+                                .isBlocked(true)
                                 .dataLimitGb(0.00048828125D)
                                 .priorityOrder(-1)
                                 .build()
@@ -157,7 +162,7 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.members[0].familyRole").value("OWNER"))
                 .andExpect(jsonPath("$.data.members[0].priorityOrder").value(-1))
                 .andExpect(jsonPath("$.data.members[1].familyRole").value("PARENT"))
-                .andExpect(jsonPath("$.data.members[1].blocked").value(true));
+                .andExpect(jsonPath("$.data.members[1].isBlocked").value(true));
     }
 
     @Test
@@ -252,8 +257,7 @@ class FamilyControllerTest {
     @Test
     @DisplayName("가족 우선순위 유형 변경 성공")
     void updateFamilyPriorityTypeSuccess() throws Exception {
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                        .patch("/api/v1/admin/families/5/priority")
+        mockMvc.perform(patch("/api/v1/admin/families/5/priority")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -262,6 +266,21 @@ class FamilyControllerTest {
                                     { "subId": 101, "priority": 1 },
                                     { "subId": 102, "priority": 2 }
                                   ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 구성원 제어 상태 수정 성공")
+    void updateFamilyMemberControlStatusSuccess() throws Exception {
+                mockMvc.perform(patch("/api/v1/admin/families/5/member/101/control-status")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "dataLimitGb": 1,
+                                  "isBlocked": true
                                 }
                                 """))
                 .andExpect(status().isOk())
