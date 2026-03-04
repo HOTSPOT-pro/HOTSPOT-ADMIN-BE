@@ -20,9 +20,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import hotspot.admin.family.infrastructure.query.FamilySubQueryRepositoryImpl;
 import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyStatusRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimeOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
 
 @ExtendWith(MockitoExtension.class)
@@ -93,6 +95,7 @@ class FamilySubQueryRepositoryImplTest {
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("sub_id")).thenReturn(101L);
+                    when(rs.getLong("policy_id")).thenReturn(1L);
                     when(rs.getString("policy_name")).thenReturn("야간 차단");
 
                     return List.of(mapper.mapRow(rs, 0));
@@ -114,6 +117,7 @@ class FamilySubQueryRepositoryImplTest {
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("sub_id")).thenReturn(102L);
+                    when(rs.getLong("policy_id")).thenReturn(11L);
                     when(rs.getString("blocked_service_name")).thenReturn("유튜브");
 
                     return List.of(mapper.mapRow(rs, 0));
@@ -122,6 +126,55 @@ class FamilySubQueryRepositoryImplTest {
         List<FamilyPolicyAppPolicyRow> result = familySubRepository.findFamilyAppPolicies(1L);
 
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 시간 정책 옵션 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyTimePolicyOptionsSuccess() throws Exception {
+        FamilySubQueryRepositoryImpl familySubRepository = new FamilySubQueryRepositoryImpl(jdbcTemplate);
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyTimeOptionRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("policy_id")).thenReturn(201L);
+                    when(rs.getString("policy_name")).thenReturn("야간 차단");
+                    when(rs.getString("policy_description")).thenReturn("매일 야간 차단");
+                    when(rs.getString("policy_type")).thenReturn("SCHEDULED");
+                    when(rs.getString("policy_snapshot_json")).thenReturn(
+                            "{\"days\":[\"MON\",\"TUE\"],\"startTime\":\"22:00\",\"endTime\":\"07:00\"}"
+                    );
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyTimeOptionRow> result = familySubRepository.findFamilyTimePolicyOptions(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).policyName()).isEqualTo("야간 차단");
+    }
+
+    @Test
+    @DisplayName("가족 정책 현황 앱 정책 옵션 조회 시 row 매핑이 정상 동작한다")
+    void findFamilyAppPolicyOptionsSuccess() throws Exception {
+        FamilySubQueryRepositoryImpl familySubRepository = new FamilySubQueryRepositoryImpl(jdbcTemplate);
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+                .thenAnswer(invocation -> {
+                    @SuppressWarnings("unchecked")
+                    RowMapper<FamilyPolicyAppOptionRow> mapper = invocation.getArgument(2);
+
+                    ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    when(rs.getLong("policy_id")).thenReturn(301L);
+                    when(rs.getString("blocked_service_name")).thenReturn("유튜브");
+
+                    return List.of(mapper.mapRow(rs, 0));
+                });
+
+        List<FamilyPolicyAppOptionRow> result = familySubRepository.findFamilyAppPolicyOptions(1L);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).policyName()).isEqualTo("유튜브");
     }
 
     @Test
