@@ -58,4 +58,10 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
     public int updatePriority(Long familyId, int priority) {
         return familySubJpaRepository.updatePriorityByFamilyId(familyId, priority);
     }
+
+    /** 특정 구성원의 우선순위를 갱신한다. */
+    @Override
+    public int updateMemberPriority(Long familyId, Long subId, int priority) {
+        return familySubJpaRepository.updatePriorityByFamilyIdAndSubId(familyId, subId, priority);
+    }
 }
