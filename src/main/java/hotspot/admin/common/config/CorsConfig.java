@@ -1,41 +1,50 @@
 package hotspot.admin.common.config;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import hotspot.admin.common.jwt.JwtAuthenticationFilter;
+import hotspot.admin.common.jwt.JwtProvider;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
-public class CorsConfig {
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
 
-    private final String localServerDomain;
-    private final String devServerDomain;
-
-    public CorsConfig(
-            @Value("${server.domain.local}") String localServerDomain,
-            @Value("${server.domain.dev}") String devServerDomain) {
-        this.localServerDomain = localServerDomain;
-        this.devServerDomain = devServerDomain;
-    }
+    private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
+    private final CorsConfig corsConfig;
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        configuration.setAllowedOrigins(List.of(localServerDomain, devServerDomain));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/health"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/admin/auth/login").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtProvider, objectMapper),
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration("/**", configuration);
-
-        return source;
+        return http.build();
     }
 }
