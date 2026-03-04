@@ -3,6 +3,7 @@ package hotspot.admin.family.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import hotspot.admin.outbox.consistencyOutbox.publisher.FamilyEventPublisher;
@@ -199,6 +200,14 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         if (updated == 0) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
         }
+
+        // applyCreateApproval() 마지막 familyId 만든 직후에 추가
+        List<Long> memberSubIds = distinctMembers.stream()
+                .map(FamilyApprovalTargetInfo::targetSubId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        familyEventPublisher.publishFamilyCreated(familyId, memberSubIds);
     }
 
     /** ADD 승인 시 family_sub 삽입 및 family/family_sub 요약 값을 동기화한다. */
