@@ -11,6 +11,7 @@ jwt:
 
 server:
   port: 8081
+  forward-headers-strategy: framework
 
   # 프론트 주소
   domain:

@@ -73,4 +73,15 @@ class FamilyRepositoryImplTest {
 
         assertThat(updated).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("가족 우선순위 유형 업데이트 성공")
+    void updateFamilyPriorityTypeSuccess() {
+        FamilyRepositoryImpl familyRepository = new FamilyRepositoryImpl(familyJpaRepository);
+        when(familyJpaRepository.updatePriorityTypeByFamilyId(1L, PriorityType.PRIORITY)).thenReturn(1);
+
+        int updated = familyRepository.updateFamilyPriorityType(1L, PriorityType.PRIORITY);
+
+        assertThat(updated).isEqualTo(1);
+    }
 }
