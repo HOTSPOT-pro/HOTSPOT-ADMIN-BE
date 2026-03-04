@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import hotspot.admin.outbox.consistencyOutbox.publisher.FamilyEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +47,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
     private final FamilyRequestOutboxPublisher familyRequestOutboxPublisher;
+    private final FamilyEventPublisher familyEventPublisher;
 
     /** 가족 요청을 승인 상태로 전환한다. */
     @Override
@@ -213,6 +215,11 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
                         request.targetFamilyRole(),
                         insertPriority,
                         INITIAL_DATA_LIMIT
+                );
+
+                familyEventPublisher.publishMemberAdded(
+                        familyId,
+                        request.targetSubId()
                 );
             }
         }
