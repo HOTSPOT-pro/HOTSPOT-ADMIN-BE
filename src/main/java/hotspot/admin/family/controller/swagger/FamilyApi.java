@@ -197,7 +197,8 @@ public interface FamilyApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{familyId}/members/{subId}/policy-status/time")
-    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyMemberTimePolicyStatusResponse>> getFamilyMemberTimePolicyStatus(
+    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyMemberTimePolicyStatusResponse>>
+            getFamilyMemberTimePolicyStatus(
             @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId,
             @Parameter(description = "구성원 구독 ID", example = "101") @PathVariable Long subId);
 
@@ -225,7 +226,8 @@ public interface FamilyApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{familyId}/members/{subId}/policy-status/app")
-    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyMemberAppPolicyStatusResponse>> getFamilyMemberAppPolicyStatus(
+    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyMemberAppPolicyStatusResponse>>
+            getFamilyMemberAppPolicyStatus(
             @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId,
             @Parameter(description = "구성원 구독 ID", example = "101") @PathVariable Long subId);
 
