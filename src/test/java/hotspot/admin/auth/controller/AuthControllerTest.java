@@ -1,9 +1,12 @@
 package hotspot.admin.auth.controller;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import hotspot.admin.auth.controller.port.LoginService;
@@ -21,6 +25,7 @@ import hotspot.admin.auth.controller.response.TokenResponse;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@TestPropertySource(properties = "jwt.expiration=3600000")
 class AuthControllerTest {
 
     @Autowired
@@ -48,7 +53,15 @@ class AuthControllerTest {
                         .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").value("mock-token"));
+                .andExpect(header().exists("Set-Cookie"))
+                .andExpect(header().string("Set-Cookie", allOf(
+                        containsString("accessToken=mock-token"),
+                        containsString("HttpOnly"),
+                        containsString("Secure"),
+                        containsString("SameSite=None"),
+                        containsString("Max-Age=3600")
+                )))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
