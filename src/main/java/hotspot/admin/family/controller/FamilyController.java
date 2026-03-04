@@ -26,7 +26,7 @@ import hotspot.admin.family.controller.port.UpdateFamilyMemberPolicyStatusServic
 import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.request.UpdateFamilyMemberControlStatusRequest;
-import hotspot.admin.family.controller.request.UpdateFamilyMemberPolicyStatusRequest;
+import hotspot.admin.family.controller.request.UpdateFamilyMemberPoliciesRequest;
 import hotspot.admin.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
@@ -112,19 +112,34 @@ public class FamilyController implements FamilyApi {
         ));
     }
 
-    /** 가족 상세 정책 적용 탭에서 특정 구성원의 시간/앱 정책 적용 여부를 수정한다. */
+    /** 가족 상세 정책 적용 탭에서 특정 구성원의 시간 정책 적용 여부를 수정한다. */
     @Override
-    @PatchMapping("/{familyId}/members/{subId}/policy-status")
-    public ResponseEntity<ApiResponse<Void>> updateFamilyMemberPolicyStatus(
+    @PatchMapping("/{familyId}/members/{subId}/policy-status/time")
+    public ResponseEntity<ApiResponse<Void>> updateFamilyMemberTimePolicyStatus(
             @PathVariable Long familyId,
             @PathVariable Long subId,
-            @Valid @RequestBody UpdateFamilyMemberPolicyStatusRequest request
+            @Valid @RequestBody UpdateFamilyMemberPoliciesRequest request
     ) {
-        updateFamilyMemberPolicyStatusService.updateMemberPolicyStatus(
+        updateFamilyMemberPolicyStatusService.updateMemberTimePolicyStatus(
                 familyId,
                 subId,
-                request.timePolicies(),
-                request.appPolicies()
+                request.policies()
+        );
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    /** 가족 상세 정책 적용 탭에서 특정 구성원의 앱 정책 적용 여부를 수정한다. */
+    @Override
+    @PatchMapping("/{familyId}/members/{subId}/policy-status/app")
+    public ResponseEntity<ApiResponse<Void>> updateFamilyMemberAppPolicyStatus(
+            @PathVariable Long familyId,
+            @PathVariable Long subId,
+            @Valid @RequestBody UpdateFamilyMemberPoliciesRequest request
+    ) {
+        updateFamilyMemberPolicyStatusService.updateMemberAppPolicyStatus(
+                familyId,
+                subId,
+                request.policies()
         );
         return ResponseEntity.ok(ApiResponse.success());
     }
