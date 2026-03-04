@@ -16,4 +16,8 @@ public interface FamilySubRepository {
     int updatePriority(Long familyId, int priority);
 
     int updateMemberPriority(Long familyId, Long subId, int priority);
+
+    int updateMemberDataLimit(Long familyId, Long subId, long dataLimit);
+
+    int updateMemberBlocked(Long familyId, Long subId, boolean isBlocked);
 }

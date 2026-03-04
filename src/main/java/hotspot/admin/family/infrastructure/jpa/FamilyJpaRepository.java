@@ -23,6 +23,14 @@ public interface FamilyJpaRepository extends JpaRepository<FamilyEntity, Long> {
             """)
     Optional<PriorityType> findPriorityTypeByFamilyId(@Param("familyId") Long familyId);
 
+    @Query("""
+            SELECT f.familyDataAmount
+            FROM FamilyEntity f
+            WHERE f.familyId = :familyId
+              AND f.isDeleted = false
+            """)
+    Optional<Long> findFamilyDataAmountByFamilyId(@Param("familyId") Long familyId);
+
     /** 가족 구성원 수/공유 데이터량을 함께 갱신한다. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

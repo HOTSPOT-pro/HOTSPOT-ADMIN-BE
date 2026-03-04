@@ -124,4 +124,34 @@ class FamilySubRepositoryImplTest {
 
         assertThat(updated).isEqualTo(3);
     }
+
+    @Test
+    @DisplayName("특정 구성원 데이터 한도 업데이트 성공")
+    void updateMemberDataLimitSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(familySubJpaRepository.updateDataLimitByFamilyIdAndSubId(3L, 100L, 2048L)).thenReturn(1);
+
+        int updated = familySubRepository.updateMemberDataLimit(3L, 100L, 2048L);
+
+        assertThat(updated).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("특정 구성원 잠금 상태 업데이트 성공")
+    void updateMemberBlockedSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(subscriptionJpaRepository.updateIsLockedByFamilyIdAndSubId(3L, 100L, true)).thenReturn(1);
+
+        int updated = familySubRepository.updateMemberBlocked(3L, 100L, true);
+
+        assertThat(updated).isEqualTo(1);
+    }
 }

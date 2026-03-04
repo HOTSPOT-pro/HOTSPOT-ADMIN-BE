@@ -37,6 +37,19 @@ public interface FamilySubJpaRepository extends JpaRepository<FamilySubEntity, L
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE FamilySubEntity fs
+            SET fs.dataLimit = :dataLimit
+            WHERE fs.family.familyId = :familyId
+              AND fs.subscription.subId = :subId
+            """)
+    int updateDataLimitByFamilyIdAndSubId(
+            @Param("familyId") Long familyId,
+            @Param("subId") Long subId,
+            @Param("dataLimit") Long dataLimit
+    );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE FamilySubEntity fs
             SET fs.priority = :priority
             WHERE fs.family.familyId = :familyId
             """)

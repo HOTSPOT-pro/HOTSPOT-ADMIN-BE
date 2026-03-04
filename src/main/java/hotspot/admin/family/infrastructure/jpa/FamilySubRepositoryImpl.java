@@ -64,4 +64,16 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
     public int updateMemberPriority(Long familyId, Long subId, int priority) {
         return familySubJpaRepository.updatePriorityByFamilyIdAndSubId(familyId, subId, priority);
     }
+
+    /** 특정 구성원의 데이터 한도(KB)를 갱신한다. */
+    @Override
+    public int updateMemberDataLimit(Long familyId, Long subId, long dataLimit) {
+        return familySubJpaRepository.updateDataLimitByFamilyIdAndSubId(familyId, subId, dataLimit);
+    }
+
+    /** 특정 구성원의 잠금 상태를 갱신한다. */
+    @Override
+    public int updateMemberBlocked(Long familyId, Long subId, boolean isBlocked) {
+        return subscriptionJpaRepository.updateIsLockedByFamilyIdAndSubId(familyId, subId, isBlocked);
+    }
 }

@@ -27,6 +27,12 @@ public class FamilyRepositoryImpl implements FamilyRepository {
         return familyJpaRepository.findPriorityTypeByFamilyId(familyId);
     }
 
+    /** 가족 공유 데이터량(KB)을 조회한다. */
+    @Override
+    public Optional<Long> findFamilyDataAmount(Long familyId) {
+        return familyJpaRepository.findFamilyDataAmountByFamilyId(familyId);
+    }
+
     /** 가족을 신규 생성하고 생성된 familyId를 반환한다. */
     @Override
     public Long createFamily(int familyNum, long familyDataAmount, PriorityType priorityType) {

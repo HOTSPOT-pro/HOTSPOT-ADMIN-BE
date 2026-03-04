@@ -9,6 +9,8 @@ public interface FamilyRepository {
 
     Optional<PriorityType> findFamilyPriorityType(Long familyId);
 
+    Optional<Long> findFamilyDataAmount(Long familyId);
+
     Long createFamily(int familyNum, long familyDataAmount, PriorityType priorityType);
 
     int updateFamilySummary(Long familyId, int familyNum, long familyDataAmount);
