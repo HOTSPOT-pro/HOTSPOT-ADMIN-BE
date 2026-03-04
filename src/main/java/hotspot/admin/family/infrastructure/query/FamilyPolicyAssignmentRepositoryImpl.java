@@ -15,6 +15,47 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignmentRepository {
 
+    private static final String SQL_FIND_EXISTING_TIME_POLICY_IDS = """
+            SELECT bp.block_policy_id
+            FROM block_policy bp
+            WHERE bp.family_id = :familyId
+              AND bp.is_deleted = false
+              AND bp.block_policy_id IN (:policyIds)
+            """;
+
+    private static final String SQL_FIND_EXISTING_APP_POLICY_IDS = """
+            SELECT abs.app_blocked_service_id
+            FROM app_blocked_service abs
+            WHERE abs.is_deleted = false
+              AND abs.app_blocked_service_id IN (:policyIds)
+            """;
+
+    private static final String SQL_UPDATE_MEMBER_TIME_POLICY_ACTIVE = """
+            UPDATE policy_sub
+            SET is_active = :isActive,
+                modified_time = now()
+            WHERE sub_id = :subId
+              AND block_policy_id = :policyId
+            """;
+
+    private static final String SQL_INSERT_MEMBER_TIME_POLICY = """
+            INSERT INTO policy_sub (sub_id, block_policy_id, is_active, created_time, modified_time)
+            VALUES (:subId, :policyId, :isActive, now(), now())
+            """;
+
+    private static final String SQL_UPDATE_MEMBER_APP_POLICY_ACTIVE = """
+            UPDATE blocked_service_sub
+            SET is_active = :isActive,
+                modified_time = now()
+            WHERE sub_id = :subId
+              AND blocked_service_id = :policyId
+            """;
+
+    private static final String SQL_INSERT_MEMBER_APP_POLICY = """
+            INSERT INTO blocked_service_sub (sub_id, blocked_service_id, is_active, created_time, modified_time)
+            VALUES (:subId, :policyId, true, now(), now())
+            """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
@@ -23,19 +64,11 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
             return Set.of();
         }
 
-        String sql = """
-                SELECT bp.block_policy_id
-                FROM block_policy bp
-                WHERE bp.family_id = :familyId
-                  AND bp.is_deleted = false
-                  AND bp.block_policy_id IN (:policyIds)
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("familyId", familyId)
                 .addValue("policyIds", policyIds);
 
-        List<Long> ids = jdbcTemplate.queryForList(sql, params, Long.class);
+        List<Long> ids = jdbcTemplate.queryForList(SQL_FIND_EXISTING_TIME_POLICY_IDS, params, Long.class);
         return new HashSet<>(ids);
     }
 
@@ -45,82 +78,49 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
             return Set.of();
         }
 
-        String sql = """
-                SELECT abs.app_blocked_service_id
-                FROM app_blocked_service abs
-                WHERE abs.is_deleted = false
-                  AND abs.app_blocked_service_id IN (:policyIds)
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("policyIds", policyIds);
 
-        List<Long> ids = jdbcTemplate.queryForList(sql, params, Long.class);
+        List<Long> ids = jdbcTemplate.queryForList(SQL_FIND_EXISTING_APP_POLICY_IDS, params, Long.class);
         return new HashSet<>(ids);
     }
 
     @Override
     public int updateMemberTimePolicyActive(Long subId, Long policyId, boolean isActive) {
-        String sql = """
-                UPDATE policy_sub
-                SET is_active = :isActive,
-                    modified_time = now()
-                WHERE sub_id = :subId
-                  AND block_policy_id = :policyId
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("subId", subId)
                 .addValue("policyId", policyId)
                 .addValue("isActive", isActive);
 
-        return jdbcTemplate.update(sql, params);
+        return jdbcTemplate.update(SQL_UPDATE_MEMBER_TIME_POLICY_ACTIVE, params);
     }
 
     @Override
     public void insertMemberTimePolicy(Long subId, Long policyId, boolean isActive) {
-        String sql = """
-                INSERT INTO policy_sub (sub_id, block_policy_id, is_active, created_time, modified_time)
-                VALUES (:subId, :policyId, :isActive, now(), now())
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("subId", subId)
                 .addValue("policyId", policyId)
                 .addValue("isActive", isActive);
 
-        jdbcTemplate.update(sql, params);
+        jdbcTemplate.update(SQL_INSERT_MEMBER_TIME_POLICY, params);
     }
 
     @Override
     public int updateMemberAppPolicyActive(Long subId, Long policyId, boolean isActive) {
-        String sql = """
-                UPDATE blocked_service_sub
-                SET is_active = :isActive,
-                    modified_time = now()
-                WHERE sub_id = :subId
-                  AND blocked_service_id = :policyId
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("subId", subId)
                 .addValue("policyId", policyId)
                 .addValue("isActive", isActive);
 
-        return jdbcTemplate.update(sql, params);
+        return jdbcTemplate.update(SQL_UPDATE_MEMBER_APP_POLICY_ACTIVE, params);
     }
 
     @Override
     public void insertMemberAppPolicy(Long subId, Long policyId) {
-        String sql = """
-                INSERT INTO blocked_service_sub (sub_id, blocked_service_id, is_active, created_time, modified_time)
-                VALUES (:subId, :policyId, true, now(), now())
-                """;
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("subId", subId)
                 .addValue("policyId", policyId);
 
-        jdbcTemplate.update(sql, params);
+        jdbcTemplate.update(SQL_INSERT_MEMBER_APP_POLICY, params);
     }
 }
