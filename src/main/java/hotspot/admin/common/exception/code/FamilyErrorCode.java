@@ -17,6 +17,7 @@ public enum FamilyErrorCode implements BaseErrorCode {
     INVALID_APPLY_STATUS(HttpStatus.BAD_REQUEST, "FAMILY_007", "유효하지 않은 가족 요청 상태입니다."),
     FAMILY_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_008", "가족 요청 정보를 찾을 수 없습니다."),
     FAMILY_REQUEST_NOT_PENDING(HttpStatus.BAD_REQUEST, "FAMILY_009", "대기중 요청만 처리할 수 있습니다."),
+    FAMILY_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "FAMILY_010", "가족 구성원 정보를 찾을 수 없습니다."),
     ;
 
     private final HttpStatus httpStatus;
