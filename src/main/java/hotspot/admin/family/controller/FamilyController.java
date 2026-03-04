@@ -30,6 +30,8 @@ import hotspot.admin.family.controller.request.UpdateFamilyMemberPoliciesRequest
 import hotspot.admin.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
+import hotspot.admin.family.controller.response.FamilyMemberAppPolicyStatusResponse;
+import hotspot.admin.family.controller.response.FamilyMemberTimePolicyStatusResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
@@ -103,12 +105,39 @@ public class FamilyController implements FamilyApi {
 
     /** 가족 상세 정책 적용 탭에서 특정 구성원의 정책별 적용 여부를 조회한다. */
     @Override
-    @GetMapping("/{familyId}/members/{subId}/policy-status")
-    public ResponseEntity<ApiResponse<FamilyPolicyMemberDetailItem>> getFamilyPolicyDetailStatus(
+    @GetMapping("/{familyId}/members/{subId}/policy-status/time")
+    public ResponseEntity<ApiResponse<FamilyMemberTimePolicyStatusResponse>> getFamilyMemberTimePolicyStatus(
             @PathVariable Long familyId,
             @PathVariable Long subId) {
+        FamilyPolicyMemberDetailItem detail = getFamilyPolicyDetailStatusService
+                .getFamilyPolicyDetailStatus(familyId, subId);
         return ResponseEntity.ok(ApiResponse.success(
-                getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(familyId, subId)
+                FamilyMemberTimePolicyStatusResponse.builder()
+                        .memberName(detail.memberName())
+                        .phoneNumber(detail.phoneNumber())
+                        .familyRole(detail.familyRole())
+                        .blocked(detail.blocked())
+                        .appliedTimePolicies(detail.appliedTimePolicies())
+                        .build()
+        ));
+    }
+
+    /** 가족 상세 정책 적용 탭에서 특정 구성원의 앱 정책 적용 여부를 조회한다. */
+    @Override
+    @GetMapping("/{familyId}/members/{subId}/policy-status/app")
+    public ResponseEntity<ApiResponse<FamilyMemberAppPolicyStatusResponse>> getFamilyMemberAppPolicyStatus(
+            @PathVariable Long familyId,
+            @PathVariable Long subId) {
+        FamilyPolicyMemberDetailItem detail = getFamilyPolicyDetailStatusService
+                .getFamilyPolicyDetailStatus(familyId, subId);
+        return ResponseEntity.ok(ApiResponse.success(
+                FamilyMemberAppPolicyStatusResponse.builder()
+                        .memberName(detail.memberName())
+                        .phoneNumber(detail.phoneNumber())
+                        .familyRole(detail.familyRole())
+                        .blocked(detail.blocked())
+                        .appliedBlockedServicePolicies(detail.appliedBlockedServicePolicies())
+                        .build()
         ));
     }
 
