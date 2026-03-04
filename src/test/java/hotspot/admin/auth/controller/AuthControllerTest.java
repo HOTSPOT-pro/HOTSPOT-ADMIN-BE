@@ -1,9 +1,11 @@
 package hotspot.admin.auth.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +50,9 @@ class AuthControllerTest {
                         .content(requestJson))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").value("mock-token"));
+                .andExpect(header().exists("Set-Cookie"))
+                .andExpect(header().string("Set-Cookie", containsString("accessToken=mock-token")))
+                .andExpect(jsonPath("$.data").doesNotExist());
     }
 
     @Test
