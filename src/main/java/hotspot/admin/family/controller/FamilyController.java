@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import hotspot.admin.common.ApiResponse;
 import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
 import hotspot.admin.family.controller.port.GetFamilyListService;
+import hotspot.admin.family.controller.port.GetFamilyPolicyDetailStatusService;
 import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
@@ -22,6 +23,7 @@ import hotspot.admin.family.controller.request.FamilyListRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import hotspot.admin.family.controller.swagger.FamilyApi;
@@ -35,6 +37,7 @@ public class FamilyController implements FamilyApi {
     private final GetFamilySummaryService getFamilySummaryService;
     private final GetFamilyControlStatusService getFamilyControlStatusService;
     private final GetFamilyPolicyStatusService getFamilyPolicyStatusService;
+    private final GetFamilyPolicyDetailStatusService getFamilyPolicyDetailStatusService;
     private final SearchFamilyByPhoneService searchFamilyByPhoneService;
 
     /** 가족 목록을 페이지 조건으로 조회한다. */
@@ -67,6 +70,17 @@ public class FamilyController implements FamilyApi {
     public ResponseEntity<ApiResponse<List<FamilyPolicyMemberStatusItem>>> getFamilyPolicyStatus(
             @PathVariable Long familyId) {
         return ResponseEntity.ok(ApiResponse.success(getFamilyPolicyStatusService.getFamilyPolicyStatus(familyId)));
+    }
+
+    /** 가족 상세 정책 적용 탭에서 특정 구성원의 정책별 적용 여부를 조회한다. */
+    @Override
+    @GetMapping("/{familyId}/members/{subId}/policy-status")
+    public ResponseEntity<ApiResponse<FamilyPolicyMemberDetailItem>> getFamilyPolicyDetailStatus(
+            @PathVariable Long familyId,
+            @PathVariable Long subId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(familyId, subId)
+        ));
     }
 
     /** 전화번호로 가족을 검색한다. */

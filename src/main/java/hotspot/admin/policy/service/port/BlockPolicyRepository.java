@@ -13,7 +13,7 @@ public interface BlockPolicyRepository {
     Page<BlockPolicy> findAll(Pageable pageable);
 
     BlockPolicy save(BlockPolicy blockPolicy);
-    boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType);
+    boolean existsTemplateByPolicyNameAndPolicyType(String policyName, PolicyType policyType);
 
     int updateActiveById(Long policyId, Boolean isActive);
     int softDeleteById(Long policyId);

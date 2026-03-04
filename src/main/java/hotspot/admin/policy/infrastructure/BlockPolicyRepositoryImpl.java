@@ -20,7 +20,7 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
 
     @Override
     public Page<BlockPolicy> findAll(Pageable pageable) {
-        return blockPolicyJpaRepository.findAll(pageable)
+        return blockPolicyJpaRepository.findAllByFamilyIdIsNull(pageable)
                 .map(BlockPolicyEntity::entityToDomain);
     }
 
@@ -31,8 +31,8 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     }
 
     @Override
-    public boolean existsByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
-        return blockPolicyJpaRepository.existsByPolicyNameAndPolicyType(policyName, policyType);
+    public boolean existsTemplateByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
+        return blockPolicyJpaRepository.existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull(policyName, policyType);
     }
 
     @Override

@@ -6,13 +6,12 @@ import hotspot.admin.family.domain.FamilyRole;
 import lombok.Builder;
 
 @Builder
-public record FamilyPolicyMemberStatusItem(
-        Long subId,
+public record FamilyPolicyMemberDetailItem(
         String memberName,
         String phoneNumber,
         FamilyRole familyRole,
         Boolean blocked,
-        List<String> appliedTimePolicies,
-        List<String> appliedBlockedServicePolicies
+        List<FamilyPolicyTimeItem> appliedTimePolicies,
+        List<FamilyPolicyAppItem> appliedBlockedServicePolicies
 ) {
 }

@@ -34,6 +34,7 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
         BlockPolicy saved = blockPolicyRepository.save(BlockPolicy.builder()
                 .policyName(request.policyName())
                 .policyDescription(request.policyDescription())
+                .familyId(null)
                 .policyType(request.policyType())
                 .policySnapshot(request.policySnapshot())
                 .isActive(true)
@@ -67,7 +68,7 @@ public class CreatePolicyServiceImpl implements CreatePolicyService {
     }
 
     private void validateDuplicatePolicyNameType(String policyName, PolicyType policyType) {
-        if (blockPolicyRepository.existsByPolicyNameAndPolicyType(policyName, policyType)) {
+        if (blockPolicyRepository.existsTemplateByPolicyNameAndPolicyType(policyName, policyType)) {
             throw new ApplicationException(PolicyErrorCode.DUPLICATE_POLICY_NAME_TYPE);
         }
     }

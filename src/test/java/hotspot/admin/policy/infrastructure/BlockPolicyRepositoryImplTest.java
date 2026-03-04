@@ -48,7 +48,7 @@ class BlockPolicyRepositoryImplTest {
                 .build();
 
         Page<BlockPolicyEntity> page = new PageImpl<>(List.of(entity));
-        when(blockPolicyJpaRepository.findAll(PageRequest.of(0, 20))).thenReturn(page);
+        when(blockPolicyJpaRepository.findAllByFamilyIdIsNull(PageRequest.of(0, 20))).thenReturn(page);
 
         Page<BlockPolicy> result = repository.findAll(PageRequest.of(0, 20));
         assertThat(result.getContent()).hasSize(1);
@@ -85,10 +85,11 @@ class BlockPolicyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("정책명+유형 중복 존재 여부 조회")
-    void existsByPolicyNameAndPolicyType() {
-        when(blockPolicyJpaRepository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).thenReturn(true);
-        assertThat(repository.existsByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).isTrue();
+    @DisplayName("관리자 템플릿 정책명+유형 중복 존재 여부 조회")
+    void existsTemplateByPolicyNameAndPolicyType() {
+        when(blockPolicyJpaRepository.existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull("수면모드", PolicyType.SCHEDULED))
+                .thenReturn(true);
+        assertThat(repository.existsTemplateByPolicyNameAndPolicyType("수면모드", PolicyType.SCHEDULED)).isTrue();
     }
 
     @Test

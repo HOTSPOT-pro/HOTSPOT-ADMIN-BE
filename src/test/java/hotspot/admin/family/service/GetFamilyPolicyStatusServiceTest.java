@@ -73,6 +73,7 @@ class GetFamilyPolicyStatusServiceTest {
         List<FamilyPolicyMemberStatusItem> response = service.getFamilyPolicyStatus(1L);
 
         assertThat(response).hasSize(2);
+        assertThat(response.get(0).subId()).isEqualTo(10L);
         assertThat(response.get(0).memberName()).isEqualTo("대표");
         assertThat(response.get(0).phoneNumber()).isEqualTo("010-****-2222");
         assertThat(response.get(0).appliedTimePolicies()).containsExactly("야간 차단");

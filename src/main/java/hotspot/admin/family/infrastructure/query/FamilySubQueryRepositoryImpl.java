@@ -12,11 +12,14 @@ import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyAppPolicyRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyStatusRow;
+import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimeOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
+import hotspot.admin.policy.domain.PolicyType;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -101,12 +104,18 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
         String sql = """
                 SELECT DISTINCT
                     ps.sub_id,
-                    ps.date_snapshot->>'policyName' AS policy_name
+                    bp.block_policy_id AS policy_id,
+                    bp.policy_name
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                JOIN policy_sub ps ON ps.sub_id = s.sub_id AND ps.is_deleted = false
+                JOIN policy_sub ps ON ps.sub_id = s.sub_id AND ps.is_active = true
+                JOIN block_policy bp
+                  ON bp.block_policy_id = ps.block_policy_id
+                 AND bp.is_active = true
+                 AND bp.is_deleted = false
                 WHERE fs.family_id = :familyId
+                  AND bp.family_id = :familyId
                 ORDER BY ps.sub_id, policy_name
                 """;
 
@@ -116,12 +125,35 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyTimePolicyRow);
     }
 
+    /** 가족 소유 시간 정책 목록을 조회한다. */
+    @Override
+    public List<FamilyPolicyTimeOptionRow> findFamilyTimePolicyOptions(Long familyId) {
+        String sql = """
+                SELECT
+                    bp.block_policy_id AS policy_id,
+                    bp.policy_name,
+                    bp.policy_description,
+                    bp.policy_type,
+                    bp.policy_snapshot::text AS policy_snapshot_json
+                FROM block_policy bp
+                WHERE bp.family_id = :familyId
+                  AND bp.is_deleted = false
+                ORDER BY bp.policy_name, bp.block_policy_id
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyTimePolicyOptionRow);
+    }
+
     /** 구성원별 적용 차단 서비스 정책명을 조회한다. */
     @Override
     public List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId) {
         String sql = """
                 SELECT DISTINCT
                     bss.sub_id,
+                    abs.app_blocked_service_id AS policy_id,
                     abs.blocked_service_name
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
@@ -138,6 +170,31 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 .addValue("familyId", familyId);
 
         return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyRow);
+    }
+
+    /** 가족 구성원에게 적용된 앱 차단 정책 목록을 조회한다. */
+    @Override
+    public List<FamilyPolicyAppOptionRow> findFamilyAppPolicyOptions(Long familyId) {
+        String sql = """
+                SELECT
+                    abs.app_blocked_service_id AS policy_id,
+                    abs.blocked_service_name
+                FROM family_sub fs
+                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
+                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_deleted = false
+                JOIN app_blocked_service abs
+                  ON abs.app_blocked_service_id = bss.blocked_service_id
+                 AND abs.is_deleted = false
+                WHERE fs.family_id = :familyId
+                GROUP BY abs.app_blocked_service_id, abs.blocked_service_name
+                ORDER BY abs.blocked_service_name, abs.app_blocked_service_id
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("familyId", familyId);
+
+        return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyOptionRow);
     }
 
     /** 정책 탭 화면용 통합 행을 한 번의 조회로 구성한다. */
@@ -157,12 +214,16 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
                 JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
                 LEFT JOIN LATERAL (
-                    SELECT array_agg(DISTINCT ps.date_snapshot->>'policyName'
-                            ORDER BY ps.date_snapshot->>'policyName') AS time_policy_names
+                    SELECT array_agg(DISTINCT bp.policy_name
+                            ORDER BY bp.policy_name) AS time_policy_names
                     FROM policy_sub ps
+                    JOIN block_policy bp
+                      ON bp.block_policy_id = ps.block_policy_id
+                     AND bp.is_active = true
+                     AND bp.is_deleted = false
                     WHERE ps.sub_id = s.sub_id
-                      AND ps.is_deleted = false
-                      AND COALESCE(ps.date_snapshot->>'policyName', '') <> ''
+                      AND ps.is_active = true
+                      AND COALESCE(bp.policy_name, '') <> ''
                 ) tp ON true
                 LEFT JOIN LATERAL (
                     SELECT array_agg(DISTINCT abs.blocked_service_name
@@ -224,7 +285,20 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
             throws java.sql.SQLException {
         return FamilyPolicyTimePolicyRow.builder()
                 .subId(rs.getLong("sub_id"))
+                .policyId(rs.getLong("policy_id"))
                 .policyName(rs.getString("policy_name"))
+                .build();
+    }
+
+    /** 시간대 정책 목록 행을 DTO로 변환한다. */
+    private FamilyPolicyTimeOptionRow mapFamilyTimePolicyOptionRow(java.sql.ResultSet rs, int rowNum)
+            throws SQLException {
+        return FamilyPolicyTimeOptionRow.builder()
+                .policyId(rs.getLong("policy_id"))
+                .policyName(rs.getString("policy_name"))
+                .policyDescription(rs.getString("policy_description"))
+                .policyType(PolicyType.valueOf(rs.getString("policy_type")))
+                .policySnapshotJson(rs.getString("policy_snapshot_json"))
                 .build();
     }
 
@@ -233,7 +307,17 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
             throws java.sql.SQLException {
         return FamilyPolicyAppPolicyRow.builder()
                 .subId(rs.getLong("sub_id"))
+                .policyId(rs.getLong("policy_id"))
                 .blockedServiceName(rs.getString("blocked_service_name"))
+                .build();
+    }
+
+    /** 앱 차단 정책 목록 행을 DTO로 변환한다. */
+    private FamilyPolicyAppOptionRow mapFamilyAppPolicyOptionRow(java.sql.ResultSet rs, int rowNum)
+            throws SQLException {
+        return FamilyPolicyAppOptionRow.builder()
+                .policyId(rs.getLong("policy_id"))
+                .policyName(rs.getString("blocked_service_name"))
                 .build();
     }
 

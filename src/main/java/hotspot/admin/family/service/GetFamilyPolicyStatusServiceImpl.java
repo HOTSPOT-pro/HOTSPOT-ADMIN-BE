@@ -41,6 +41,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
     /** 통합 조회 행을 정책 탭 응답 항목으로 변환한다. */
     private FamilyPolicyMemberStatusItem toMemberItem(FamilyPolicyStatusRow member) {
         return FamilyPolicyMemberStatusItem.builder()
+                .subId(member.subId())
                 .memberName(member.memberName())
                 .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc()))
                 .familyRole(member.familyRole())

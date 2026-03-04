@@ -9,7 +9,7 @@ public record FamilyControlMemberItem(
         String memberName,
         FamilyRole familyRole,
         Boolean blocked,
-        Long dataLimitMb,
+        Double dataLimitGb,
         Integer priorityOrder
 ) {
 }

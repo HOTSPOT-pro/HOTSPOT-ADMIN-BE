@@ -3,9 +3,8 @@ package hotspot.admin.family.infrastructure.query.dto;
 import lombok.Builder;
 
 @Builder
-public record FamilyPolicyAppPolicyRow(
-        Long subId,
+public record FamilyPolicyAppOptionRow(
         Long policyId,
-        String blockedServiceName
+        String policyName
 ) {
 }
