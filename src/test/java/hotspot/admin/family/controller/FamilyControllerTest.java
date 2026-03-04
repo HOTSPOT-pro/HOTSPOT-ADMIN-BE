@@ -160,6 +160,7 @@ class FamilyControllerTest {
     @DisplayName("가족 정책 적용 현황 조회 성공")
     void getFamilyPolicyStatusSuccess() throws Exception {
         FamilyPolicyMemberStatusItem member = FamilyPolicyMemberStatusItem.builder()
+                .subId(101L)
                 .memberName("홍길동")
                 .phoneNumber("010-****-1111")
                 .familyRole(FamilyRole.OWNER)
@@ -173,6 +174,7 @@ class FamilyControllerTest {
 
         mockMvc.perform(get("/api/v1/admin/families/5/policy-status"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].subId").value(101))
                 .andExpect(jsonPath("$.data[0].memberName").value("홍길동"))
                 .andExpect(jsonPath("$.data[0].familyRole").value("OWNER"))
                 .andExpect(jsonPath("$.data[0].blocked").value(true))

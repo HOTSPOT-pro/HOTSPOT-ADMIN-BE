@@ -7,6 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record FamilyPolicyMemberStatusItem(
+        Long subId,
         String memberName,
         String phoneNumber,
         FamilyRole familyRole,
