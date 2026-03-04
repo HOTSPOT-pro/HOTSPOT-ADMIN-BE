@@ -36,6 +36,7 @@ import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRemoveScheduleRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.outbox.consistencyOutbox.publisher.FamilyEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessFamilyRequestServiceTest {
@@ -52,6 +53,8 @@ class ProcessFamilyRequestServiceTest {
     private FamilySubRepository familySubRepository;
     @Mock
     private FamilyRequestOutboxPublisher familyRequestOutboxPublisher;
+    @Mock
+    private FamilyEventPublisher familyEventPublisher;
 
     private ProcessFamilyRequestServiceImpl service;
 
@@ -63,7 +66,8 @@ class ProcessFamilyRequestServiceTest {
                 familyRemoveScheduleRepository,
                 familyRepository,
                 familySubRepository,
-                familyRequestOutboxPublisher
+                familyRequestOutboxPublisher,
+                familyEventPublisher
         );
     }
 
@@ -111,6 +115,9 @@ class ProcessFamilyRequestServiceTest {
         verify(familySubRepository).saveFamilySub(99L, 30L, FamilyRole.OWNER, -1, 15728640L);
         verify(familySubRepository).saveFamilySub(99L, 31L, FamilyRole.PARENT, -1, 15728640L);
         verify(familySubRepository).saveFamilySub(99L, 32L, FamilyRole.CHILD, -1, 15728640L);
+        verify(familyEventPublisher).publishFamilyCreated(eq(99L), eq(List.of(31L, 32L, 30L)));
+
+
     }
 
     @Test
@@ -148,6 +155,7 @@ class ProcessFamilyRequestServiceTest {
         verify(familyRepository).updateFamilySummary(3L, 3, 15728640L);
         verify(familySubRepository).updateDataLimit(3L, 15728640L);
         verify(familySubRepository).updatePriority(3L, -1);
+        verify(familyEventPublisher).publishMemberAdded(eq(3L), eq(100L));
     }
 
     @Test
