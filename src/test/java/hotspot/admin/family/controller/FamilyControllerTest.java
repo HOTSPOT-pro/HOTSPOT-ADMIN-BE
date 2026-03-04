@@ -279,7 +279,7 @@ class FamilyControllerTest {
     @Test
     @DisplayName("가족 구성원 제어 상태 수정 성공")
     void updateFamilyMemberControlStatusSuccess() throws Exception {
-                mockMvc.perform(patch("/api/v1/admin/families/5/member/101/control-status")
+                mockMvc.perform(patch("/api/v1/admin/families/5/members/101/control-status")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content("""
                                 {
