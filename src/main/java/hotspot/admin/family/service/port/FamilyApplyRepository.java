@@ -20,4 +20,6 @@ public interface FamilyApplyRepository {
 
     Optional<FamilyRequestOutboxInfo> findFamilyRequestOutboxInfo(Long familyApplyId, ApplyType applyType);
 
+    int updateFamilyId(Long familyApplyId, ApplyType applyType, Long familyId);
+
 }

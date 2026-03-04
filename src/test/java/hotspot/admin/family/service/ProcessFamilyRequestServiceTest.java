@@ -73,7 +73,7 @@ class ProcessFamilyRequestServiceTest {
         FamilyApply familyApply = FamilyApply.builder()
                 .familyApplyId(17L)
                 .requesterSubId(30L)
-                .familyId(null)
+                .familyId(99L)
                 .applyType(ApplyType.CREATE)
                 .status(FamilyApplyStatus.APPROVED)
                 .createdTime(LocalDateTime.now())
@@ -83,7 +83,7 @@ class ProcessFamilyRequestServiceTest {
         when(familyApplyRepository.updateFamilyRequestStatus(17L, ApplyType.CREATE, FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED)).thenReturn(1);
         when(familyApplyRepository.findFamilyRequestOutboxInfo(17L, ApplyType.CREATE))
-                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "member-a, member-b")));
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, List.of("member-a", "member-b"))));
         when(familyApplyQueryRepository.findApprovalTargetInfos(17L, ApplyType.CREATE))
                 .thenReturn(List.of(
                         FamilyApprovalTargetInfo.builder()
@@ -101,10 +101,13 @@ class ProcessFamilyRequestServiceTest {
                 .thenReturn(Optional.of(30L));
         when(familyRepository.createFamily(3, 15728640L, PriorityType.FIFO))
                 .thenReturn(99L);
+        when(familyApplyRepository.updateFamilyId(17L, ApplyType.CREATE, 99L))
+                .thenReturn(1);
 
         service.approve(ApplyType.CREATE, 17L);
 
-        verify(familyRequestOutboxPublisher).publishApproved(eq(familyApply), eq("member-a, member-b"));
+        verify(familyRequestOutboxPublisher)
+                .publishApproved(eq(familyApply), eq(List.of("member-a", "member-b")), eq(99L));
         verify(familySubRepository).saveFamilySub(99L, 30L, FamilyRole.OWNER, -1, 15728640L);
         verify(familySubRepository).saveFamilySub(99L, 31L, FamilyRole.PARENT, -1, 15728640L);
         verify(familySubRepository).saveFamilySub(99L, 32L, FamilyRole.CHILD, -1, 15728640L);
@@ -126,7 +129,7 @@ class ProcessFamilyRequestServiceTest {
         when(familyApplyRepository.updateFamilyRequestStatus(7L, ApplyType.ADD, FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED)).thenReturn(1);
         when(familyApplyRepository.findFamilyRequestOutboxInfo(7L, ApplyType.ADD))
-                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "target-name")));
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, List.of("target-name"))));
         when(familyApplyQueryRepository.findApprovalTargetInfos(7L, ApplyType.ADD))
                 .thenReturn(List.of(FamilyApprovalTargetInfo.builder()
                         .familyId(3L)
@@ -139,7 +142,8 @@ class ProcessFamilyRequestServiceTest {
 
         service.approve(ApplyType.ADD, 7L);
 
-        verify(familyRequestOutboxPublisher).publishApproved(eq(familyApply), eq("target-name"));
+        verify(familyRequestOutboxPublisher)
+                .publishApproved(eq(familyApply), eq(List.of("target-name")), eq(3L));
         verify(familySubRepository).saveFamilySub(3L, 100L, FamilyRole.CHILD, -1, 0L);
         verify(familyRepository).updateFamilySummary(3L, 3, 15728640L);
         verify(familySubRepository).updateDataLimit(3L, 15728640L);
@@ -162,7 +166,7 @@ class ProcessFamilyRequestServiceTest {
         when(familyApplyRepository.updateFamilyRequestStatus(5L, ApplyType.REMOVE, FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.APPROVED)).thenReturn(1);
         when(familyApplyRepository.findFamilyRequestOutboxInfo(5L, ApplyType.REMOVE))
-                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "remove-target")));
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, List.of("remove-target"))));
         when(familyApplyQueryRepository.findApprovalTargetInfos(5L, ApplyType.REMOVE))
                 .thenReturn(List.of(FamilyApprovalTargetInfo.builder()
                         .familyId(6L)
@@ -179,7 +183,8 @@ class ProcessFamilyRequestServiceTest {
 
         service.approve(ApplyType.REMOVE, 5L);
 
-        verify(familyRequestOutboxPublisher).publishApproved(eq(familyApply), eq("remove-target"));
+        verify(familyRequestOutboxPublisher)
+                .publishApproved(eq(familyApply), eq(List.of("remove-target")), eq(6L));
         verify(familyRemoveScheduleRepository).saveAll(any());
         verifyNoInteractions(familyRepository, familySubRepository);
     }
@@ -200,11 +205,12 @@ class ProcessFamilyRequestServiceTest {
         when(familyApplyRepository.updateFamilyRequestStatus(8L, ApplyType.REMOVE, FamilyApplyStatus.PENDING,
                 FamilyApplyStatus.REJECTED)).thenReturn(1);
         when(familyApplyRepository.findFamilyRequestOutboxInfo(8L, ApplyType.REMOVE))
-                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, "reject-target")));
+                .thenReturn(Optional.of(new FamilyRequestOutboxInfo(familyApply, List.of("reject-target"))));
 
         service.reject(ApplyType.REMOVE, 8L);
 
-        verify(familyRequestOutboxPublisher).publishRejected(eq(familyApply), eq("reject-target"));
+        verify(familyRequestOutboxPublisher)
+                .publishRejected(eq(familyApply), eq(List.of("reject-target")), eq(9L));
         verifyNoInteractions(
                 familyApplyQueryRepository,
                 familyRemoveScheduleRepository,
@@ -223,7 +229,7 @@ class ProcessFamilyRequestServiceTest {
         assertThatThrownBy(() -> service.reject(ApplyType.REMOVE, 9L))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
-        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any());
+        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any(), any());
     }
 
     @Test
@@ -236,6 +242,6 @@ class ProcessFamilyRequestServiceTest {
         assertThatThrownBy(() -> service.reject(ApplyType.REMOVE, 9L))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_REQUEST_NOT_PENDING);
-        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any());
+        verify(familyRequestOutboxPublisher, never()).publishRejected(any(), any(), any());
     }
 }

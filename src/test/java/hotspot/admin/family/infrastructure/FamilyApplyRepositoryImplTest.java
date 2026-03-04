@@ -3,6 +3,7 @@ package hotspot.admin.family.infrastructure;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +50,7 @@ class FamilyApplyRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("요청 존재 여부 조회 성공")
+    @DisplayName("exists family request")
     void existsFamilyRequestSuccess() {
         FamilyApplyRepositoryImpl familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
         when(familyApplyJpaRepository.existsByFamilyApplyIdAndApplyType(10L, ApplyType.REMOVE)).thenReturn(true);
@@ -101,7 +102,7 @@ class FamilyApplyRepositoryImplTest {
         when(familyApplyJpaRepository.findOutboxSourceByFamilyApplyIdAndApplyType(44L, ApplyType.ADD))
                 .thenReturn(Optional.of(entity));
         when(familyApplyJpaRepository.findTargetNamesByFamilyApplyId(44L))
-                .thenReturn("target-name");
+                .thenReturn(List.of("target-name"));
 
         Optional<FamilyRequestOutboxInfo> result = familyApplyRepository.findFamilyRequestOutboxInfo(
                 44L,
@@ -109,10 +110,21 @@ class FamilyApplyRepositoryImplTest {
         );
 
         assertThat(result).isPresent();
-        assertThat(result.get().targetName()).isEqualTo("target-name");
+        assertThat(result.get().targetNames()).containsExactly("target-name");
         assertThat(result.get().familyApply().getFamilyApplyId()).isEqualTo(44L);
         assertThat(result.get().familyApply().getRequesterSubId()).isEqualTo(11L);
         assertThat(result.get().familyApply().getTargets()).isEmpty();
         assertThat(result.get().familyApply().getFamilyId()).isEqualTo(33L);
+    }
+
+    @Test
+    @DisplayName("update family id")
+    void updateFamilyIdSuccess() {
+        FamilyApplyRepositoryImpl familyApplyRepository = new FamilyApplyRepositoryImpl(familyApplyJpaRepository);
+        when(familyApplyJpaRepository.updateFamilyIdByIdAndType(44L, ApplyType.CREATE, 55L)).thenReturn(1);
+
+        int updated = familyApplyRepository.updateFamilyId(44L, ApplyType.CREATE, 55L);
+
+        assertThat(updated).isEqualTo(1);
     }
 }

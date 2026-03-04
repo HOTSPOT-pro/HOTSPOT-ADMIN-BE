@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,13 +44,13 @@ class FamilyRequestOutboxPublisherTest {
     void publishApprovedSuccess() {
         FamilyApply familyApply = familyApply(11L, 101L, ApplyType.ADD);
 
-        publisher.publishApproved(familyApply, "target-name");
+        publisher.publishApproved(familyApply, List.of("target-name"), 101L);
 
         ArgumentCaptor<Object> payloadCaptor = ArgumentCaptor.forClass(Object.class);
         verify(outboxEventAppender).append(
                 eq("user-alert"),
-                eq("11"),
-                eq("APPROVED"),
+                eq("101"),
+                eq("FAMILY_MEMBER_ADD"),
                 payloadCaptor.capture()
         );
 
@@ -57,7 +58,7 @@ class FamilyRequestOutboxPublisherTest {
         assertThat(event.alertId()).isNotBlank();
         assertThat(event.eventType()).isEqualTo("FAMILY_MEMBER_ADD");
         assertThat(event.alertType()).isEqualTo("APPROVED");
-        assertThat(event.targetName()).isEqualTo("target-name");
+        assertThat(event.targetNames()).containsExactly("target-name");
         assertThat(event.familyId()).isEqualTo(101L);
         assertThat(event.createdTime()).isNotNull();
     }
@@ -67,13 +68,13 @@ class FamilyRequestOutboxPublisherTest {
     void publishRejectedSuccess() {
         FamilyApply familyApply = familyApply(22L, 202L, ApplyType.REMOVE);
 
-        publisher.publishRejected(familyApply, "target-name-2");
+        publisher.publishRejected(familyApply, List.of("target-name-2"), 202L);
 
         ArgumentCaptor<Object> payloadCaptor = ArgumentCaptor.forClass(Object.class);
         verify(outboxEventAppender).append(
                 eq("user-alert"),
-                eq("22"),
-                eq("REJECTED"),
+                eq("202"),
+                eq("FAMILY_MEMBER_REMOVE"),
                 payloadCaptor.capture()
         );
 
@@ -83,13 +84,34 @@ class FamilyRequestOutboxPublisherTest {
     }
 
     @Test
-    @DisplayName("ApplicationException은 그대로 전파")
+    @DisplayName("publish create approved event")
+    void publishCreateApprovedSuccess() {
+        FamilyApply familyApply = familyApply(33L, null, ApplyType.CREATE);
+
+        publisher.publishApproved(familyApply, List.of("member-a", "member-b"), 303L);
+
+        ArgumentCaptor<Object> payloadCaptor = ArgumentCaptor.forClass(Object.class);
+        verify(outboxEventAppender).append(
+                eq("user-alert"),
+                eq("303"),
+                eq("FAMILY_CREATE"),
+                payloadCaptor.capture()
+        );
+
+        FamilyRequestAlertEvent event = (FamilyRequestAlertEvent) payloadCaptor.getValue();
+        assertThat(event.eventType()).isEqualTo("FAMILY_CREATE");
+        assertThat(event.targetNames()).containsExactly("member-a", "member-b");
+        assertThat(event.familyId()).isEqualTo(303L);
+    }
+
+    @Test
+    @DisplayName("propagate application exception")
     void publishPropagateApplicationException() {
         FamilyApply familyApply = familyApply(1L, 1L, ApplyType.ADD);
         ApplicationException appEx = new ApplicationException(OutboxErrorCode.OUTBOX_EVENT_SAVE_FAILED);
         doThrow(appEx).when(outboxEventAppender).append(any(), any(), any(), any());
 
-        assertThatThrownBy(() -> publisher.publishApproved(familyApply, "x"))
+        assertThatThrownBy(() -> publisher.publishApproved(familyApply, List.of("x"), 1L))
                 .isSameAs(appEx);
     }
 
@@ -99,7 +121,7 @@ class FamilyRequestOutboxPublisherTest {
         FamilyApply familyApply = familyApply(1L, 1L, ApplyType.ADD);
         doThrow(new RuntimeException("boom")).when(outboxEventAppender).append(any(), any(), any(), any());
 
-        assertThatThrownBy(() -> publisher.publishApproved(familyApply, "x"))
+        assertThatThrownBy(() -> publisher.publishApproved(familyApply, List.of("x"), 1L))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == OutboxErrorCode.OUTBOX_EVENT_PUBLISH_FAILED);
     }
