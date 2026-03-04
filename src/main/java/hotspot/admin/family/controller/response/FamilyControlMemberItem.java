@@ -8,7 +8,8 @@ public record FamilyControlMemberItem(
         Long subId,
         String memberName,
         FamilyRole familyRole,
-        Boolean blocked,
+        Boolean isParent,
+        Boolean isBlocked,
         Double dataLimitGb,
         Integer priorityOrder
 ) {

@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import hotspot.admin.auth.controller.request.LoginRequest;
-import hotspot.admin.auth.controller.response.TokenResponse;
 import hotspot.admin.common.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +19,7 @@ public interface AuthApi {
 
     @Operation(
             summary = "관리자 로그인",
-            description = "관리자 계정으로 로그인하여 JWT 토큰을 발급받습니다.",
+            description = "관리자 계정으로 로그인하여 JWT 액세스 토큰을 HttpOnly 쿠키로 발급합니다.",
             security = {}
     )
     @ApiResponses(value = {
@@ -50,5 +49,5 @@ public interface AuthApi {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    ResponseEntity<hotspot.admin.common.ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request);
+    ResponseEntity<hotspot.admin.common.ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request);
 }

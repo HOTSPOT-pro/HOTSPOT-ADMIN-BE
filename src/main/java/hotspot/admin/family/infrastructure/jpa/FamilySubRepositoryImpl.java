@@ -1,5 +1,7 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
@@ -57,5 +59,35 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
     @Override
     public int updatePriority(Long familyId, int priority) {
         return familySubJpaRepository.updatePriorityByFamilyId(familyId, priority);
+    }
+
+    /** 특정 구성원의 우선순위를 갱신한다. */
+    @Override
+    public int updateMemberPriority(Long familyId, Long subId, int priority) {
+        return familySubJpaRepository.updatePriorityByFamilyIdAndSubId(familyId, subId, priority);
+    }
+
+    /** 특정 구성원의 데이터 한도(KB)를 갱신한다. */
+    @Override
+    public int updateMemberDataLimit(Long familyId, Long subId, long dataLimit) {
+        return familySubJpaRepository.updateDataLimitByFamilyIdAndSubId(familyId, subId, dataLimit);
+    }
+
+    /** 특정 구성원의 잠금 상태를 갱신한다. */
+    @Override
+    public int updateMemberBlocked(Long familyId, Long subId, boolean isBlocked) {
+        return subscriptionJpaRepository.updateIsLockedByFamilyIdAndSubId(familyId, subId, isBlocked);
+    }
+
+    /** 특정 구성원의 가족 역할(OWNER/PARENT/CHILD)을 조회한다. */
+    @Override
+    public Optional<FamilyRole> findFamilyRole(Long familyId, Long subId) {
+        return familySubJpaRepository.findFamilyRoleByFamilyIdAndSubId(familyId, subId);
+    }
+
+    /** 특정 구성원의 가족 역할(OWNER/PARENT/CHILD)을 갱신한다. */
+    @Override
+    public int updateMemberFamilyRole(Long familyId, Long subId, FamilyRole familyRole) {
+        return familySubJpaRepository.updateFamilyRoleByFamilyIdAndSubId(familyId, subId, familyRole);
     }
 }
