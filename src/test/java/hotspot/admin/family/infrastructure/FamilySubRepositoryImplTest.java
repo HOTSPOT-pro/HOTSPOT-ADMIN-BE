@@ -124,4 +124,66 @@ class FamilySubRepositoryImplTest {
 
         assertThat(updated).isEqualTo(3);
     }
+
+    @Test
+    @DisplayName("특정 구성원 데이터 한도 업데이트 성공")
+    void updateMemberDataLimitSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(familySubJpaRepository.updateDataLimitByFamilyIdAndSubId(3L, 100L, 2048L)).thenReturn(1);
+
+        int updated = familySubRepository.updateMemberDataLimit(3L, 100L, 2048L);
+
+        assertThat(updated).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("특정 구성원 잠금 상태 업데이트 성공")
+    void updateMemberBlockedSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(subscriptionJpaRepository.updateIsLockedByFamilyIdAndSubId(3L, 100L, true)).thenReturn(1);
+
+        int updated = familySubRepository.updateMemberBlocked(3L, 100L, true);
+
+        assertThat(updated).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("특정 구성원 가족 역할 조회 성공")
+    void findFamilyRoleSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(familySubJpaRepository.findFamilyRoleByFamilyIdAndSubId(3L, 100L))
+                .thenReturn(java.util.Optional.of(FamilyRole.PARENT));
+
+        java.util.Optional<FamilyRole> role = familySubRepository.findFamilyRole(3L, 100L);
+
+        assertThat(role).isPresent();
+        assertThat(role.get()).isEqualTo(FamilyRole.PARENT);
+    }
+
+    @Test
+    @DisplayName("특정 구성원 가족 역할 업데이트 성공")
+    void updateMemberFamilyRoleSuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+        when(familySubJpaRepository.updateFamilyRoleByFamilyIdAndSubId(3L, 100L, FamilyRole.CHILD)).thenReturn(1);
+
+        int updated = familySubRepository.updateMemberFamilyRole(3L, 100L, FamilyRole.CHILD);
+
+        assertThat(updated).isEqualTo(1);
+    }
 }

@@ -1,5 +1,7 @@
 package hotspot.admin.family.service.port;
 
+import java.util.Optional;
+
 import hotspot.admin.family.domain.FamilyRole;
 
 public interface FamilySubRepository {
@@ -14,4 +16,14 @@ public interface FamilySubRepository {
     int updateDataLimit(Long familyId, long dataLimit);
 
     int updatePriority(Long familyId, int priority);
+
+    int updateMemberPriority(Long familyId, Long subId, int priority);
+
+    int updateMemberDataLimit(Long familyId, Long subId, long dataLimit);
+
+    int updateMemberBlocked(Long familyId, Long subId, boolean isBlocked);
+
+    Optional<FamilyRole> findFamilyRole(Long familyId, Long subId);
+
+    int updateMemberFamilyRole(Long familyId, Long subId, FamilyRole familyRole);
 }
