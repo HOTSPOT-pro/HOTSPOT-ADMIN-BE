@@ -7,11 +7,14 @@ import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import hotspot.admin.common.exception.ErrorResponse;
 import hotspot.admin.family.controller.request.FamilyListRequest;
+import hotspot.admin.family.controller.request.UpdateFamilyPriorityRequest;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
@@ -155,6 +158,43 @@ public interface FamilyApi {
     ResponseEntity<hotspot.admin.common.ApiResponse<FamilyPolicyMemberDetailItem>> getFamilyPolicyDetailStatus(
             @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId,
             @Parameter(description = "구성원 구독 ID", example = "101") @PathVariable Long subId);
+
+    @Operation(summary = "가족 우선순위 유형 변경", description = "가족 우선순위 유형(FIFO/PRIORITY)을 변경하고 필요 시 구성원 우선순위를 반영합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "변경 성공"),
+            @ApiResponse(responseCode = "400", description = """
+                    잘못된 요청
+                    - COMMON_001: 잘못된 요청입니다.
+                    - FAMILY_011: 우선순위 모드에서는 -1 값을 사용할 수 없습니다.
+                    - FAMILY_012: 중복된 우선순위 값이 존재합니다.
+                    - FAMILY_013: 우선순위는 1부터 시작하여 연속적이어야 합니다.
+                    - FAMILY_014: 모든 가족 구성원의 우선순위 값이 필요합니다.
+                    - FAMILY_015: 중복된 구성원 우선순위 입력이 존재합니다.
+                    """,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = """
+                    인증 실패
+                    - AUTH_002: 유효하지 않은 토큰입니다.
+                    - AUTH_003: 만료된 토큰입니다.
+                    - AUTH_004: 지원되지 않는 토큰입니다.
+                    - AUTH_005: 토큰이 비어있거나 잘못되었습니다.
+                    """,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = """
+                    가족 정보를 찾을 수 없음
+                    - FAMILY_001: 가족 정보를 찾을 수 없습니다.
+                    """,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = """
+                    서버 에러
+                    - COMMON_004: 서버 에러가 발생했습니다.
+                    """,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PatchMapping("/{familyId}/priority")
+    ResponseEntity<hotspot.admin.common.ApiResponse<Void>> updateFamilyPriority(
+            @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId,
+            @Valid @RequestBody UpdateFamilyPriorityRequest request);
 
     @Operation(summary = "전화번호로 가족 검색", description = "전화번호 기준으로 가족을 검색합니다.")
     @ApiResponses(value = {

@@ -89,6 +89,7 @@ public class FamilyController implements FamilyApi {
     }
 
     /** 가족 제어 기능의 우선순위 유형(FIFO/PRIORITY)을 변경한다. */
+    @Override
     @PatchMapping("/{familyId}/priority")
     public ResponseEntity<ApiResponse<Void>> updateFamilyPriority(
             @PathVariable Long familyId,
