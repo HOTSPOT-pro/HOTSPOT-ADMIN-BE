@@ -5,6 +5,7 @@ import lombok.Builder;
 @Builder
 public record FamilyPolicyTimePolicyRow(
         Long subId,
+        Long policyId,
         String policyName
 ) {
 }

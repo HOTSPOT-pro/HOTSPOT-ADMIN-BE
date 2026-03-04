@@ -13,6 +13,7 @@ public class BlockPolicy {
     private final Long blockPolicyId;
     private final String policyName;
     private final String policyDescription;
+    private final Long familyId;
     private final PolicyType policyType;
     private final PolicySnapshot policySnapshot;
     private final Boolean isActive;

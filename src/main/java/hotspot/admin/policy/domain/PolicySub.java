@@ -12,9 +12,8 @@ import lombok.Getter;
 public class PolicySub {
     private final Long policySubId;
     private final Long subId;
-    private final Long policyId;
-    private final DateSnapshot dateSnapshot;
-    private final Boolean isDeleted;
+    private final Long blockPolicyId;
+    private final Boolean isActive;
     private final LocalDateTime createdTime;
     private final LocalDateTime modifiedTime;
 }
