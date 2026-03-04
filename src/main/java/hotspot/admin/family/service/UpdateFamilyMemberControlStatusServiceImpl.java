@@ -39,7 +39,9 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
         if (dataLimitGb != null) {
             long dataLimitKb = toKb(dataLimitGb);
             long familyDataAmount = familyRepository.findFamilyDataAmount(familyId)
-                    .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Family data amount is missing for existing familyId=" + familyId
+                    ));
             if (dataLimitKb > familyDataAmount) {
                 throw new ApplicationException(FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
             }

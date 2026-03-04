@@ -83,6 +83,18 @@ class UpdateFamilyMemberControlStatusServiceTest {
     }
 
     @Test
+    @DisplayName("가족 존재 확인 이후 데이터량이 비어있으면 내부 예외")
+    void familyDataAmountMissingAfterExistenceCheck() {
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
+        when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
+        when(familyRepository.findFamilyDataAmount(1L)).thenReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, 1L, null, null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("familyId=1");
+    }
+
+    @Test
     @DisplayName("자녀를 부모로 변경 성공")
     void updateChildToParentSuccess() {
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
