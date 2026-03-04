@@ -49,7 +49,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .subId(member.subId())
                 .memberName(member.memberName())
                 .familyRole(member.familyRole())
-                .blocked(Boolean.TRUE.equals(member.blocked()))
+                .isBlocked(Boolean.TRUE.equals(member.blocked()))
                 .dataLimitGb(toGb(member.dataLimit()))
                 .priorityOrder(resolvePriorityOrder(member.priority(), priorityType))
                 .build();
