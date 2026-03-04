@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
+import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 
@@ -41,7 +42,7 @@ class UpdateFamilyMemberControlStatusServiceTest {
         when(familySubRepository.updateMemberDataLimit(1L, 101L, 1048576L)).thenReturn(1);
         when(familySubRepository.updateMemberBlocked(1L, 101L, true)).thenReturn(1);
 
-        service.updateMemberControlStatus(1L, 101L, 1L, true);
+        service.updateMemberControlStatus(1L, 101L, 1L, true, null);
 
         verify(familySubRepository).updateMemberDataLimit(1L, 101L, 1048576L);
         verify(familySubRepository).updateMemberBlocked(1L, 101L, true);
@@ -52,7 +53,7 @@ class UpdateFamilyMemberControlStatusServiceTest {
     void familyNotFound() {
         when(familyRepository.existsFamilyById(999L)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.updateMemberControlStatus(999L, 101L, 1L, null))
+        assertThatThrownBy(() -> service.updateMemberControlStatus(999L, 101L, 1L, null, null))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_NOT_FOUND);
     }
@@ -63,7 +64,7 @@ class UpdateFamilyMemberControlStatusServiceTest {
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
         when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, null, true))
+        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, null, true, null))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
     }
@@ -75,9 +76,47 @@ class UpdateFamilyMemberControlStatusServiceTest {
         when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
         when(familyRepository.findFamilyDataAmount(1L)).thenReturn(java.util.Optional.of(1048576L));
 
-        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, 2L, null))
+        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, 2L, null, null))
                 .isInstanceOf(ApplicationException.class)
                 .matches(ex -> ((ApplicationException) ex).getCode()
                         == FamilyErrorCode.DATA_LIMIT_EXCEEDS_FAMILY_AMOUNT);
+    }
+
+    @Test
+    @DisplayName("자녀를 부모로 변경 성공")
+    void updateChildToParentSuccess() {
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
+        when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
+        when(familySubRepository.findFamilyRole(1L, 101L)).thenReturn(java.util.Optional.of(FamilyRole.CHILD));
+        when(familySubRepository.updateMemberFamilyRole(1L, 101L, FamilyRole.PARENT)).thenReturn(1);
+
+        service.updateMemberControlStatus(1L, 101L, null, null, true);
+
+        verify(familySubRepository).updateMemberFamilyRole(1L, 101L, FamilyRole.PARENT);
+    }
+
+    @Test
+    @DisplayName("부모를 자녀로 변경 성공")
+    void updateParentToChildSuccess() {
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
+        when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
+        when(familySubRepository.findFamilyRole(1L, 101L)).thenReturn(java.util.Optional.of(FamilyRole.PARENT));
+        when(familySubRepository.updateMemberFamilyRole(1L, 101L, FamilyRole.CHILD)).thenReturn(1);
+
+        service.updateMemberControlStatus(1L, 101L, null, null, false);
+
+        verify(familySubRepository).updateMemberFamilyRole(1L, 101L, FamilyRole.CHILD);
+    }
+
+    @Test
+    @DisplayName("OWNER의 isParent 변경 시 예외")
+    void updateOwnerRoleForbidden() {
+        when(familyRepository.existsFamilyById(1L)).thenReturn(true);
+        when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
+        when(familySubRepository.findFamilyRole(1L, 101L)).thenReturn(java.util.Optional.of(FamilyRole.OWNER));
+
+        assertThatThrownBy(() -> service.updateMemberControlStatus(1L, 101L, null, null, true))
+                .isInstanceOf(ApplicationException.class)
+                .matches(ex -> ((ApplicationException) ex).getCode() == FamilyErrorCode.OWNER_ROLE_NOT_UPDATABLE);
     }
 }

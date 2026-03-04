@@ -1,5 +1,7 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
@@ -75,5 +77,17 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
     @Override
     public int updateMemberBlocked(Long familyId, Long subId, boolean isBlocked) {
         return subscriptionJpaRepository.updateIsLockedByFamilyIdAndSubId(familyId, subId, isBlocked);
+    }
+
+    /** 특정 구성원의 가족 역할(OWNER/PARENT/CHILD)을 조회한다. */
+    @Override
+    public Optional<FamilyRole> findFamilyRole(Long familyId, Long subId) {
+        return familySubJpaRepository.findFamilyRoleByFamilyIdAndSubId(familyId, subId);
+    }
+
+    /** 특정 구성원의 가족 역할(OWNER/PARENT/CHILD)을 갱신한다. */
+    @Override
+    public int updateMemberFamilyRole(Long familyId, Long subId, FamilyRole familyRole) {
+        return familySubJpaRepository.updateFamilyRoleByFamilyIdAndSubId(familyId, subId, familyRole);
     }
 }

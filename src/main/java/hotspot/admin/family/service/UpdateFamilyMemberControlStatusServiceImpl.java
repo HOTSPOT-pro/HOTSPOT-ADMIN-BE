@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
+import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,13 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
 
     @Transactional
     @Override
-    public void updateMemberControlStatus(Long familyId, Long subId, Long dataLimitGb, Boolean isBlocked) {
+    public void updateMemberControlStatus(
+            Long familyId,
+            Long subId,
+            Long dataLimitGb,
+            Boolean isBlocked,
+            Boolean isParent
+    ) {
         if (!familyRepository.existsFamilyById(familyId)) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
         }
@@ -45,6 +52,20 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
 
         if (isBlocked != null) {
             int updated = familySubRepository.updateMemberBlocked(familyId, subId, isBlocked);
+            if (updated == 0) {
+                throw new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
+            }
+        }
+
+        if (isParent != null) {
+            FamilyRole currentRole = familySubRepository.findFamilyRole(familyId, subId)
+                    .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND));
+            if (currentRole == FamilyRole.OWNER) {
+                throw new ApplicationException(FamilyErrorCode.OWNER_ROLE_NOT_UPDATABLE);
+            }
+
+            FamilyRole targetRole = isParent ? FamilyRole.PARENT : FamilyRole.CHILD;
+            int updated = familySubRepository.updateMemberFamilyRole(familyId, subId, targetRole);
             if (updated == 0) {
                 throw new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
             }

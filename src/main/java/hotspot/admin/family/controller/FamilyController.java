@@ -74,7 +74,7 @@ public class FamilyController implements FamilyApi {
 
     /** 가족 제어 기능 탭에서 특정 구성원의 데이터 한도/잠금 상태를 수정한다. */
     @Override
-    @PatchMapping("/{familyId}/member/{subId}/control-status")
+    @PatchMapping("/{familyId}/members/{subId}/control-status")
     public ResponseEntity<ApiResponse<Void>> updateFamilyMemberControlStatus(
             @PathVariable Long familyId,
             @PathVariable Long subId,
@@ -84,7 +84,8 @@ public class FamilyController implements FamilyApi {
                 familyId,
                 subId,
                 request.dataLimitGb(),
-                request.isBlocked()
+                request.isBlocked(),
+                request.isParent()
         );
         return ResponseEntity.ok(ApiResponse.success());
     }

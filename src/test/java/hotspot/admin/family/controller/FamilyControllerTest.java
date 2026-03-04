@@ -136,6 +136,7 @@ class FamilyControllerTest {
                                 .subId(101L)
                                 .memberName("홍대표")
                                 .familyRole(FamilyRole.OWNER)
+                                .isParent(null)
                                 .isBlocked(false)
                                 .dataLimitGb(0.0009765625D)
                                 .priorityOrder(-1)
@@ -144,6 +145,7 @@ class FamilyControllerTest {
                                 .subId(102L)
                                 .memberName("홍부모")
                                 .familyRole(FamilyRole.PARENT)
+                                .isParent(true)
                                 .isBlocked(true)
                                 .dataLimitGb(0.00048828125D)
                                 .priorityOrder(-1)
@@ -160,8 +162,10 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.members[0].subId").value(101))
                 .andExpect(jsonPath("$.data.members[0].memberName").value("홍대표"))
                 .andExpect(jsonPath("$.data.members[0].familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data.members[0].isParent").isEmpty())
                 .andExpect(jsonPath("$.data.members[0].priorityOrder").value(-1))
                 .andExpect(jsonPath("$.data.members[1].familyRole").value("PARENT"))
+                .andExpect(jsonPath("$.data.members[1].isParent").value(true))
                 .andExpect(jsonPath("$.data.members[1].isBlocked").value(true));
     }
 
@@ -280,7 +284,8 @@ class FamilyControllerTest {
                         .content("""
                                 {
                                   "dataLimitGb": 1,
-                                  "isBlocked": true
+                                  "isBlocked": true,
+                                  "isParent": true
                                 }
                                 """))
                 .andExpect(status().isOk())

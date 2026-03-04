@@ -39,8 +39,6 @@ public interface FamilyApi {
             @ApiResponse(responseCode = "400", description = """
                     잘못된 요청
                     - COMMON_002: 올바르지 않은 요청입니다.
-                    - FAMILY_016: 데이터 한도는 0 이상이어야 합니다.
-                    - FAMILY_017: 데이터 한도는 가족 공유 데이터량을 초과할 수 없습니다.
                     """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = """
@@ -110,12 +108,15 @@ public interface FamilyApi {
     ResponseEntity<hotspot.admin.common.ApiResponse<FamilyControlStatusResponse>> getFamilyControlStatus(
             @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId);
 
-    @Operation(summary = "가족 구성원 제어 상태 수정", description = "특정 구성원의 데이터 한도(GB)와 차단 여부를 수정합니다.")
+    @Operation(summary = "가족 구성원 제어 상태 수정", description = "특정 구성원의 데이터 한도(GB), 차단 여부, 부모 권한 여부를 수정합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "수정 성공"),
             @ApiResponse(responseCode = "400", description = """
                     잘못된 요청
                     - COMMON_002: 올바르지 않은 요청입니다.
+                    - FAMILY_016: 데이터 한도는 0 이상이어야 합니다.
+                    - FAMILY_017: 데이터 한도는 가족 공유 데이터량을 초과할 수 없습니다.
+                    - FAMILY_018: 가족 대표(OWNER)의 부모 권한은 변경할 수 없습니다.
                     """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = """

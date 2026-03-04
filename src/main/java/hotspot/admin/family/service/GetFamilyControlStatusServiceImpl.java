@@ -10,6 +10,7 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
+import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
@@ -49,10 +50,19 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .subId(member.subId())
                 .memberName(member.memberName())
                 .familyRole(member.familyRole())
+                .isParent(resolveIsParent(member.familyRole()))
                 .isBlocked(Boolean.TRUE.equals(member.blocked()))
                 .dataLimitGb(toGb(member.dataLimit()))
                 .priorityOrder(resolvePriorityOrder(member.priority(), priorityType))
                 .build();
+    }
+
+    private Boolean resolveIsParent(FamilyRole familyRole) {
+        return switch (familyRole) {
+            case PARENT -> true;
+            case CHILD -> false;
+            case OWNER -> null;
+        };
     }
 
     /** 우선순위 유형 규칙에 따라 화면 노출용 우선순위 순서를 계산한다. */
