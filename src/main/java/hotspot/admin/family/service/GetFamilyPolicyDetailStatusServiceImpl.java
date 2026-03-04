@@ -1,11 +1,9 @@
 package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -58,14 +56,9 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
         }
 
         List<FamilyPolicyMemberRow> members = familySubQueryRepository.findFamilyPolicyMembers(familyId);
-        List<FamilyPolicyTimeOptionRow> timePolicyOptions = deduplicateById(
-                familySubQueryRepository.findFamilyTimePolicyOptions(familyId),
-                FamilyPolicyTimeOptionRow::policyId
-        );
-        List<FamilyPolicyAppOptionRow> appPolicyOptions = deduplicateById(
-                familySubQueryRepository.findFamilyAppPolicyOptions(familyId),
-                FamilyPolicyAppOptionRow::policyId
-        );
+        List<FamilyPolicyTimeOptionRow> timePolicyOptions = familySubQueryRepository
+                .findFamilyTimePolicyOptions(familyId);
+        List<FamilyPolicyAppOptionRow> appPolicyOptions = familySubQueryRepository.findFamilyAppPolicyOptions(familyId);
 
         Map<Long, Set<Long>> appliedTimePolicyIds = familySubQueryRepository.findFamilyTimePolicies(familyId).stream()
                 .collect(Collectors.groupingBy(
@@ -205,17 +198,6 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
             case SAT -> "토";
             case SUN -> "일";
         };
-    }
-
-    private <T> List<T> deduplicateById(List<T> rows, Function<T, Long> idExtractor) {
-        Map<Long, T> deduplicated = rows.stream()
-                .collect(Collectors.toMap(
-                        idExtractor,
-                        Function.identity(),
-                        (existing, ignored) -> existing,
-                        LinkedHashMap::new
-                ));
-        return deduplicated.values().stream().toList();
     }
 
     private String decryptAndMaskPhone(String encryptedPhone) {
