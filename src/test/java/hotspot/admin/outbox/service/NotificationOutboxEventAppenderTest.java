@@ -20,8 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.OutboxErrorCode;
-import hotspot.admin.outbox.infrastructure.NotificationOutboxEventJpaRepository;
-import hotspot.admin.outbox.infrastructure.entity.NotificationOutboxEventEntity;
+import hotspot.admin.outbox.notificationOutbox.infrastructure.NotificationOutboxEventJpaRepository;
+import hotspot.admin.outbox.notificationOutbox.infrastructure.entity.NotificationOutboxEventEntity;
+import hotspot.admin.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationOutboxEventAppenderTest {
