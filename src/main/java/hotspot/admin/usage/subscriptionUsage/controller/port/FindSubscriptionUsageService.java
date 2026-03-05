@@ -6,5 +6,5 @@ import hotspot.admin.usage.subscriptionUsage.controller.response.SubscriptionUsa
 
 public interface FindSubscriptionUsageService {
 
-    List<SubscriptionUsageResponse> findSubscriptionUsage(Long subscriptionId);
+    List<SubscriptionUsageResponse> findSubscriptionUsage(Long familyId);
 }

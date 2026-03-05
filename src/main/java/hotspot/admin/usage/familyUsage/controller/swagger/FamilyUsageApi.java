@@ -27,5 +27,5 @@ public interface FamilyUsageApi {
                             implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.admin.common.ApiResponse<FamilyUsageResponse>> findFamilyUsage(
-            @Parameter(description = "가족 ID", example = "1") @PathVariable Long subId);
+            @Parameter(description = "가족 ID", example = "1") @PathVariable Long familyId);
 }
