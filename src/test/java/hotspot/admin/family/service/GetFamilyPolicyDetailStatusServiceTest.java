@@ -98,7 +98,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
                                         """)
                                 .build()
                 ));
-        when(familySubQueryRepository.findFamilyAppPolicyOptions(1L))
+        when(familySubQueryRepository.findAllAppPolicyOptions())
                 .thenReturn(List.of(
                         FamilyPolicyAppOptionRow.builder().policyId(201L).policyName("유튜브").build(),
                         FamilyPolicyAppOptionRow.builder().policyId(202L).policyName("틱톡").build()
@@ -166,7 +166,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
                         .blocked(true)
                         .build()));
         when(familySubQueryRepository.findFamilyTimePolicyOptions(1L)).thenReturn(List.of());
-        when(familySubQueryRepository.findFamilyAppPolicyOptions(1L)).thenReturn(List.of());
+        when(familySubQueryRepository.findAllAppPolicyOptions()).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyTimePolicies(1L)).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyAppPolicies(1L)).thenReturn(List.of());
 
@@ -188,7 +188,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
                         .blocked(false)
                         .build()));
         when(familySubQueryRepository.findFamilyTimePolicyOptions(1L)).thenReturn(List.of());
-        when(familySubQueryRepository.findFamilyAppPolicyOptions(1L)).thenReturn(List.of());
+        when(familySubQueryRepository.findAllAppPolicyOptions()).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyTimePolicies(1L)).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyAppPolicies(1L)).thenReturn(List.of());
         when(phoneCryptoUtil.decryptPhone("enc")).thenThrow(new GeneralSecurityException("decrypt failed"));

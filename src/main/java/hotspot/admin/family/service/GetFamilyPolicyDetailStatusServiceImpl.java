@@ -49,7 +49,7 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
         List<FamilyPolicyMemberRow> members = familySubQueryRepository.findFamilyPolicyMembers(familyId);
         List<FamilyPolicyTimeOptionRow> timePolicyOptions = familySubQueryRepository
                 .findFamilyTimePolicyOptions(familyId);
-        List<FamilyPolicyAppOptionRow> appPolicyOptions = familySubQueryRepository.findFamilyAppPolicyOptions(familyId);
+        List<FamilyPolicyAppOptionRow> appPolicyOptions = familySubQueryRepository.findAllAppPolicyOptions();
 
         Map<Long, Set<Long>> appliedTimePolicyIds = familySubQueryRepository.findFamilyTimePolicies(familyId).stream()
                 .collect(Collectors.groupingBy(

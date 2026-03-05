@@ -174,7 +174,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
 
     /** 앱 차단 정책 전체 목록을 조회한다. */
     @Override
-    public List<FamilyPolicyAppOptionRow> findFamilyAppPolicyOptions(Long familyId) {
+    public List<FamilyPolicyAppOptionRow> findAllAppPolicyOptions() {
         String sql = """
                 SELECT
                     abs.app_blocked_service_id AS policy_id,
@@ -183,11 +183,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 WHERE abs.is_deleted = false
                 ORDER BY abs.blocked_service_name, abs.app_blocked_service_id
                 """;
-
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("familyId", familyId);
-
-        return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyOptionRow);
+        return jdbcTemplate.query(sql, this::mapFamilyAppPolicyOptionRow);
     }
 
     /** 정책 탭 화면용 통합 행을 한 번의 조회로 구성한다. */
