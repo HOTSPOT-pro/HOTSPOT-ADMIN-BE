@@ -7,7 +7,7 @@ public enum FamilyApplyStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    CANCELLED;
+    CANCELED;
 
     public static FamilyApplyStatus from(String value) {
         if (value == null) {

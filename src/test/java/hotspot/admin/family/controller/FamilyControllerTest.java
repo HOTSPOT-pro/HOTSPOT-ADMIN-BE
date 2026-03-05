@@ -24,6 +24,7 @@ import hotspot.admin.family.controller.port.GetFamilyPolicyStatusService;
 import hotspot.admin.family.controller.port.GetFamilySummaryService;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
+import hotspot.admin.family.controller.port.UpdateFamilyMemberPolicyStatusService;
 import hotspot.admin.family.controller.port.UpdateFamilyPriorityTypeService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
@@ -68,6 +69,9 @@ class FamilyControllerTest {
 
     @MockBean
     private UpdateFamilyPriorityTypeService updateFamilyPriorityTypeService;
+
+    @MockBean
+    private UpdateFamilyMemberPolicyStatusService updateFamilyMemberPolicyStatusService;
     @Test
     @DisplayName("가족 목록 조회 성공")
     void getFamilyListSuccess() throws Exception {
@@ -196,8 +200,8 @@ class FamilyControllerTest {
     }
 
     @Test
-    @DisplayName("가족 정책 상세 조회 성공")
-    void getFamilyPolicyDetailStatusSuccess() throws Exception {
+    @DisplayName("가족 구성원 시간 정책 조회 성공")
+    void getFamilyMemberTimePolicyStatusSuccess() throws Exception {
         FamilyPolicyMemberDetailItem member = FamilyPolicyMemberDetailItem.builder()
                 .memberName("홍길동")
                 .phoneNumber("010-****-1111")
@@ -225,13 +229,47 @@ class FamilyControllerTest {
         when(getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(5L, 101L))
                 .thenReturn(member);
 
-        mockMvc.perform(get("/api/v1/admin/families/5/members/101/policy-status"))
+        mockMvc.perform(get("/api/v1/admin/families/5/members/101/policy-status/time"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.memberName").value("홍길동"))
+                .andExpect(jsonPath("$.data.phoneNumber").value("010-****-1111"))
+                .andExpect(jsonPath("$.data.familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data.blocked").value(true))
                 .andExpect(jsonPath("$.data.appliedTimePolicies[0].policyName").value("야간 차단"))
                 .andExpect(jsonPath("$.data.appliedTimePolicies[0].policyType").value("SCHEDULED"))
                 .andExpect(jsonPath("$.data.appliedTimePolicies[0].policyScheduleLabel").value("주중 22:00~07:00"))
                 .andExpect(jsonPath("$.data.appliedTimePolicies[0].isActive").value(true));
+    }
+
+    @Test
+    @DisplayName("가족 구성원 앱 정책 조회 성공")
+    void getFamilyMemberAppPolicyStatusSuccess() throws Exception {
+        FamilyPolicyMemberDetailItem member = FamilyPolicyMemberDetailItem.builder()
+                .memberName("홍길동")
+                .phoneNumber("010-****-1111")
+                .familyRole(FamilyRole.OWNER)
+                .blocked(true)
+                .appliedTimePolicies(List.of())
+                .appliedBlockedServicePolicies(List.of(
+                        FamilyPolicyAppItem.builder()
+                                .policyId(11L)
+                                .policyName("유튜브")
+                                .isActive(true)
+                                .build()
+                ))
+                .build();
+
+        when(getFamilyPolicyDetailStatusService.getFamilyPolicyDetailStatus(5L, 101L))
+                .thenReturn(member);
+
+        mockMvc.perform(get("/api/v1/admin/families/5/members/101/policy-status/app"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.memberName").value("홍길동"))
+                .andExpect(jsonPath("$.data.phoneNumber").value("010-****-1111"))
+                .andExpect(jsonPath("$.data.familyRole").value("OWNER"))
+                .andExpect(jsonPath("$.data.blocked").value(true))
+                .andExpect(jsonPath("$.data.appliedBlockedServicePolicies[0].policyName").value("유튜브"))
+                .andExpect(jsonPath("$.data.appliedBlockedServicePolicies[0].isActive").value(true));
     }
 
     @Test
@@ -286,6 +324,40 @@ class FamilyControllerTest {
                                   "dataLimitGb": 1,
                                   "isBlocked": true,
                                   "isParent": true
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 구성원 시간 정책 적용 상태 수정 성공")
+    void updateFamilyMemberTimePolicyStatusSuccess() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/families/5/members/101/policy-status/time")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "policies": [
+                                    { "policyId": 1, "isActive": true },
+                                    { "policyId": 2, "isActive": false }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("가족 구성원 앱 정책 적용 상태 수정 성공")
+    void updateFamilyMemberAppPolicyStatusSuccess() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/families/5/members/101/policy-status/app")
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "policies": [
+                                    { "policyId": 11, "isActive": true },
+                                    { "policyId": 12, "isActive": false }
+                                  ]
                                 }
                                 """))
                 .andExpect(status().isOk())

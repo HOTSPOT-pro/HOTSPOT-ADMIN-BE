@@ -113,7 +113,7 @@ ADMIN-BE 레포지토리는 가족 공유 데이터/차단 정책을 운영자�
 * **회선 적용 정책(`POLICY_SUB`)**: 실제 적용 시점 스냅샷 저장
 
 ### 2) 가족 요청 승인 워크플로우
-* 요청 상태: `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`
+* 요청 상태: `PENDING`, `APPROVED`, `REJECTED`, `CANCELED`
 * 승인/반려 이력과 근거를 추적 가능한 형태로 관리
 
 ### 3) 개인정보 보호 정책
