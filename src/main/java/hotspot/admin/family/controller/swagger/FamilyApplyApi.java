@@ -54,7 +54,7 @@ public interface FamilyApplyApi {
             ) @PathVariable ApplyType applyType,
             @Parameter(
                     description = "요청 상태",
-                    schema = @Schema(allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"},
+                    schema = @Schema(allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELED"},
                             example = "PENDING")
             ) @PathVariable FamilyApplyStatus status,
             @Valid @ParameterObject @ModelAttribute FamilyRequestListRequest request);
