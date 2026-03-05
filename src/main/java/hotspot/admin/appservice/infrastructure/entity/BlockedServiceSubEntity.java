@@ -28,8 +28,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "blocked_service_sub")
-@SQLDelete(sql = "UPDATE blocked_service_sub SET is_deleted = true WHERE blocked_service_sub_id = ?")
-@Where(clause = "is_deleted = false")
+@SQLDelete(sql = "UPDATE blocked_service_sub SET is_active = false WHERE blocked_service_sub_id = ?")
+@Where(clause = "is_active = true")
 public class BlockedServiceSubEntity extends BaseEntity {
 
     @Id
@@ -51,9 +51,9 @@ public class BlockedServiceSubEntity extends BaseEntity {
     @Column(name = "blocked_service_id", nullable = false, insertable = false, updatable = false)
     private Long blockedServiceId;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private Boolean isActive = true;
 
     public static BlockedServiceSubEntity domainToEntity(
             BlockedServiceSub blockedServiceSub,
@@ -64,7 +64,7 @@ public class BlockedServiceSubEntity extends BaseEntity {
                 .blockedServiceSubId(blockedServiceSub.getBlockedServiceSubId())
                 .subscription(subscriptionEntity)
                 .appBlockedService(appBlockedServiceEntity)
-                .isDeleted(blockedServiceSub.getIsDeleted())
+                .isActive(blockedServiceSub.getIsActive())
                 .build();
     }
 
@@ -73,7 +73,7 @@ public class BlockedServiceSubEntity extends BaseEntity {
                 .blockedServiceSubId(blockedServiceSubId)
                 .subId(subId)
                 .blockedServiceId(blockedServiceId)
-                .isDeleted(isDeleted)
+                .isActive(isActive)
                 .createdTime(getCreatedTime())
                 .modifiedTime(getModifiedTime())
                 .build();

@@ -158,7 +158,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_deleted = false
+                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_active = true
                 JOIN app_blocked_service abs
                   ON abs.app_blocked_service_id = bss.blocked_service_id
                  AND abs.is_deleted = false
@@ -182,7 +182,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_deleted = false
+                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_active = true
                 JOIN app_blocked_service abs
                   ON abs.app_blocked_service_id = bss.blocked_service_id
                  AND abs.is_deleted = false
@@ -233,7 +233,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                       ON abs.app_blocked_service_id = bss.blocked_service_id
                      AND abs.is_deleted = false
                     WHERE bss.sub_id = s.sub_id
-                      AND bss.is_deleted = false
+                      AND bss.is_active = true
                 ) ap ON true
                 WHERE fs.family_id = :familyId
                 ORDER BY
