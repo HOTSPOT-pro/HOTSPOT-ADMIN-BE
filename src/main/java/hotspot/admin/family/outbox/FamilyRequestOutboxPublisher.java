@@ -11,7 +11,7 @@ import hotspot.admin.common.exception.code.OutboxErrorCode;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApply;
 import hotspot.admin.family.outbox.dto.FamilyRequestAlertEvent;
-import hotspot.admin.outbox.service.NotificationOutboxEventAppender;
+import hotspot.admin.outbox.notificationOutbox.service.NotificationOutboxEventAppender;
 import lombok.RequiredArgsConstructor;
 
 @Component
