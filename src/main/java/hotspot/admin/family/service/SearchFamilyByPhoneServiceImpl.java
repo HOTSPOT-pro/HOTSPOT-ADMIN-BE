@@ -14,7 +14,7 @@ import hotspot.admin.common.util.PhoneHashUtil;
 import hotspot.admin.common.util.PhoneMaskingUtil;
 import hotspot.admin.family.controller.port.SearchFamilyByPhoneService;
 import hotspot.admin.family.controller.response.FamilyListItem;
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.service.port.FamilyQueryRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -29,14 +29,19 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
     /** 전화번호 해시 검색으로 가족을 조회하고 전화번호를 마스킹해 반환한다. */
     @Transactional(readOnly = true)
     @Override
-    public FamilyPhoneSearchResponse searchByPhone(String phoneNumber) {
+    public FamilyListResponse searchByPhone(String phoneNumber) {
         String phoneHash = createPhoneHash(phoneNumber);
         FamilyListItem family = familyQueryRepository.findFamilyByPhoneHash(phoneHash)
                 .map(this::decryptAndMaskPhone)
                 .orElse(null);
 
-        return FamilyPhoneSearchResponse.builder()
-                .family(family)
+        return FamilyListResponse.builder()
+                .page(0)
+                .size(1)
+                .totalElements(family == null ? 0L : 1L)
+                .totalPages(family == null ? 0 : 1)
+                .hasNext(false)
+                .familyList(family == null ? java.util.List.of() : java.util.List.of(family))
                 .build();
     }
 

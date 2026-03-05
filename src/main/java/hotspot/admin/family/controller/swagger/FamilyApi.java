@@ -22,7 +22,6 @@ import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyMemberAppPolicyStatusResponse;
 import hotspot.admin.family.controller.response.FamilyMemberTimePolicyStatusResponse;
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -368,7 +367,7 @@ public interface FamilyApi {
                     """,
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyPhoneSearchResponse>> searchFamilyByPhone(
+    ResponseEntity<hotspot.admin.common.ApiResponse<FamilyListResponse>> searchFamilyByPhone(
             @Parameter(description = "검색할 전화번호", example = "01012345678") @RequestParam String phoneNumber);
 
 }
