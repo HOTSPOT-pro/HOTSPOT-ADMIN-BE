@@ -1,12 +1,13 @@
 package hotspot.admin.usage.familyUsage.infrastructure.respository;
 
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
 import hotspot.admin.usage.familyUsage.domain.FamilyUsage;
 import hotspot.admin.usage.familyUsage.service.port.FamilyUsageRepository;
 import hotspot.admin.usage.familyUsage.service.schema.FamilySubList;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor

@@ -1,5 +1,10 @@
 package hotspot.admin.usage.subscriptionUsage.controller.swagger;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
+
 import hotspot.admin.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,11 +13,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.ErrorResponse;
-
-import java.util.List;
 
 @Tag(name = "Subscription Usage", description = "회선 개인 데이터 및 선물 데이터 사용량 조회 API")
 public interface SubscriptionUsageApi {

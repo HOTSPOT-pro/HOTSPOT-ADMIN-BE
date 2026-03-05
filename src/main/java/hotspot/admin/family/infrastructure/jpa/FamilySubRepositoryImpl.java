@@ -3,10 +3,10 @@ package hotspot.admin.family.infrastructure.jpa;
 import java.util.List;
 import java.util.Optional;
 
-import hotspot.admin.family.domain.FamilySub;
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.FamilySub;
 import hotspot.admin.family.infrastructure.entity.FamilySubEntity;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;

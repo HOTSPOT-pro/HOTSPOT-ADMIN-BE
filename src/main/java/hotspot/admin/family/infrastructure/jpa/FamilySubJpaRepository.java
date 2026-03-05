@@ -1,5 +1,7 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,8 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.infrastructure.entity.FamilySubEntity;
-
-import java.util.List;
 
 public interface FamilySubJpaRepository extends JpaRepository<FamilySubEntity, Long> {
     boolean existsByFamilyFamilyIdAndSubscriptionSubId(Long familyId, Long subId);

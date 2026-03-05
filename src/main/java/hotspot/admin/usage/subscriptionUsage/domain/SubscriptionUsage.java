@@ -1,8 +1,8 @@
 package hotspot.admin.usage.subscriptionUsage.domain;
 
-import hotspot.admin.common.util.redis.RedisUsageCalculator;
-
 import java.util.List;
+
+import hotspot.admin.common.util.redis.RedisUsageCalculator;
 
 public class SubscriptionUsage {
 

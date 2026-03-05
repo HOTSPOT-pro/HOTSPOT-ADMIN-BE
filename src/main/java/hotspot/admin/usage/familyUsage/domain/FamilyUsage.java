@@ -1,9 +1,9 @@
 package hotspot.admin.usage.familyUsage.domain;
 
 
-import hotspot.admin.common.util.redis.RedisUsageCalculator;
-
 import java.util.Map;
+
+import hotspot.admin.common.util.redis.RedisUsageCalculator;
 
 public class FamilyUsage {
 

@@ -1,8 +1,8 @@
 package hotspot.admin.usage.subscriptionUsage.controller.port;
 
-import hotspot.admin.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
-
 import java.util.List;
+
+import hotspot.admin.usage.subscriptionUsage.controller.response.SubscriptionUsageResponse;
 
 public interface FindSubscriptionUsageService {
 

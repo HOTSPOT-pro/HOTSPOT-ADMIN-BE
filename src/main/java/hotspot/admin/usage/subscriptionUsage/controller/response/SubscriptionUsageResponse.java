@@ -1,9 +1,9 @@
 package hotspot.admin.usage.subscriptionUsage.controller.response;
 
-import hotspot.admin.family.domain.FamilyRole;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import hotspot.admin.family.domain.FamilyRole;
 
 public record SubscriptionUsageResponse(
         Long subId,

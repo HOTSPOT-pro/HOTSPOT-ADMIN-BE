@@ -1,12 +1,20 @@
 package hotspot.admin.usage.subscriptionUsage.service;
 
+import java.security.GeneralSecurityException;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.common.util.PhoneMaskingUtil;
-import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.FamilySub;
-import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.plan.domain.DataPeriod;
 import hotspot.admin.subscription.domain.Subscription;
@@ -18,16 +26,6 @@ import hotspot.admin.usage.subscriptionUsage.domain.mapper.SubscriptionUsageMapp
 import hotspot.admin.usage.subscriptionUsage.infrastructure.repository.PresentDataJdbcRepository;
 import hotspot.admin.usage.subscriptionUsage.service.port.SubscriptionUsageRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.security.GeneralSecurityException;
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

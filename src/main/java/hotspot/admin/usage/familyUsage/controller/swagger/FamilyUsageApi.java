@@ -1,5 +1,9 @@
 package hotspot.admin.usage.familyUsage.controller.swagger;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import hotspot.admin.usage.familyUsage.controller.response.FamilyUsageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,9 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Tag(name = "Family Usage", description = "가족 공유 데이터 사용량 조회 API")
 public interface FamilyUsageApi {

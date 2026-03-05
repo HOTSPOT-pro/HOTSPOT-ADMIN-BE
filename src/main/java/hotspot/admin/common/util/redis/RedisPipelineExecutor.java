@@ -1,11 +1,12 @@
 package hotspot.admin.common.util.redis;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
