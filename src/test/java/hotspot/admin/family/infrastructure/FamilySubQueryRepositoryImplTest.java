@@ -157,12 +157,12 @@ class FamilySubQueryRepositoryImplTest {
 
     @Test
     @DisplayName("가족 정책 현황 앱 정책 옵션 조회 시 row 매핑이 정상 동작한다")
-    void findFamilyAppPolicyOptionsSuccess() throws Exception {
+    void findAllAppPolicyOptionsSuccess() throws Exception {
         FamilySubQueryRepositoryImpl familySubRepository = new FamilySubQueryRepositoryImpl(jdbcTemplate);
-        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
                     @SuppressWarnings("unchecked")
-                    RowMapper<FamilyPolicyAppOptionRow> mapper = invocation.getArgument(2);
+                    RowMapper<FamilyPolicyAppOptionRow> mapper = invocation.getArgument(1);
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("policy_id")).thenReturn(301L);
@@ -171,7 +171,7 @@ class FamilySubQueryRepositoryImplTest {
                     return List.of(mapper.mapRow(rs, 0));
                 });
 
-        List<FamilyPolicyAppOptionRow> result = familySubRepository.findFamilyAppPolicyOptions(1L);
+        List<FamilyPolicyAppOptionRow> result = familySubRepository.findAllAppPolicyOptions();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).policyName()).isEqualTo("유튜브");
