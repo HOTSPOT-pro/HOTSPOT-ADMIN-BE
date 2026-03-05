@@ -24,6 +24,10 @@ public interface SubscriptionUsageApi {
             @ApiResponse(responseCode = "404", description = "찾을 수 없음\n"
                     + "- SUBSCRIPTION_USAGE_001: 개인 데이터 전체 한도를 조회할 수 없습니다",
                     content = @Content(schema = @Schema(
+                            implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류\n"
+                    + "- FAMILY_003: 전화번호 복호화에 실패했습니다",
+                    content = @Content(schema = @Schema(
                             implementation = ErrorResponse.class)))
     })
     ResponseEntity<hotspot.admin.common.ApiResponse<List<SubscriptionUsageResponse>>> findSubscriptionUsage(
