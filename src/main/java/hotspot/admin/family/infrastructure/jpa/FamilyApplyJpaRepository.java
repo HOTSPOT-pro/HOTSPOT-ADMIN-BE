@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 
 public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntity, Long> {
     /** 대기중 가족 요청만 목표 상태(승인/반려)로 조건부 업데이트한다. */
@@ -30,20 +31,16 @@ public interface FamilyApplyJpaRepository extends JpaRepository<FamilyApplyEntit
     );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(
-            value = """
-                    UPDATE family_apply
-                    SET family_id = :familyId,
-                        modified_time = now()
-                    WHERE family_apply_id = :familyApplyId
-                      AND apply_type = :applyType
-                    """,
-            nativeQuery = true
-    )
-    int updateFamilyIdByIdAndType(
+    @Query("""
+            UPDATE FamilyApplyEntity fa
+            SET fa.family = :family
+            WHERE fa.familyApplyId = :familyApplyId
+              AND fa.applyType = :applyType
+            """)
+    int updateFamilyByIdAndType(
             @Param("familyApplyId") Long familyApplyId,
             @Param("applyType") ApplyType applyType,
-            @Param("familyId") Long familyId
+            @Param("family") FamilyEntity family
     );
 
     /** 요청 ID와 요청 유형으로 요청 존재 여부를 확인한다. */
