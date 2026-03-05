@@ -1,5 +1,6 @@
 package hotspot.admin.family.domain;
 
+import hotspot.admin.subscription.domain.Subscription;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,8 +10,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class FamilySub {
     private final Long familySubId;
-    private final Long subId;
-    private final Long familyId;
+    private Subscription subscription;
+    private Family family;
     private final FamilyRole familyRole;
     private final Integer priority;
     private final Long dataLimit;
