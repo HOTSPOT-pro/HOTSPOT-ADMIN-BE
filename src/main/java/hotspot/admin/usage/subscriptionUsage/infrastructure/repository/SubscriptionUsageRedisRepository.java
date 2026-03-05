@@ -29,7 +29,6 @@ public class SubscriptionUsageRedisRepository {
     private static final String K_GIFT_USED_PREFIX  = "gift_used:";
 
     private final RedisPipelineExecutor pipelineExecutor;
-    private final StringRedisTemplate redisTemplate;
     private final Clock clock;
 
     public Map<Long, SubscriptionUsage> findSubscriptionUsages(
@@ -244,66 +243,4 @@ public class SubscriptionUsageRedisRepository {
             List<String> requestKeys,
             List<Object> rawResults
     ) {}
-
-    /**
-     * 개인 데이터 한도와 개인 데이터 사용량을 Redis에서 조회
-     * 남은 잔여량을 계산 후 반환
-     */
-    public long findRemainingPlanKb(
-            Long subId,
-            DataPeriod dataPeriod
-    ) {
-
-        LocalDate now = LocalDate.now(clock);
-
-        PipelineResult pipeline =
-                executePlanOnlyPipeline(subId, dataPeriod, now);
-
-        Map<String, Object> resultMap =
-                PipelineResultMapper.toMap(
-                        pipeline.requestKeys(),
-                        pipeline.rawResults()
-                );
-
-        return buildRemaining(resultMap);
-    }
-
-    private PipelineResult executePlanOnlyPipeline(
-            Long subId,
-            DataPeriod dataPeriod,
-            LocalDate now
-    ) {
-
-        List<String> requestKeys = new ArrayList<>();
-
-        List<Object> rawResults =
-                pipelineExecutor.execute((RedisCallback<Object>) connection -> {
-
-                    addPlanRequests(connection, subId, dataPeriod, requestKeys, now);
-                    return null;
-                });
-
-        return new PipelineResult(requestKeys, rawResults);
-    }
-
-    private long buildRemaining(Map<String, Object> resultMap) {
-
-        Object planLimitValue = resultMap.get(K_PLAN_LIMIT);
-
-        if (planLimitValue == null) {
-            throw new ApplicationException(
-                    SubscriptionUsageErrorCode.SUBSCRIPTION_LIMIT_NOT_FOUND
-            );
-        }
-
-        long planLimitKb = RedisValueParser.toLong(planLimitValue);
-
-        Object planUsedValue = resultMap.get(K_PLAN_USED);
-
-        long planUsedKb = (planUsedValue == null)
-                ? 0L
-                : RedisValueParser.toLong(planUsedValue);
-
-        return Math.max(planLimitKb - planUsedKb, 0L);
-    }
 }

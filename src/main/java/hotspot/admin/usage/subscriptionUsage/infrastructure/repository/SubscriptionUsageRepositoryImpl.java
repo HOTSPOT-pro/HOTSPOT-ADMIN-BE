@@ -21,12 +21,4 @@ public class SubscriptionUsageRepositoryImpl
     ) {
         return redisRepository.findSubscriptionUsages(subPeriodMap);
     }
-
-    @Override
-    public long findRemainingPlanKb(
-            Long subId,
-            DataPeriod dataPeriod
-    ) {
-        return redisRepository.findRemainingPlanKb(subId, dataPeriod);
-    }
 }

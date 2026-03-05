@@ -10,6 +10,4 @@ public interface SubscriptionUsageRepository {
     Map<Long, SubscriptionUsage> findSubscriptionUsages(
             Map<Long, DataPeriod> subPeriodMap
     );
-
-    long findRemainingPlanKb(Long subId, DataPeriod dataPeriod);
 }
