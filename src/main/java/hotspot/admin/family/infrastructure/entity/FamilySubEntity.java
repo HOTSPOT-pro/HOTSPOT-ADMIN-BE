@@ -70,8 +70,8 @@ public class FamilySubEntity {
     public FamilySub entityToDomain() {
         return FamilySub.builder()
                 .familySubId(familySubId)
-                .subId(subscription.getSubId())
-                .familyId(family.getFamilyId())
+                .subscription(subscription.entityToDomain())
+                .family(family.entityToDomain())
                 .familyRole(familyRole)
                 .priority(priority)
                 .dataLimit(dataLimit)
