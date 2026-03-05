@@ -1,6 +1,7 @@
 package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
         List<FamilyPolicyMemberRow> members = familySubQueryRepository.findFamilyPolicyMembers(familyId);
         List<FamilyPolicyTimeOptionRow> timePolicyOptions = familySubQueryRepository
                 .findFamilyTimePolicyOptions(familyId);
-        List<FamilyPolicyAppOptionRow> appPolicyOptions = familySubQueryRepository.findFamilyAppPolicyOptions(familyId);
+        List<FamilyPolicyAppOptionRow> appPolicyOptions = familySubQueryRepository.findAllAppPolicyOptions();
 
         Map<Long, Set<Long>> appliedTimePolicyIds = familySubQueryRepository.findFamilyTimePolicies(familyId).stream()
                 .collect(Collectors.groupingBy(
@@ -111,6 +112,14 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
                         ))
                         .isActive(appliedPolicyIds.contains(option.policyId()))
                         .build())
+                .sorted(Comparator
+                        .comparing((FamilyPolicyTimeItem item) -> Boolean.TRUE.equals(item.isActive()))
+                        .reversed()
+                        .thenComparing(
+                                FamilyPolicyTimeItem::policyName,
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                        )
+                        .thenComparing(FamilyPolicyTimeItem::policyId, Comparator.nullsLast(Long::compareTo)))
                 .toList();
     }
 
@@ -124,6 +133,14 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
                         .policyName(option.policyName())
                         .isActive(appliedPolicyIds.contains(option.policyId()))
                         .build())
+                .sorted(Comparator
+                        .comparing((FamilyPolicyAppItem item) -> Boolean.TRUE.equals(item.isActive()))
+                        .reversed()
+                        .thenComparing(
+                                FamilyPolicyAppItem::policyName,
+                                Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                        )
+                        .thenComparing(FamilyPolicyAppItem::policyId, Comparator.nullsLast(Long::compareTo)))
                 .toList();
     }
 

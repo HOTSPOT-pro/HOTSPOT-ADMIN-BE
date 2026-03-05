@@ -21,7 +21,7 @@ public interface FamilySubQueryRepository {
 
     List<FamilyPolicyAppPolicyRow> findFamilyAppPolicies(Long familyId);
 
-    List<FamilyPolicyAppOptionRow> findFamilyAppPolicyOptions(Long familyId);
+    List<FamilyPolicyAppOptionRow> findAllAppPolicyOptions();
 
     List<FamilyPolicyStatusRow> findFamilyPolicyStatusRows(Long familyId);
 }
