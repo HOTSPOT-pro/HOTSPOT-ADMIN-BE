@@ -172,22 +172,15 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
         return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyRow);
     }
 
-    /** 가족 구성원에게 적용된 앱 차단 정책 목록을 조회한다. */
+    /** 앱 차단 정책 전체 목록을 조회한다. */
     @Override
     public List<FamilyPolicyAppOptionRow> findFamilyAppPolicyOptions(Long familyId) {
         String sql = """
                 SELECT
                     abs.app_blocked_service_id AS policy_id,
                     abs.blocked_service_name
-                FROM family_sub fs
-                JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
-                JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_active = true
-                JOIN app_blocked_service abs
-                  ON abs.app_blocked_service_id = bss.blocked_service_id
-                 AND abs.is_deleted = false
-                WHERE fs.family_id = :familyId
-                GROUP BY abs.app_blocked_service_id, abs.blocked_service_name
+                FROM app_blocked_service abs
+                WHERE abs.is_deleted = false
                 ORDER BY abs.blocked_service_name, abs.app_blocked_service_id
                 """;
 
