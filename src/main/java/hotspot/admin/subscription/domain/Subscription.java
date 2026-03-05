@@ -2,6 +2,8 @@ package hotspot.admin.subscription.domain;
 
 import java.time.LocalDateTime;
 
+import hotspot.admin.member.domain.Member;
+import hotspot.admin.plan.domain.Plan;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Subscription {
     private final Long subId;
-    private final Long planId;
-    private final Long memberId;
+    private final Plan plan;
+    private final Member member;
     private final String phoneEnc;
     private final String phoneHash;
     private final Boolean isLocked;

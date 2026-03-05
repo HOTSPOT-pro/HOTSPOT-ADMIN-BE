@@ -1,10 +1,12 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.FamilySub;
 import hotspot.admin.family.infrastructure.entity.FamilySubEntity;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
@@ -17,6 +19,13 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
     private final FamilySubJpaRepository familySubJpaRepository;
     private final FamilyJpaRepository familyJpaRepository;
     private final SubscriptionJpaRepository subscriptionJpaRepository;
+
+    @Override
+    public List<FamilySub> findByFamilyId(Long familyId) {
+        return familySubJpaRepository.findByFamilyFamilyId(familyId).stream()
+                .map(FamilySubEntity::entityToDomain)
+                .toList();
+    }
 
     /** familyId/subId 조합의 가족 구성원 존재 여부를 확인한다. */
     @Override

@@ -1,10 +1,15 @@
 package hotspot.admin.family.service.port;
 
+import java.util.List;
 import java.util.Optional;
 
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.domain.FamilySub;
 
 public interface FamilySubRepository {
+
+    List<FamilySub> findByFamilyId(Long familyId);
+
     boolean existsFamilySub(Long familyId, Long subId);
 
     int findMaxPriority(Long familyId);
