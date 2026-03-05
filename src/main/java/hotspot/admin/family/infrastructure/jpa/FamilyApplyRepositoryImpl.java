@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import hotspot.admin.family.domain.ApplyType;
 import hotspot.admin.family.domain.FamilyApplyStatus;
 import hotspot.admin.family.infrastructure.entity.FamilyApplyEntity;
+import hotspot.admin.family.infrastructure.entity.FamilyEntity;
 import hotspot.admin.family.service.dto.FamilyRequestOutboxInfo;
 import hotspot.admin.family.service.port.FamilyApplyRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     private final FamilyApplyJpaRepository familyApplyJpaRepository;
+    private final FamilyJpaRepository familyJpaRepository;
 
     /** 대기중 가족 요청만 목표 상태(승인/반려)로 조건부 업데이트한다. */
     @Override
@@ -55,7 +57,8 @@ public class FamilyApplyRepositoryImpl implements FamilyApplyRepository {
 
     @Override
     public int updateFamilyId(Long familyApplyId, ApplyType applyType, Long familyId) {
-        return familyApplyJpaRepository.updateFamilyIdByIdAndType(familyApplyId, applyType, familyId);
+        FamilyEntity familyRef = familyJpaRepository.getReferenceById(familyId);
+        return familyApplyJpaRepository.updateFamilyByIdAndType(familyApplyId, applyType, familyRef);
     }
 
     private FamilyRequestOutboxInfo toFamilyRequestOutboxInfo(FamilyApplyEntity entity) {

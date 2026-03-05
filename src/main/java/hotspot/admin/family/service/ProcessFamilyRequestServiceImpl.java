@@ -3,6 +3,7 @@ package hotspot.admin.family.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRemoveScheduleRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.outbox.consistencyOutbox.publisher.FamilyEventPublisher;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -46,6 +48,7 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
     private final FamilyRequestOutboxPublisher familyRequestOutboxPublisher;
+    private final FamilyEventPublisher familyEventPublisher;
 
     /** 가족 요청을 승인 상태로 전환한다. */
     @Override
@@ -197,6 +200,14 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
         if (updated == 0) {
             throw new ApplicationException(FamilyErrorCode.FAMILY_REQUEST_NOT_FOUND);
         }
+
+        // applyCreateApproval() 마지막 familyId 만든 직후에 추가
+        List<Long> memberSubIds = distinctMembers.stream()
+                .map(FamilyApprovalTargetInfo::targetSubId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        familyEventPublisher.publishFamilyCreated(familyId, memberSubIds);
     }
 
     /** ADD 승인 시 family_sub 삽입 및 family/family_sub 요약 값을 동기화한다. */
@@ -213,6 +224,11 @@ public class ProcessFamilyRequestServiceImpl implements ProcessFamilyRequestServ
                         request.targetFamilyRole(),
                         insertPriority,
                         INITIAL_DATA_LIMIT
+                );
+
+                familyEventPublisher.publishMemberAdded(
+                        familyId,
+                        request.targetSubId()
                 );
             }
         }

@@ -1,4 +1,4 @@
-package hotspot.admin.outbox.infrastructure.entity;
+package hotspot.admin.outbox.notificationOutbox.infrastructure.entity;
 
 import java.util.UUID;
 
