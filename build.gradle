@@ -34,6 +34,7 @@ dependencies {
 
 	// Infra
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// Swagger
@@ -121,7 +122,8 @@ def reportExcludes = [
 		'**/entity/**',
 		'**/exception/**',
 		'**/common/**',
-		'**/infrastructure/**'
+		'**/infrastructure/**',
+		'**/usage/**'
 ]
 
 def verificationExcludes = [
@@ -135,7 +137,8 @@ def verificationExcludes = [
 		'*.common.*',
 		'*.domain.*',
 		'**.*Application*',    // 메인 애플리케이션
-		'**.*HealthController' // 특정 컨트롤러
+		'**.*HealthController', // 특정 컨트롤러
+		'**.usage.*'
 ]
 
 jacocoTestReport {

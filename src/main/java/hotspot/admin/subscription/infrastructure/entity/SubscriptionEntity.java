@@ -79,8 +79,8 @@ public class SubscriptionEntity extends BaseEntity {
     public Subscription entityToDomain() {
         return Subscription.builder()
                 .subId(subId)
-                .planId(plan.getPlanId())
-                .memberId(member.getMemberId())
+                .plan(plan.entityToDomain())
+                .member(member.entityToDomain())
                 .phoneEnc(phoneEnc)
                 .phoneHash(phoneHash)
                 .isLocked(isLocked)

@@ -1,5 +1,8 @@
 package hotspot.admin.family.infrastructure.jpa;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +13,14 @@ import hotspot.admin.family.infrastructure.entity.FamilySubEntity;
 
 public interface FamilySubJpaRepository extends JpaRepository<FamilySubEntity, Long> {
     boolean existsByFamilyFamilyIdAndSubscriptionSubId(Long familyId, Long subId);
+
+
+    @EntityGraph(attributePaths = {
+            "family",
+            "subscription",
+            "subscription.member"
+    })
+    List<FamilySubEntity> findByFamilyFamilyId(Long familyId);
 
     @Query("""
             SELECT COALESCE(MAX(fs.priority), 0)
