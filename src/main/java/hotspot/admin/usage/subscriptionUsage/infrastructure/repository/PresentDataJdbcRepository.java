@@ -35,7 +35,7 @@ public class PresentDataJdbcRepository {
             """.formatted(
                 giftIds.stream()
                         .map(id -> "?")
-                        .reduce((a,b)->a+","+b)
+                        .reduce((a, b) -> a + "," + b)
                         .orElse("")
         );
 

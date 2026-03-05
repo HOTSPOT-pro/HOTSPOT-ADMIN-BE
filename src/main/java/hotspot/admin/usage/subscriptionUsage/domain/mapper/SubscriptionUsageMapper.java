@@ -48,7 +48,8 @@ public class SubscriptionUsageMapper {
                 subscription.getMember().getName(),
                 familyRole,
                 maskedPhone,
-                subscription.getPlan().getPlanName(),// 요금제 이름
+                // 요금제 이름
+                subscription.getPlan().getPlanName(),
                 // 개인 요금제
                 usage.limitGb(),
                 usage.usedGb(),
