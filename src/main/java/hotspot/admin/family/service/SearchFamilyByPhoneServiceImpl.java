@@ -1,6 +1,7 @@
 package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,17 +32,18 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
     @Override
     public FamilyListResponse searchByPhone(String phoneNumber) {
         String phoneHash = createPhoneHash(phoneNumber);
-        FamilyListItem family = familyQueryRepository.findFamilyByPhoneHash(phoneHash)
+        List<FamilyListItem> familyList = familyQueryRepository.findFamilyByPhoneHash(phoneHash)
                 .map(this::decryptAndMaskPhone)
-                .orElse(null);
+                .map(List::of)
+                .orElse(List.of());
 
         return FamilyListResponse.builder()
                 .page(0)
                 .size(1)
-                .totalElements(family == null ? 0L : 1L)
-                .totalPages(family == null ? 0 : 1)
+                .totalElements((long) familyList.size())
+                .totalPages(familyList.isEmpty() ? 0 : 1)
                 .hasNext(false)
-                .familyList(family == null ? java.util.List.of() : java.util.List.of(family))
+                .familyList(familyList)
                 .build();
     }
 
