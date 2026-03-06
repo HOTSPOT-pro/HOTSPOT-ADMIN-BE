@@ -19,7 +19,7 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.common.util.PhoneHashUtil;
 import hotspot.admin.family.controller.response.FamilyListItem;
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.service.port.FamilyQueryRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,11 +56,12 @@ class SearchFamilyByPhoneServiceTest {
         when(phoneCryptoUtil.decryptPhone("encrypted-phone"))
                 .thenReturn("01012345678");
 
-        FamilyPhoneSearchResponse response = service.searchByPhone("010-1234-5678");
+        FamilyListResponse response = service.searchByPhone("010-1234-5678");
 
-        assertThat(response.family()).isNotNull();
-        assertThat(response.family().familyId()).isEqualTo(10L);
-        assertThat(response.family().phoneNumber()).isEqualTo("010-****-5678");
+        assertThat(response.familyList()).hasSize(1);
+        assertThat(response.totalElements()).isEqualTo(1L);
+        assertThat(response.familyList().get(0).familyId()).isEqualTo(10L);
+        assertThat(response.familyList().get(0).phoneNumber()).isEqualTo("010-****-5678");
     }
 
     @Test
