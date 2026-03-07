@@ -23,6 +23,7 @@ import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyPriorityServiceTest {
@@ -36,6 +37,9 @@ class UpdateFamilyPriorityServiceTest {
     @Mock
     private FamilySubQueryRepository familySubQueryRepository;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UpdateFamilyPriorityServiceImpl service;
 
     @BeforeEach
@@ -43,7 +47,8 @@ class UpdateFamilyPriorityServiceTest {
         service = new UpdateFamilyPriorityServiceImpl(
                 familyRepository,
                 familySubRepository,
-                familySubQueryRepository
+                familySubQueryRepository,
+                applicationEventPublisher
         );
     }
 
