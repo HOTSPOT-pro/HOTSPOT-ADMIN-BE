@@ -1,5 +1,6 @@
 package hotspot.admin.policy.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -33,6 +34,14 @@ public class BlockPolicyRepositoryImpl implements BlockPolicyRepository {
     @Override
     public boolean existsTemplateByPolicyNameAndPolicyType(String policyName, PolicyType policyType) {
         return blockPolicyJpaRepository.existsByPolicyNameAndPolicyTypeAndFamilyIdIsNull(policyName, policyType);
+    }
+
+    // policyId에 해당하는 모든 정책 리턴
+    @Override
+    public List<BlockPolicy> findAllById(List<Long> idList) {
+        return blockPolicyJpaRepository.findAllById(idList).stream()
+                .map(BlockPolicyEntity::entityToDomain)
+                .toList();
     }
 
     @Override
