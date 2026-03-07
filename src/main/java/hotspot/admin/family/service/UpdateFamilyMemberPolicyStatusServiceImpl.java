@@ -1,9 +1,12 @@
 package hotspot.admin.family.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,8 @@ import hotspot.admin.family.controller.request.PolicyActiveRequest;
 import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.outbox.consistencyOutbox.util.PolicyBlockSnapshotPublisher;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,6 +29,8 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
     private final FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
+    private final PolicyBlockSnapshotPublisher policyBlockSnapshotPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     @Override
@@ -75,6 +82,9 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
     }
 
     private void updateTimePolicies(Long subId, List<PolicyActiveRequest> policies) {
+
+        List<Long> activePolicyIds = new ArrayList<>();
+
         for (PolicyActiveRequest policy : policies) {
             int updated = familyPolicyAssignmentRepository.updateMemberTimePolicyActive(
                     subId,
@@ -82,13 +92,22 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
                     policy.isActive()
             );
 
+            if (policy.isActive()) {
+                activePolicyIds.add(policy.policyId());
+            }
+
             if (updated == 0 && Boolean.TRUE.equals(policy.isActive())) {
                 familyPolicyAssignmentRepository.insertMemberTimePolicy(subId, policy.policyId(), true);
             }
         }
+
+        policyBlockSnapshotPublisher.publish(subId, activePolicyIds);
     }
 
     private void updateAppPolicies(Long subId, List<PolicyActiveRequest> policies) {
+
+        List<Long> activeAppIds = new ArrayList<>();
+
         for (PolicyActiveRequest policy : policies) {
             int updated = familyPolicyAssignmentRepository.updateMemberAppPolicyActive(
                     subId,
@@ -96,10 +115,23 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
                     policy.isActive()
             );
 
+            if (policy.isActive()) {
+                activeAppIds.add(policy.policyId());
+            }
+
             if (updated == 0 && Boolean.TRUE.equals(policy.isActive())) {
                 familyPolicyAssignmentRepository.insertMemberAppPolicy(subId, policy.policyId());
             }
         }
+
+        applicationEventPublisher.publishEvent(
+                new AppBlockListUpdateEvent(
+                        "APP_BLOCK_LIST_UPDATED",
+                        subId,
+                        activeAppIds,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 
     private Set<Long> toPolicyIdSet(List<PolicyActiveRequest> policies) {
