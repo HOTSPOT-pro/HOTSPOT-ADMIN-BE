@@ -1,5 +1,10 @@
 package hotspot.admin.family.service;
 
+import hotspot.admin.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.subscription.lock.SubscriptionLockedEvent;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.subscription.lock.SubscriptionUnlockedEvent;
+import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +16,8 @@ import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyMemberControlStatusService {
@@ -19,6 +26,9 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
 
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
+    private final SubscriptionJpaRepository subscriptionJpaRepository;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     @Override
@@ -50,13 +60,18 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
             if (updated == 0) {
                 throw new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
             }
+
+            publishSubscriptionDataLimitEvent(familyId, subId, dataLimitKb);
         }
 
         if (isBlocked != null) {
+            Boolean current = subscriptionJpaRepository.findIsLockedBySubId(subId);
             int updated = familySubRepository.updateMemberBlocked(familyId, subId, isBlocked);
             if (updated == 0) {
                 throw new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
             }
+
+            publishSubscriptionStatusEvent(subId, isBlocked, current);
         }
 
         if (isParent != null) {
@@ -71,6 +86,41 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
             if (updated == 0) {
                 throw new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND);
             }
+        }
+    }
+
+    private void publishSubscriptionDataLimitEvent(Long familyId, Long subId, long dataLimitKb) {
+        applicationEventPublisher.publishEvent(
+                new FamilySubLimitChangedEvent(
+                        "FAMILY_SUB_LIMIT_CHANGED",
+                        familyId,
+                        subId,
+                        dataLimitKb,
+                        UUID.randomUUID().toString()
+                )
+        );
+    }
+
+    private void publishSubscriptionStatusEvent(Long subId, Boolean isBlocked, Boolean current) {
+        if (current != null) {
+            if (!current && isBlocked) {
+                applicationEventPublisher.publishEvent(
+                        new SubscriptionLockedEvent(
+                                "SUBSCRIPTION_LOCKED",
+                                subId,
+                                UUID.randomUUID().toString()
+                        )
+                );
+            }
+        }
+        else {
+            applicationEventPublisher.publishEvent(
+                    new SubscriptionUnlockedEvent(
+                            "SUBSCRIPTION_UNLOCKED",
+                            subId,
+                            UUID.randomUUID().toString()
+                    )
+            );
         }
     }
 
