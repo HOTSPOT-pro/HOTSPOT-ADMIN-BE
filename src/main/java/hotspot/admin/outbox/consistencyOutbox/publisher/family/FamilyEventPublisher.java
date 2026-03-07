@@ -1,4 +1,4 @@
-package hotspot.admin.outbox.consistencyOutbox.publisher;
+package hotspot.admin.outbox.consistencyOutbox.publisher.family;
 
 import java.util.List;
 import java.util.UUID;

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
+import hotspot.admin.outbox.consistencyOutbox.publisher.family.FamilyEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
