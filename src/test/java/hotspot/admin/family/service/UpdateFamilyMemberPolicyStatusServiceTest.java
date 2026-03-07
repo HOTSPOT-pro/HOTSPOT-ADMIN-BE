@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
@@ -22,6 +23,8 @@ import hotspot.admin.family.controller.request.PolicyActiveRequest;
 import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.outbox.consistencyOutbox.util.PolicyBlockSnapshotPublisher;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.subscription.app.AppBlockListUpdateEvent;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyMemberPolicyStatusServiceTest {
@@ -35,6 +38,12 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
     @Mock
     private FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
 
+    @Mock
+    private PolicyBlockSnapshotPublisher policyBlockSnapshotPublisher;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UpdateFamilyMemberPolicyStatusServiceImpl service;
 
     @BeforeEach
@@ -42,13 +51,16 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
         service = new UpdateFamilyMemberPolicyStatusServiceImpl(
                 familyRepository,
                 familySubRepository,
-                familyPolicyAssignmentRepository
+                familyPolicyAssignmentRepository,
+                policyBlockSnapshotPublisher,
+                applicationEventPublisher
         );
     }
 
     @Test
     @DisplayName("가족 구성원 시간 정책 적용 상태 수정 성공")
     void updateMemberTimePolicyStatusSuccess() {
+
         List<PolicyActiveRequest> policies = List.of(
                 new PolicyActiveRequest(101L, true),
                 new PolicyActiveRequest(102L, false)
@@ -56,19 +68,29 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
 
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
         when(familySubRepository.existsFamilySub(1L, 10L)).thenReturn(true);
+
         when(familyPolicyAssignmentRepository.findExistingTimePolicyIds(1L, Set.of(101L, 102L)))
                 .thenReturn(Set.of(101L, 102L));
-        when(familyPolicyAssignmentRepository.updateMemberTimePolicyActive(10L, 101L, true)).thenReturn(0);
-        when(familyPolicyAssignmentRepository.updateMemberTimePolicyActive(10L, 102L, false)).thenReturn(1);
+
+        when(familyPolicyAssignmentRepository.updateMemberTimePolicyActive(10L, 101L, true))
+                .thenReturn(0);
+
+        when(familyPolicyAssignmentRepository.updateMemberTimePolicyActive(10L, 102L, false))
+                .thenReturn(1);
 
         service.updateMemberTimePolicyStatus(1L, 10L, policies);
 
-        verify(familyPolicyAssignmentRepository).insertMemberTimePolicy(10L, 101L, true);
+        verify(familyPolicyAssignmentRepository)
+                .insertMemberTimePolicy(10L, 101L, true);
+
+        verify(policyBlockSnapshotPublisher)
+                .publish(10L, List.of(101L));
     }
 
     @Test
     @DisplayName("가족 구성원 앱 정책 적용 상태 수정 성공")
     void updateMemberAppPolicyStatusSuccess() {
+
         List<PolicyActiveRequest> policies = List.of(
                 new PolicyActiveRequest(201L, true),
                 new PolicyActiveRequest(202L, false)
@@ -76,14 +98,23 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
 
         when(familyRepository.existsFamilyById(1L)).thenReturn(true);
         when(familySubRepository.existsFamilySub(1L, 10L)).thenReturn(true);
+
         when(familyPolicyAssignmentRepository.findExistingAppPolicyIds(Set.of(201L, 202L)))
                 .thenReturn(Set.of(201L, 202L));
-        when(familyPolicyAssignmentRepository.updateMemberAppPolicyActive(10L, 201L, true)).thenReturn(1);
-        when(familyPolicyAssignmentRepository.updateMemberAppPolicyActive(10L, 202L, false)).thenReturn(1);
+
+        when(familyPolicyAssignmentRepository.updateMemberAppPolicyActive(10L, 201L, true))
+                .thenReturn(1);
+
+        when(familyPolicyAssignmentRepository.updateMemberAppPolicyActive(10L, 202L, false))
+                .thenReturn(1);
 
         service.updateMemberAppPolicyStatus(1L, 10L, policies);
 
-        verify(familyPolicyAssignmentRepository, never()).insertMemberAppPolicy(10L, 201L);
+        verify(familyPolicyAssignmentRepository, never())
+                .insertMemberAppPolicy(10L, 201L);
+
+        verify(applicationEventPublisher)
+                .publishEvent(org.mockito.ArgumentMatchers.any(AppBlockListUpdateEvent.class));
     }
 
     @Test
