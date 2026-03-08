@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Array;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
@@ -94,9 +95,13 @@ class FamilySubQueryRepositoryImplTest {
                     RowMapper<FamilyPolicyTimePolicyRow> mapper = invocation.getArgument(2);
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
+                    Timestamp modifiedTime = Timestamp.valueOf("2026-03-09 10:30:00");
+
+                    when(rs.getLong("policy_sub_id")).thenReturn(1001L);
                     when(rs.getLong("sub_id")).thenReturn(101L);
                     when(rs.getLong("policy_id")).thenReturn(1L);
                     when(rs.getString("policy_name")).thenReturn("야간 차단");
+                    when(rs.getTimestamp("modified_time")).thenReturn(modifiedTime);
 
                     return List.of(mapper.mapRow(rs, 0));
                 });

@@ -1,6 +1,7 @@
 package hotspot.admin.family.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,7 @@ import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimeOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import hotspot.admin.policy.domain.PolicyDay;
 import hotspot.admin.policy.domain.PolicySnapshot;
@@ -33,6 +36,9 @@ class FamilyBlockedStatusResolverTest {
     @Mock
     private FamilySubQueryRepository familySubQueryRepository;
 
+    @Mock
+    private FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
+
     private FamilyBlockedStatusResolver resolver;
 
     @BeforeEach
@@ -43,6 +49,7 @@ class FamilyBlockedStatusResolverTest {
         );
         resolver = new FamilyBlockedStatusResolver(
                 familySubQueryRepository,
+                familyPolicyAssignmentRepository,
                 new ObjectMapper(),
                 fixedClock
         );
@@ -85,8 +92,20 @@ class FamilyBlockedStatusResolverTest {
         ));
 
         when(familySubQueryRepository.findFamilyTimePolicies(9L)).thenReturn(List.of(
-                FamilyPolicyTimePolicyRow.builder().subId(24L).policyId(101L).policyName("active").build(),
-                FamilyPolicyTimePolicyRow.builder().subId(26L).policyId(102L).policyName("inactive").build()
+                FamilyPolicyTimePolicyRow.builder()
+                        .policySubId(1001L)
+                        .subId(24L)
+                        .policyId(101L)
+                        .policyName("active")
+                        .modifiedTime(LocalDateTime.of(2026, 3, 9, 10, 30))
+                        .build(),
+                FamilyPolicyTimePolicyRow.builder()
+                        .policySubId(1002L)
+                        .subId(26L)
+                        .policyId(102L)
+                        .policyName("inactive")
+                        .modifiedTime(LocalDateTime.of(2026, 3, 9, 0, 30))
+                        .build()
         ));
 
         Map<Long, Boolean> result = resolver.resolveBlockedBySubId(9L);
@@ -116,12 +135,53 @@ class FamilyBlockedStatusResolverTest {
         ));
 
         when(familySubQueryRepository.findFamilyTimePolicies(9L)).thenReturn(List.of(
-                FamilyPolicyTimePolicyRow.builder().subId(30L).policyId(999L).policyName("missing").build()
+                FamilyPolicyTimePolicyRow.builder()
+                        .policySubId(2001L)
+                        .subId(30L)
+                        .policyId(999L)
+                        .policyName("missing")
+                        .modifiedTime(LocalDateTime.of(2026, 3, 9, 8, 0))
+                        .build()
         ));
 
         Map<Long, Boolean> result = resolver.resolveBlockedBySubId(9L);
 
         assertThat(result).containsEntry(30L, false);
+    }
+
+    @Test
+    void resolveBlockedBySubIdDeactivatesExpiredOncePolicy() {
+        when(familySubQueryRepository.findFamilyPolicyMembers(9L)).thenReturn(List.of(
+                FamilyPolicyMemberRow.builder()
+                        .subId(40L)
+                        .memberName("E")
+                        .familyRole(FamilyRole.CHILD)
+                        .blocked(false)
+                        .build()
+        ));
+
+        when(familySubQueryRepository.findFamilyTimePolicyOptions(9L)).thenReturn(List.of(
+                FamilyPolicyTimeOptionRow.builder()
+                        .policyId(301L)
+                        .policyType(PolicyType.ONCE)
+                        .policySnapshotJson("{\"durationMinutes\":30}")
+                        .build()
+        ));
+
+        when(familySubQueryRepository.findFamilyTimePolicies(9L)).thenReturn(List.of(
+                FamilyPolicyTimePolicyRow.builder()
+                        .policySubId(3001L)
+                        .subId(40L)
+                        .policyId(301L)
+                        .policyName("once-expired")
+                        .modifiedTime(LocalDateTime.of(2026, 3, 9, 10, 30))
+                        .build()
+        ));
+
+        Map<Long, Boolean> result = resolver.resolveBlockedBySubId(9L);
+
+        verify(familyPolicyAssignmentRepository).bulkDeactivateTimePoliciesByIds(Set.of(3001L));
+        assertThat(result).containsEntry(40L, false);
     }
 
     @Test

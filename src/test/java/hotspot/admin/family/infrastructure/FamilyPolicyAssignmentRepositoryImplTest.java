@@ -105,4 +105,22 @@ class FamilyPolicyAssignmentRepositoryImplTest {
 
         verify(jdbcTemplate).update(anyString(), any(MapSqlParameterSource.class));
     }
+
+    @Test
+    @DisplayName("만료 시간 정책 벌크 비활성화 성공")
+    void bulkDeactivateTimePoliciesByIdsSuccess() {
+        when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class))).thenReturn(2);
+
+        repository.bulkDeactivateTimePoliciesByIds(Set.of(1001L, 1002L));
+
+        verify(jdbcTemplate).update(anyString(), any(MapSqlParameterSource.class));
+    }
+
+    @Test
+    @DisplayName("만료 시간 정책 벌크 비활성화 시 빈 요청이면 쿼리 미실행")
+    void bulkDeactivateTimePoliciesByIdsWithEmptyRequest() {
+        repository.bulkDeactivateTimePoliciesByIds(Set.of());
+
+        verify(jdbcTemplate, never()).update(anyString(), any(MapSqlParameterSource.class));
+    }
 }
