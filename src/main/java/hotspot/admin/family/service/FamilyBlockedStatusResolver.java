@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +20,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyMemberRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimeOptionRow;
 import hotspot.admin.family.infrastructure.query.dto.FamilyPolicyTimePolicyRow;
+import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import hotspot.admin.policy.domain.PolicyDay;
 import hotspot.admin.policy.domain.PolicySnapshot;
+import hotspot.admin.policy.domain.PolicyType;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -28,21 +32,32 @@ import lombok.RequiredArgsConstructor;
 public class FamilyBlockedStatusResolver {
 
     private final FamilySubQueryRepository familySubQueryRepository;
+    private final FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<Long, Boolean> resolveBlockedBySubId(Long familyId) {
         List<FamilyPolicyMemberRow> members = familySubQueryRepository.findFamilyPolicyMembers(familyId);
-
-        Map<Long, PolicySnapshot> policySnapshotById = familySubQueryRepository
+        List<FamilyPolicyTimePolicyRow> memberTimePolicies = familySubQueryRepository.findFamilyTimePolicies(familyId);
+        Map<Long, FamilyPolicyTimeOptionRow> timePolicyOptionById = familySubQueryRepository
                 .findFamilyTimePolicyOptions(familyId).stream()
+                .collect(Collectors.toMap(
+                        FamilyPolicyTimeOptionRow::policyId,
+                        row -> row,
+                        (existing, replacement) -> existing
+                ));
+
+        LocalDateTime now = LocalDateTime.now(clock);
+        deactivateExpiredOncePolicies(memberTimePolicies, timePolicyOptionById, now);
+
+        Map<Long, PolicySnapshot> policySnapshotById = timePolicyOptionById.values().stream()
                 .collect(Collectors.toMap(
                         FamilyPolicyTimeOptionRow::policyId,
                         row -> parsePolicySnapshot(row.policySnapshotJson()),
                         (existing, replacement) -> existing
                 ));
 
-        LocalDateTime now = LocalDateTime.now(clock);
         Set<Long> timePolicyBlockedSubIds = familySubQueryRepository.findFamilyTimePolicies(familyId).stream()
                 .filter(row -> isTimePolicyBlockingNow(policySnapshotById.get(row.policyId()), now))
                 .map(FamilyPolicyTimePolicyRow::subId)
@@ -55,6 +70,52 @@ public class FamilyBlockedStatusResolver {
                                 || timePolicyBlockedSubIds.contains(member.subId()),
                         (existing, replacement) -> existing
                 ));
+    }
+
+    private void deactivateExpiredOncePolicies(
+            List<FamilyPolicyTimePolicyRow> memberTimePolicies,
+            Map<Long, FamilyPolicyTimeOptionRow> timePolicyOptionById,
+            LocalDateTime now
+    ) {
+        Set<Long> expiredPolicySubIds = memberTimePolicies.stream()
+                .filter(row -> isOncePolicyExpired(row, timePolicyOptionById, now))
+                .map(FamilyPolicyTimePolicyRow::policySubId)
+                .collect(Collectors.toSet());
+
+        familyPolicyAssignmentRepository.bulkDeactivateTimePoliciesByIds(expiredPolicySubIds);
+    }
+
+    private boolean isOncePolicyExpired(
+            FamilyPolicyTimePolicyRow row,
+            Map<Long, FamilyPolicyTimeOptionRow> timePolicyOptionById,
+            LocalDateTime now
+    ) {
+        FamilyPolicyTimeOptionRow option = timePolicyOptionById.get(row.policyId());
+        if (option == null || option.policyType() != PolicyType.ONCE) {
+            return false;
+        }
+
+        PolicySnapshot snapshot = parsePolicySnapshot(option.policySnapshotJson());
+        if (snapshot == null || row.modifiedTime() == null) {
+            return false;
+        }
+
+        Integer durationMinutes = snapshot.getDurationMinutes();
+        if (durationMinutes != null && durationMinutes > 0) {
+            return now.isAfter(row.modifiedTime().plusMinutes(durationMinutes));
+        }
+
+        LocalTime start = snapshot.getStartLocalTime();
+        LocalTime end = snapshot.getEndLocalTime();
+        if (start == null || end == null) {
+            return false;
+        }
+
+        LocalDateTime expirationTime = row.modifiedTime().toLocalDate().atTime(end);
+        if (end.isBefore(start)) {
+            expirationTime = expirationTime.plusDays(1);
+        }
+        return now.isAfter(expirationTime);
     }
 
     static boolean isTimePolicyBlockingNow(PolicySnapshot snapshot, LocalDateTime now) {
