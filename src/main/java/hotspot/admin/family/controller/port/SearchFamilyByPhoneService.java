@@ -1,7 +1,7 @@
 package hotspot.admin.family.controller.port;
 
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
+import hotspot.admin.family.controller.response.FamilyListResponse;
 
 public interface SearchFamilyByPhoneService {
-    FamilyPhoneSearchResponse searchByPhone(String phoneNumber);
+    FamilyListResponse searchByPhone(String phoneNumber);
 }

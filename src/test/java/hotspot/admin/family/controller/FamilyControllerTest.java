@@ -30,7 +30,6 @@ import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListItem;
 import hotspot.admin.family.controller.response.FamilyListResponse;
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyAppItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
@@ -282,8 +281,13 @@ class FamilyControllerTest {
                 .memberCount(4)
                 .build();
 
-        FamilyPhoneSearchResponse response = FamilyPhoneSearchResponse.builder()
-                .family(item)
+        FamilyListResponse response = FamilyListResponse.builder()
+                .page(0)
+                .size(1)
+                .totalElements(1L)
+                .totalPages(1)
+                .hasNext(false)
+                .familyList(List.of(item))
                 .build();
 
         when(searchFamilyByPhoneService.searchByPhone("010-1234-1234"))
@@ -292,8 +296,8 @@ class FamilyControllerTest {
         mockMvc.perform(get("/api/v1/admin/families/search/phone")
                         .param("phoneNumber", "010-1234-1234"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.family.familyId").value(2))
-                .andExpect(jsonPath("$.data.family.phoneNumber").value("010-****-1234"));
+                .andExpect(jsonPath("$.data.familyList[0].familyId").value(2))
+                .andExpect(jsonPath("$.data.familyList[0].phoneNumber").value("010-****-1234"));
     }
 
     @Test

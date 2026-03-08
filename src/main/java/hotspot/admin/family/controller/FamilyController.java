@@ -32,7 +32,6 @@ import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.controller.response.FamilyListResponse;
 import hotspot.admin.family.controller.response.FamilyMemberAppPolicyStatusResponse;
 import hotspot.admin.family.controller.response.FamilyMemberTimePolicyStatusResponse;
-import hotspot.admin.family.controller.response.FamilyPhoneSearchResponse;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberDetailItem;
 import hotspot.admin.family.controller.response.FamilyPolicyMemberStatusItem;
 import hotspot.admin.family.controller.response.FamilySummaryResponse;
@@ -191,7 +190,7 @@ public class FamilyController implements FamilyApi {
     /** 전화번호로 가족을 검색한다. */
     @Override
     @GetMapping("/search/phone")
-    public ResponseEntity<ApiResponse<FamilyPhoneSearchResponse>> searchFamilyByPhone(
+    public ResponseEntity<ApiResponse<FamilyListResponse>> searchFamilyByPhone(
             @RequestParam String phoneNumber) {
         return ResponseEntity.ok(ApiResponse.success(searchFamilyByPhoneService.searchByPhone(phoneNumber)));
     }
