@@ -102,18 +102,21 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
     }
 
     private void publishSubscriptionStatusEvent(Long subId, Boolean isBlocked, Boolean current) {
-        if (current != null) {
-            if (!current && isBlocked) {
-                applicationEventPublisher.publishEvent(
-                        new SubscriptionLockedEvent(
-                                "SUBSCRIPTION_LOCKED",
-                                subId,
-                                UUID.randomUUID().toString()
-                        )
-                );
-            }
+        if (current == null) {
+            return;
         }
-        else {
+
+        if (!current && isBlocked) {
+            applicationEventPublisher.publishEvent(
+                    new SubscriptionLockedEvent(
+                            "SUBSCRIPTION_LOCKED",
+                            subId,
+                            UUID.randomUUID().toString()
+                    )
+            );
+        }
+
+        if (current && !isBlocked) {
             applicationEventPublisher.publishEvent(
                     new SubscriptionUnlockedEvent(
                             "SUBSCRIPTION_UNLOCKED",
