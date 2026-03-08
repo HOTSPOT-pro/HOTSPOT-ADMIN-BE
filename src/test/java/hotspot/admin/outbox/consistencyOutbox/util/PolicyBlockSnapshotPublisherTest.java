@@ -1,5 +1,18 @@
 package hotspot.admin.outbox.consistencyOutbox.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
+
 import hotspot.admin.outbox.consistencyOutbox.domain.event.subscription.policyBlock.PolicyBlockSnapshotEvent;
 import hotspot.admin.policy.domain.BlockPolicy;
 import hotspot.admin.policy.domain.PolicyDay;
@@ -7,16 +20,6 @@ import hotspot.admin.policy.domain.PolicyPayload;
 import hotspot.admin.policy.domain.PolicySnapshot;
 import hotspot.admin.policy.domain.PolicyType;
 import hotspot.admin.policy.service.port.BlockPolicyRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.ApplicationEventPublisher;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 class PolicyBlockSnapshotPublisherTest {
 
