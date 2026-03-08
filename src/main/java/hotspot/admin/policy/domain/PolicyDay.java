@@ -3,15 +3,25 @@ package hotspot.admin.policy.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum PolicyDay {
-    MON,
-    TUE,
-    WED,
-    THU,
-    FRI,
-    SAT,
-    SUN;
+    MON(1),
+    TUE(2),
+    WED(3),
+    THU(4),
+    FRI(5),
+    SAT(6),
+    SUN(7);
 
-    @JsonCreator
+    private final int value;
+
+    PolicyDay(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static PolicyDay from(String value) {
         if (value == null) {
             return null;

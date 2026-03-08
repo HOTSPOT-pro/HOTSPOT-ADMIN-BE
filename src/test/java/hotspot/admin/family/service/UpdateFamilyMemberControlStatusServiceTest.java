@@ -10,12 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UpdateFamilyMemberControlStatusServiceTest {
@@ -26,11 +28,22 @@ class UpdateFamilyMemberControlStatusServiceTest {
     @Mock
     private FamilySubRepository familySubRepository;
 
+    @Mock
+    private SubscriptionJpaRepository subscriptionJpaRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UpdateFamilyMemberControlStatusServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new UpdateFamilyMemberControlStatusServiceImpl(familyRepository, familySubRepository);
+        service = new UpdateFamilyMemberControlStatusServiceImpl(
+                familyRepository,
+                familySubRepository,
+                subscriptionJpaRepository,
+                applicationEventPublisher
+        );
     }
 
     @Test
@@ -40,6 +53,8 @@ class UpdateFamilyMemberControlStatusServiceTest {
         when(familySubRepository.existsFamilySub(1L, 101L)).thenReturn(true);
         when(familyRepository.findFamilyDataAmount(1L)).thenReturn(java.util.Optional.of(2097152L));
         when(familySubRepository.updateMemberDataLimit(1L, 101L, 1048576L)).thenReturn(1);
+
+        when(subscriptionJpaRepository.findIsLockedBySubId(101L)).thenReturn(false);
         when(familySubRepository.updateMemberBlocked(1L, 101L, true)).thenReturn(1);
 
         service.updateMemberControlStatus(1L, 101L, 1L, true, null);

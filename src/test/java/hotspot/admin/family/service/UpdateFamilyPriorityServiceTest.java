@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
@@ -36,6 +37,9 @@ class UpdateFamilyPriorityServiceTest {
     @Mock
     private FamilySubQueryRepository familySubQueryRepository;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UpdateFamilyPriorityServiceImpl service;
 
     @BeforeEach
@@ -43,7 +47,8 @@ class UpdateFamilyPriorityServiceTest {
         service = new UpdateFamilyPriorityServiceImpl(
                 familyRepository,
                 familySubRepository,
-                familySubQueryRepository
+                familySubQueryRepository,
+                applicationEventPublisher
         );
     }
 

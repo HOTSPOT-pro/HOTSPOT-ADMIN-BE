@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,8 @@ import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToFifoEvent;
+import hotspot.admin.outbox.consistencyOutbox.domain.event.family.mode.FamilyModeChangedToPriorityEvent;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,6 +34,8 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityType
     private final FamilyRepository familyRepository;
     private final FamilySubRepository familySubRepository;
     private final FamilySubQueryRepository familySubQueryRepository;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     /** 가족 우선순위 유형을 변경하고 요청값에 맞춰 구성원 우선순위를 동기화한다. */
     @Transactional
@@ -46,6 +52,17 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityType
 
         if (priorityType == PriorityType.FIFO) {
             familySubRepository.updatePriority(familyId, UNUSED_PRIORITY_ORDER);
+
+            // 선착순 일 경우 이벤트 발행
+            applicationEventPublisher.publishEvent(
+                    new FamilyModeChangedToFifoEvent(
+                            "FAMILY_MODE_CHANGED",
+                            familyId,
+                            "FIFO",
+                            UUID.randomUUID().toString()
+
+                    )
+            );
             return;
         }
 
@@ -75,6 +92,26 @@ public class UpdateFamilyPriorityServiceImpl implements UpdateFamilyPriorityType
                     memberPriority.priority()
             );
         }
+
+        List<FamilyModeChangedToPriorityEvent.Priority> priorities =
+                sorted.stream()
+                        .map(req -> new FamilyModeChangedToPriorityEvent.Priority(
+                                req.subId(),
+                                req.priority()
+                        ))
+                        .toList();
+
+
+        // Priority 모드 일 경우 구성원별 우선순위를 포함하여 outbox event 발행
+        applicationEventPublisher.publishEvent(
+                new FamilyModeChangedToPriorityEvent(
+                        "FAMILY_MODE_CHANGED",
+                        familyId,
+                        "PRIORITY",
+                        priorities,
+                        UUID.randomUUID().toString()
+                )
+        );
     }
 
     private Map<Long, Integer> buildPriorityMap(List<MemberPriorityRequest> memberPriorities) {

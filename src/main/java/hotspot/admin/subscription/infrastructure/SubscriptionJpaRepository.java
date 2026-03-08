@@ -25,4 +25,11 @@ public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEnt
             @Param("subId") Long subId,
             @Param("isLocked") boolean isLocked
     );
+
+    @Query("""
+        SELECT s.isLocked
+        FROM SubscriptionEntity s
+        WHERE s.subId = :subId
+        """)
+    Boolean findIsLockedBySubId(@Param("subId") Long subId);
 }

@@ -36,7 +36,7 @@ import hotspot.admin.family.service.port.FamilyApplyRepository;
 import hotspot.admin.family.service.port.FamilyRemoveScheduleRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
-import hotspot.admin.outbox.consistencyOutbox.publisher.FamilyEventPublisher;
+import hotspot.admin.outbox.consistencyOutbox.publisher.family.FamilyEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class ProcessFamilyRequestServiceTest {

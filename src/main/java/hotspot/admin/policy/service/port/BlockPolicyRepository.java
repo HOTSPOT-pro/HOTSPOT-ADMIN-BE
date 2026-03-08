@@ -1,5 +1,6 @@
 package hotspot.admin.policy.service.port;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ public interface BlockPolicyRepository {
 
     BlockPolicy save(BlockPolicy blockPolicy);
     boolean existsTemplateByPolicyNameAndPolicyType(String policyName, PolicyType policyType);
+
+    List<BlockPolicy> findAllById(List<Long> idList);
 
     int updateActiveById(Long policyId, Boolean isActive);
     int softDeleteById(Long policyId);

@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import hotspot.admin.outbox.consistencyOutbox.domain.event.family.familyCreate.FamilyCreatedEvent;
 import hotspot.admin.outbox.consistencyOutbox.domain.event.family.familyMember.FamilyMemberAddedEvent;
 import hotspot.admin.outbox.consistencyOutbox.domain.event.family.familyMember.FamilyMemberRemovedEvent;
+import hotspot.admin.outbox.consistencyOutbox.publisher.family.FamilyEventPublisher;
 
 class FamilyEventPublisherTest {
 
