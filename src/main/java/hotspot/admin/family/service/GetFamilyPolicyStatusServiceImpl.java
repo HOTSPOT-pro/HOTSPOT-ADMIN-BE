@@ -2,6 +2,7 @@ package hotspot.admin.family.service;
 
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
             throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
         }
 
-        java.util.Map<Long, Boolean> blockedBySubId = familyBlockedStatusResolver.resolveBlockedBySubId(familyId);
+        Map<Long, Boolean> blockedBySubId = familyBlockedStatusResolver.resolveBlockedBySubId(familyId);
 
         return familySubQueryRepository.findFamilyPolicyStatusRows(familyId).stream()
                 .map(member -> toMemberItem(member, blockedBySubId))
@@ -44,7 +45,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
     /** 통합 조회 행을 정책 탭 응답 항목으로 변환한다. */
     private FamilyPolicyMemberStatusItem toMemberItem(
             FamilyPolicyStatusRow member,
-            java.util.Map<Long, Boolean> blockedBySubId
+            Map<Long, Boolean> blockedBySubId
     ) {
         boolean blocked = blockedBySubId.getOrDefault(member.subId(), Boolean.TRUE.equals(member.blocked()));
 

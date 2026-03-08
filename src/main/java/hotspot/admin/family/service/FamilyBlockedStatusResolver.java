@@ -26,8 +26,10 @@ import hotspot.admin.policy.domain.PolicyDay;
 import hotspot.admin.policy.domain.PolicySnapshot;
 import hotspot.admin.policy.domain.PolicyType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class FamilyBlockedStatusResolver {
 
@@ -49,7 +51,11 @@ public class FamilyBlockedStatusResolver {
                 ));
 
         LocalDateTime now = LocalDateTime.now(clock);
-        deactivateExpiredOncePolicies(memberTimePolicies, timePolicyOptionById, now);
+        Set<Long> deactivatedPolicySubIds = deactivateExpiredOncePolicies(
+                memberTimePolicies,
+                timePolicyOptionById,
+                now
+        );
 
         Map<Long, PolicySnapshot> policySnapshotById = timePolicyOptionById.values().stream()
                 .collect(Collectors.toMap(
@@ -58,7 +64,8 @@ public class FamilyBlockedStatusResolver {
                         (existing, replacement) -> existing
                 ));
 
-        Set<Long> timePolicyBlockedSubIds = familySubQueryRepository.findFamilyTimePolicies(familyId).stream()
+        Set<Long> timePolicyBlockedSubIds = memberTimePolicies.stream()
+                .filter(row -> !deactivatedPolicySubIds.contains(row.policySubId()))
                 .filter(row -> isTimePolicyBlockingNow(policySnapshotById.get(row.policyId()), now))
                 .map(FamilyPolicyTimePolicyRow::subId)
                 .collect(Collectors.toSet());
@@ -72,7 +79,7 @@ public class FamilyBlockedStatusResolver {
                 ));
     }
 
-    private void deactivateExpiredOncePolicies(
+    private Set<Long> deactivateExpiredOncePolicies(
             List<FamilyPolicyTimePolicyRow> memberTimePolicies,
             Map<Long, FamilyPolicyTimeOptionRow> timePolicyOptionById,
             LocalDateTime now
@@ -83,6 +90,7 @@ public class FamilyBlockedStatusResolver {
                 .collect(Collectors.toSet());
 
         familyPolicyAssignmentRepository.bulkDeactivateTimePoliciesByIds(expiredPolicySubIds);
+        return expiredPolicySubIds;
     }
 
     private boolean isOncePolicyExpired(
@@ -165,6 +173,7 @@ public class FamilyBlockedStatusResolver {
         try {
             return objectMapper.readValue(policySnapshotJson, PolicySnapshot.class);
         } catch (JsonProcessingException e) {
+            log.warn("Failed to parse PolicySnapshot JSON: {}", policySnapshotJson, e);
             return null;
         }
     }
