@@ -44,6 +44,9 @@ class GetFamilyPolicyDetailStatusServiceTest {
     @Mock
     private PhoneCryptoUtil phoneCryptoUtil;
 
+    @Mock
+    private FamilyBlockedStatusResolver familyBlockedStatusResolver;
+
     private GetFamilyPolicyDetailStatusServiceImpl service;
 
     @BeforeEach
@@ -51,6 +54,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
         service = new GetFamilyPolicyDetailStatusServiceImpl(
                 familyRepository,
                 familySubQueryRepository,
+                familyBlockedStatusResolver,
                 phoneCryptoUtil,
                 new ObjectMapper()
         );
@@ -113,12 +117,15 @@ class GetFamilyPolicyDetailStatusServiceTest {
                         FamilyPolicyAppPolicyRow.builder().subId(10L).policyId(201L).blockedServiceName("유튜브").build(),
                         FamilyPolicyAppPolicyRow.builder().subId(10L).policyId(202L).blockedServiceName("틱톡").build()
                 ));
+        when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
+                .thenReturn(java.util.Map.of(10L, true, 11L, false));
         when(phoneCryptoUtil.decryptPhone("enc-1")).thenReturn("01011112222");
 
         FamilyPolicyMemberDetailItem response = service.getFamilyPolicyDetailStatus(1L, 10L);
 
         assertThat(response.memberName()).isEqualTo("대표");
         assertThat(response.phoneNumber()).isEqualTo("010-****-2222");
+        assertThat(response.blocked()).isTrue();
         assertThat(response.appliedTimePolicies()).containsExactly(
                 FamilyPolicyTimeItem.builder()
                         .policyId(101L)
@@ -191,6 +198,8 @@ class GetFamilyPolicyDetailStatusServiceTest {
         when(familySubQueryRepository.findAllAppPolicyOptions()).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyTimePolicies(1L)).thenReturn(List.of());
         when(familySubQueryRepository.findFamilyAppPolicies(1L)).thenReturn(List.of());
+        when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
+                .thenReturn(java.util.Map.of(1L, false));
         when(phoneCryptoUtil.decryptPhone("enc")).thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyPolicyDetailStatus(1L, 1L))
