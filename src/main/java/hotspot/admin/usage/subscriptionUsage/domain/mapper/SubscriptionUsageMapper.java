@@ -16,6 +16,7 @@ public class SubscriptionUsageMapper {
             String maskedPhone,
             FamilyRole familyRole,
             Subscription subscription,
+            Boolean blocked,
             Map<Long, String> giftIdToUserName,
             LocalDateTime now
     ) {
@@ -47,6 +48,7 @@ public class SubscriptionUsageMapper {
                 now,
                 subscription.getMember().getName(),
                 familyRole,
+                blocked,
                 maskedPhone,
                 // 요금제 이름
                 subscription.getPlan().getPlanName(),

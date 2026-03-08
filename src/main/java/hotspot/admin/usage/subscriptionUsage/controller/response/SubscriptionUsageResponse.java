@@ -10,6 +10,7 @@ public record SubscriptionUsageResponse(
         LocalDateTime currentTime,
         String subName,
         FamilyRole familyRole,
+        Boolean blocked,
         String phoneEnc,
         String planName, // 요금제 이름
         Double subDataAmount,

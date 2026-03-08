@@ -23,6 +23,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
 
     private final FamilyRepository familyRepository;
     private final FamilySubQueryRepository familySubQueryRepository;
+    private final FamilyBlockedStatusResolver familyBlockedStatusResolver;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
     /** 구성원별 적용 정책(시간대/차단 서비스)과 차단 상태를 묶어 반환한다. */
@@ -33,19 +34,26 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
             throw new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND);
         }
 
+        java.util.Map<Long, Boolean> blockedBySubId = familyBlockedStatusResolver.resolveBlockedBySubId(familyId);
+
         return familySubQueryRepository.findFamilyPolicyStatusRows(familyId).stream()
-                .map(this::toMemberItem)
+                .map(member -> toMemberItem(member, blockedBySubId))
                 .toList();
     }
 
     /** 통합 조회 행을 정책 탭 응답 항목으로 변환한다. */
-    private FamilyPolicyMemberStatusItem toMemberItem(FamilyPolicyStatusRow member) {
+    private FamilyPolicyMemberStatusItem toMemberItem(
+            FamilyPolicyStatusRow member,
+            java.util.Map<Long, Boolean> blockedBySubId
+    ) {
+        boolean blocked = blockedBySubId.getOrDefault(member.subId(), Boolean.TRUE.equals(member.blocked()));
+
         return FamilyPolicyMemberStatusItem.builder()
                 .subId(member.subId())
                 .memberName(member.memberName())
                 .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc()))
                 .familyRole(member.familyRole())
-                .blocked(Boolean.TRUE.equals(member.blocked()))
+                .blocked(blocked)
                 .appliedTimePolicies(member.appliedTimePolicies())
                 .appliedBlockedServicePolicies(member.appliedBlockedServicePolicies())
                 .build();

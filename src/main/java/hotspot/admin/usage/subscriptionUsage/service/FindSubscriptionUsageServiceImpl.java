@@ -15,6 +15,7 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.util.PhoneCryptoUtil;
 import hotspot.admin.common.util.PhoneMaskingUtil;
 import hotspot.admin.family.domain.FamilySub;
+import hotspot.admin.family.service.FamilyBlockedStatusResolver;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.plan.domain.DataPeriod;
 import hotspot.admin.subscription.domain.Subscription;
@@ -34,6 +35,7 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
     private final SubscriptionUsageRepository subscriptionUsageRepository;
     private final PresentDataJdbcRepository presentDataJdbcRepository;
     private final FamilySubRepository familySubRepository;
+    private final FamilyBlockedStatusResolver familyBlockedStatusResolver;
     private final Clock clock;
     private final PhoneCryptoUtil phoneCryptoUtil;
 
@@ -69,6 +71,8 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
         Map<Long, String> giftIdToUserName =
                 presentDataJdbcRepository.findGiftGiverNames(giftIds);
 
+        Map<Long, Boolean> blockedBySubId = familyBlockedStatusResolver.resolveBlockedBySubId(familyId);
+
         LocalDateTime now = LocalDateTime.now(clock);
 
         return familySubs.stream()
@@ -81,6 +85,10 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
                             usageMap.get(subId);
 
                     String maskedPhone = decryptAndMaskPhone(subscription.getPhoneEnc());
+                    Boolean blocked = blockedBySubId.getOrDefault(
+                            subId,
+                            Boolean.TRUE.equals(subscription.getIsLocked())
+                    );
 
                     return SubscriptionUsageMapper
                             .toSubscriptionUsageResponse(
@@ -88,6 +96,7 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
                                     maskedPhone,
                                     familySub.getFamilyRole(),
                                     subscription,
+                                    blocked,
                                     giftIdToUserName,
                                     now
                             );
