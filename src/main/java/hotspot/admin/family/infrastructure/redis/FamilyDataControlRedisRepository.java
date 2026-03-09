@@ -44,6 +44,10 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
         List<Object> rawResults =
                 fetchSubUsageWithPipeline(familyId, subIdList, date);
 
+        if (rawResults == null) {
+            return new FamilyDataControl(familyLimitGb, List.of());
+        }
+
 
         List<FamilyDataControl.SubFamilyDataControl> subFamilies =
                 buildSubFamilyControls(subIdList, rawResults);
