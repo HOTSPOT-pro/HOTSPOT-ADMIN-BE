@@ -56,6 +56,14 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
             VALUES (:subId, :policyId, true, now(), now())
             """;
 
+    private static final String SQL_BULK_DEACTIVATE_TIME_POLICIES_BY_IDS = """
+            UPDATE policy_sub
+            SET is_active = false,
+                modified_time = now()
+            WHERE policy_sub_id IN (:policySubIds)
+              AND is_active = true
+            """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
@@ -122,5 +130,17 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
                 .addValue("policyId", policyId);
 
         jdbcTemplate.update(SQL_INSERT_MEMBER_APP_POLICY, params);
+    }
+
+    @Override
+    public void bulkDeactivateTimePoliciesByIds(Set<Long> policySubIds) {
+        if (policySubIds == null || policySubIds.isEmpty()) {
+            return;
+        }
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("policySubIds", policySubIds);
+
+        jdbcTemplate.update(SQL_BULK_DEACTIVATE_TIME_POLICIES_BY_IDS, params);
     }
 }

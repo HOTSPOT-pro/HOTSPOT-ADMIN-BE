@@ -36,6 +36,7 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
 
     private final FamilyRepository familyRepository;
     private final FamilySubQueryRepository familySubQueryRepository;
+    private final FamilyBlockedStatusResolver familyBlockedStatusResolver;
     private final PhoneCryptoUtil phoneCryptoUtil;
     private final ObjectMapper objectMapper;
 
@@ -68,12 +69,15 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
                 .findFirst()
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_MEMBER_NOT_FOUND));
 
+        Map<Long, Boolean> blockedBySubId = familyBlockedStatusResolver.resolveBlockedBySubId(familyId);
+
         return toMemberItem(
                 member,
                 timePolicyOptions,
                 appPolicyOptions,
                 appliedTimePolicyIds,
-                appliedAppPolicyIds
+                appliedAppPolicyIds,
+                blockedBySubId
         );
     }
 
@@ -82,16 +86,18 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
             List<FamilyPolicyTimeOptionRow> timePolicyOptions,
             List<FamilyPolicyAppOptionRow> appPolicyOptions,
             Map<Long, Set<Long>> appliedTimePolicyIds,
-            Map<Long, Set<Long>> appliedAppPolicyIds
+            Map<Long, Set<Long>> appliedAppPolicyIds,
+            Map<Long, Boolean> blockedBySubId
     ) {
         Set<Long> memberTimePolicyIds = appliedTimePolicyIds.getOrDefault(member.subId(), Set.of());
         Set<Long> memberAppPolicyIds = appliedAppPolicyIds.getOrDefault(member.subId(), Set.of());
+        boolean blocked = blockedBySubId.getOrDefault(member.subId(), Boolean.TRUE.equals(member.blocked()));
 
         return FamilyPolicyMemberDetailItem.builder()
                 .memberName(member.memberName())
                 .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc()))
                 .familyRole(member.familyRole())
-                .blocked(Boolean.TRUE.equals(member.blocked()))
+                .blocked(blocked)
                 .appliedTimePolicies(toTimeItems(timePolicyOptions, memberTimePolicyIds))
                 .appliedBlockedServicePolicies(toAppItems(appPolicyOptions, memberAppPolicyIds))
                 .build();

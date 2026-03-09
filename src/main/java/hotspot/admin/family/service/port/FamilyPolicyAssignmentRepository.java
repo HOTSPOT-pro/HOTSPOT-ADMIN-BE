@@ -14,4 +14,6 @@ public interface FamilyPolicyAssignmentRepository {
     int updateMemberAppPolicyActive(Long subId, Long policyId, boolean isActive);
 
     void insertMemberAppPolicy(Long subId, Long policyId);
+
+    void bulkDeactivateTimePoliciesByIds(Set<Long> policySubIds);
 }

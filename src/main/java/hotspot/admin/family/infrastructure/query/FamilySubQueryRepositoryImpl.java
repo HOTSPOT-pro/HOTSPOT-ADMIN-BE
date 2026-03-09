@@ -103,9 +103,11 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
     public List<FamilyPolicyTimePolicyRow> findFamilyTimePolicies(Long familyId) {
         String sql = """
                 SELECT DISTINCT
+                    ps.policy_sub_id,
                     ps.sub_id,
                     bp.block_policy_id AS policy_id,
-                    bp.policy_name
+                    bp.policy_name,
+                    ps.modified_time
                 FROM family_sub fs
                 JOIN family f ON f.family_id = fs.family_id AND f.is_deleted = false
                 JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
@@ -273,9 +275,11 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
     private FamilyPolicyTimePolicyRow mapFamilyTimePolicyRow(java.sql.ResultSet rs, int rowNum)
             throws java.sql.SQLException {
         return FamilyPolicyTimePolicyRow.builder()
+                .policySubId(rs.getLong("policy_sub_id"))
                 .subId(rs.getLong("sub_id"))
                 .policyId(rs.getLong("policy_id"))
                 .policyName(rs.getString("policy_name"))
+                .modifiedTime(rs.getTimestamp("modified_time").toLocalDateTime())
                 .build();
     }
 
