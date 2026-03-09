@@ -132,6 +132,7 @@ class FamilyControllerTest {
     @Test
     @DisplayName("가족 제어 기능 조회 성공")
     void getFamilyControlStatusSuccess() throws Exception {
+
         FamilyControlStatusResponse response = FamilyControlStatusResponse.builder()
                 .priorityType(PriorityType.FIFO)
                 .members(List.of(
@@ -141,7 +142,9 @@ class FamilyControllerTest {
                                 .familyRole(FamilyRole.OWNER)
                                 .isParent(null)
                                 .isBlocked(false)
-                                .dataLimitGb(0.0009765625D)
+                                .familyDataLimit(30L)
+                                .familyDataUsage(5L)
+                                .familyDataSubLimit(10L)
                                 .priorityOrder(-1)
                                 .build(),
                         FamilyControlMemberItem.builder()
@@ -150,7 +153,9 @@ class FamilyControllerTest {
                                 .familyRole(FamilyRole.PARENT)
                                 .isParent(true)
                                 .isBlocked(true)
-                                .dataLimitGb(0.00048828125D)
+                                .familyDataLimit(30L)
+                                .familyDataUsage(2L)
+                                .familyDataSubLimit(10L)
                                 .priorityOrder(-1)
                                 .build()
                 ))
@@ -166,10 +171,10 @@ class FamilyControllerTest {
                 .andExpect(jsonPath("$.data.members[0].memberName").value("홍대표"))
                 .andExpect(jsonPath("$.data.members[0].familyRole").value("OWNER"))
                 .andExpect(jsonPath("$.data.members[0].isParent").isEmpty())
-                .andExpect(jsonPath("$.data.members[0].priorityOrder").value(-1))
-                .andExpect(jsonPath("$.data.members[1].familyRole").value("PARENT"))
-                .andExpect(jsonPath("$.data.members[1].isParent").value(true))
-                .andExpect(jsonPath("$.data.members[1].isBlocked").value(true));
+                .andExpect(jsonPath("$.data.members[0].familyDataLimit").value(30))
+                .andExpect(jsonPath("$.data.members[0].familyDataUsage").value(5))
+                .andExpect(jsonPath("$.data.members[0].familyDataSubLimit").value(10))
+                .andExpect(jsonPath("$.data.members[0].priorityOrder").value(-1));
     }
 
     @Test
