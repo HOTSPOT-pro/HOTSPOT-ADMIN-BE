@@ -10,7 +10,9 @@ public record FamilyControlMemberItem(
         FamilyRole familyRole,
         Boolean isParent,
         Boolean isBlocked,
-        Double dataLimitGb,
-        Integer priorityOrder
+        Integer priorityOrder,
+        Long familyDataLimit,
+        Long familyDataUsage,
+        Long familyDataSubLimit
 ) {
 }

@@ -20,6 +20,10 @@ public class FamilyUsageRedisKeyBuilder {
         return "usage:family:" + familyId + ":" + format(date);
     }
 
+    public static String familySubs(Long familyId) {
+        return "idx:family:subs:" + familyId;
+    }
+
     public static String subUsage(Long subId, LocalDate date) {
         return "usage:sub:" + subId + ":" + format(date);
     }
