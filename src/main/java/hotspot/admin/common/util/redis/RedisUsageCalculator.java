@@ -49,4 +49,15 @@ public final class RedisUsageCalculator {
 
         return Math.min(Math.max(rounded, 0), 100); // <- 초과표시 원하면 제거
     }
+
+    public static Long kbToGbCeil(long kb) {
+
+        if (kb <= 0) {
+            return 0L;
+        }
+
+        double gb = kb / (1024.0 * 1024.0);
+
+        return (long) Math.ceil(gb);
+    }
 }

@@ -1,6 +1,9 @@
 package hotspot.admin.family.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +16,8 @@ import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
 import hotspot.admin.family.domain.FamilyRole;
 import hotspot.admin.family.domain.PriorityType;
 import hotspot.admin.family.infrastructure.query.dto.FamilyControlMemberRow;
+import hotspot.admin.family.infrastructure.schema.FamilyDataControl;
+import hotspot.admin.family.service.port.FamilyDataLimitRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubQueryRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
 
     private final FamilyRepository familyRepository;
     private final FamilySubQueryRepository familySubQueryRepository;
+    private final FamilyDataLimitRepository familyDataLimitRepository;
 
     /** 가족 우선순위 유형과 구성원별 제어 상태를 제어 탭 응답 형태로 변환한다. */
     @Transactional(readOnly = true)
@@ -34,8 +40,25 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
         PriorityType priorityType = familyRepository.findFamilyPriorityType(familyId)
                 .orElseThrow(() -> new ApplicationException(FamilyErrorCode.FAMILY_NOT_FOUND));
 
-        List<FamilyControlMemberItem> members = familySubQueryRepository.findFamilyControlMembers(familyId).stream()
-                .map(member -> toMemberItem(member, priorityType))
+        // DB 조회
+        List<FamilyControlMemberRow> memberRows =
+                familySubQueryRepository.findFamilyControlMembers(familyId);
+
+        // Redis 조회
+        FamilyDataControl familyData =
+                familyDataLimitRepository.findFamilyDataLimit(familyId);
+
+        // Redis subId → usage map 생성
+        Map<Long, FamilyDataControl.SubFamilyDataControl> dataMap =
+                familyData.subFamilies().stream()
+                        .collect(Collectors.toMap(
+                                FamilyDataControl.SubFamilyDataControl::subId,
+                                Function.identity()
+                        ));
+
+        // 최종 매핑
+        List<FamilyControlMemberItem> members = memberRows.stream()
+                .map(member -> toMemberItem(member, priorityType, familyData.familyDataLimit(), dataMap))
                 .toList();
 
         return FamilyControlStatusResponse.builder()
@@ -45,14 +68,28 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
     }
 
     /** 구성원 제어 조회 행을 제어 탭 응답 항목으로 변환한다. */
-    private FamilyControlMemberItem toMemberItem(FamilyControlMemberRow member, PriorityType priorityType) {
+    private FamilyControlMemberItem toMemberItem(
+            FamilyControlMemberRow member,
+            PriorityType priorityType,
+            Long familyLimit,
+            Map<Long, FamilyDataControl.SubFamilyDataControl> dataMap
+    ) {
+
+        FamilyDataControl.SubFamilyDataControl data =
+                dataMap.get(member.subId());
+
+        Long usage = data != null ? data.familyDataUsage() : 0L;
+        Long subLimit = data != null ? data.familyDataSubLimit() : 0L;
+
         return FamilyControlMemberItem.builder()
                 .subId(member.subId())
                 .memberName(member.memberName())
                 .familyRole(member.familyRole())
                 .isParent(resolveIsParent(member.familyRole()))
                 .isBlocked(Boolean.TRUE.equals(member.blocked()))
-                .dataLimitGb(toGb(member.dataLimit()))
+                .familyDataLimit(familyLimit)
+                .familyDataUsage(usage)
+                .familyDataSubLimit(subLimit)
                 .priorityOrder(resolvePriorityOrder(member.priority(), priorityType))
                 .build();
     }

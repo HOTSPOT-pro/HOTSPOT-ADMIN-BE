@@ -8,6 +8,7 @@ public record UpdateFamilyMemberControlStatusRequest(
         Long dataLimitGb,
         Boolean isBlocked,
         Boolean isParent
+
 ) {
 
     @AssertTrue(message = "dataLimitGb, isBlocked, isParent 중 하나 이상은 입력해야 합니다.")
