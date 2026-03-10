@@ -42,6 +42,7 @@ class GetFamilySummaryServiceTest {
     void getFamilySummarySuccess() throws Exception {
         FamilyListItem row = FamilyListItem.builder()
                 .familyId(3L)
+                .subId(103L)
                 .representativeName("대표자")
                 .phoneNumber("enc-phone")
                 .memberCount(4)
@@ -49,7 +50,7 @@ class GetFamilySummaryServiceTest {
 
         when(familyQueryRepository.findFamilyById(3L))
                 .thenReturn(Optional.of(row));
-        when(phoneCryptoUtil.decryptPhone("enc-phone"))
+        when(phoneCryptoUtil.decryptPhone("enc-phone", 103L))
                 .thenReturn("01012345678");
 
         FamilySummaryResponse response = service.getFamilySummary(3L);
@@ -77,6 +78,7 @@ class GetFamilySummaryServiceTest {
     void decryptFailThenException() throws Exception {
         FamilyListItem row = FamilyListItem.builder()
                 .familyId(8L)
+                .subId(108L)
                 .representativeName("대표자")
                 .phoneNumber("enc")
                 .memberCount(2)
@@ -84,7 +86,7 @@ class GetFamilySummaryServiceTest {
 
         when(familyQueryRepository.findFamilyById(8L))
                 .thenReturn(Optional.of(row));
-        when(phoneCryptoUtil.decryptPhone("enc"))
+        when(phoneCryptoUtil.decryptPhone("enc", 108L))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilySummary(8L))

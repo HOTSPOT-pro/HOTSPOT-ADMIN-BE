@@ -49,11 +49,12 @@ class SearchFamilyByPhoneServiceTest {
         when(familyQueryRepository.findFamilyByPhoneHash("hashed-phone"))
                 .thenReturn(Optional.of(FamilyListItem.builder()
                         .familyId(10L)
+                        .subId(110L)
                         .representativeName("대표자")
                         .phoneNumber("encrypted-phone")
                         .memberCount(3)
                         .build()));
-        when(phoneCryptoUtil.decryptPhone("encrypted-phone"))
+        when(phoneCryptoUtil.decryptPhone("encrypted-phone", 110L))
                 .thenReturn("01012345678");
 
         FamilyListResponse response = service.searchByPhone("010-1234-5678");

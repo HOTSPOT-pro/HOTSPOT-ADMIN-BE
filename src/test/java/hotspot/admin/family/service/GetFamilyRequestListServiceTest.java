@@ -69,9 +69,9 @@ class GetFamilyRequestListServiceTest {
                 .thenReturn(1L);
         when(familyApplyQueryRepository.findFamilyRequestList(ApplyType.ADD, FamilyApplyStatus.PENDING, 20, 0))
                 .thenReturn(List.of(row));
-        when(phoneCryptoUtil.decryptPhone("enc-requester"))
+        when(phoneCryptoUtil.decryptPhone("enc-requester", 100L))
                 .thenReturn("01011112222");
-        when(phoneCryptoUtil.decryptPhone("enc-target"))
+        when(phoneCryptoUtil.decryptPhone("enc-target", 101L))
                 .thenReturn("01033334444");
 
         FamilyRequestListResponse result = service.getFamilyRequests(ApplyType.ADD, FamilyApplyStatus.PENDING, request);
@@ -118,7 +118,7 @@ class GetFamilyRequestListServiceTest {
                 .thenReturn(1L);
         when(familyApplyQueryRepository.findFamilyRequestList(ApplyType.REMOVE, FamilyApplyStatus.APPROVED, 20, 0))
                 .thenReturn(List.of(row));
-        when(phoneCryptoUtil.decryptPhone("enc-requester"))
+        when(phoneCryptoUtil.decryptPhone("enc-requester", 10L))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyRequests(ApplyType.REMOVE, FamilyApplyStatus.APPROVED, request))
