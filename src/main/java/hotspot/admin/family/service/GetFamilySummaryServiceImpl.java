@@ -46,6 +46,7 @@ public class GetFamilySummaryServiceImpl implements GetFamilySummaryService {
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
             return FamilyListItem.builder()
                     .familyId(item.familyId())
+                    .subId(item.subId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(item.phoneNumber())
@@ -54,10 +55,11 @@ public class GetFamilySummaryServiceImpl implements GetFamilySummaryService {
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
+            String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber(), item.subId());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
             return FamilyListItem.builder()
                     .familyId(item.familyId())
+                    .subId(item.subId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)

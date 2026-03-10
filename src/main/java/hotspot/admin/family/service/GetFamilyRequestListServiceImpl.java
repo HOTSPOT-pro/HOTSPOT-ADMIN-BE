@@ -77,7 +77,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
                     row.familyId(),
                     row.requestSubId(),
                     row.requesterName(),
-                    decryptAndMask(row.requesterPhoneNumberEnc()),
+                    decryptAndMask(row.requesterPhoneNumberEnc(), row.requestSubId()),
                     row.relationDocumentUrl(),
                     row.requestedAt()
             ));
@@ -86,7 +86,7 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
                 acc.targets.add(FamilyRequestTargetItem.builder()
                         .targetSubId(row.targetSubId())
                         .targetName(row.targetName())
-                        .targetPhoneNumber(decryptAndMask(row.targetPhoneNumberEnc()))
+                        .targetPhoneNumber(decryptAndMask(row.targetPhoneNumberEnc(), row.targetSubId()))
                         .targetFamilyRole(row.targetFamilyRole())
                         .build());
             }
@@ -113,13 +113,13 @@ public class GetFamilyRequestListServiceImpl implements GetFamilyRequestListServ
     }
 
     /** 단일 전화번호를 복호화 후 마스킹 형식으로 변환한다. */
-    private String decryptAndMask(String phoneEnc) {
+    private String decryptAndMask(String phoneEnc, Long subId) {
         if (phoneEnc == null || phoneEnc.isBlank()) {
             return phoneEnc;
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(phoneEnc);
+            String decrypted = phoneCryptoUtil.decryptPhone(phoneEnc, subId);
             return PhoneMaskingUtil.maskMiddle(decrypted);
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);

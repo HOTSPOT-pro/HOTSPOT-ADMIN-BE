@@ -52,7 +52,7 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
         return FamilyPolicyMemberStatusItem.builder()
                 .subId(member.subId())
                 .memberName(member.memberName())
-                .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc()))
+                .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc(), member.subId()))
                 .familyRole(member.familyRole())
                 .blocked(blocked)
                 .appliedTimePolicies(member.appliedTimePolicies())
@@ -61,13 +61,13 @@ public class GetFamilyPolicyStatusServiceImpl implements GetFamilyPolicyStatusSe
     }
 
     /** 암호화된 전화번호를 복호화하고 마스킹해 표시 형식으로 변환한다. */
-    private String decryptAndMaskPhone(String encryptedPhone) {
+    private String decryptAndMaskPhone(String encryptedPhone, Long subId) {
         if (encryptedPhone == null || encryptedPhone.isBlank()) {
             return encryptedPhone;
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone);
+            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone, subId);
             return PhoneMaskingUtil.maskMiddle(decrypted);
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);

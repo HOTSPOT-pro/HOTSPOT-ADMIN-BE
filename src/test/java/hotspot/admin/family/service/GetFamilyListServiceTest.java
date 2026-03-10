@@ -2,6 +2,7 @@ package hotspot.admin.family.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -49,12 +50,14 @@ class GetFamilyListServiceTest {
         List<FamilyListItem> rows = List.of(
                 FamilyListItem.builder()
                         .familyId(1L)
+                        .subId(101L)
                         .representativeName("대표자1")
                         .phoneNumber("enc-1")
                         .memberCount(2)
                         .build(),
                 FamilyListItem.builder()
                         .familyId(2L)
+                        .subId(102L)
                         .representativeName("대표자2")
                         .phoneNumber("enc-2")
                         .memberCount(3)
@@ -65,7 +68,7 @@ class GetFamilyListServiceTest {
                 .thenReturn(25L);
         when(familyQueryRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
-        when(phoneCryptoUtil.decryptPhone(anyString()))
+        when(phoneCryptoUtil.decryptPhone(anyString(), anyLong()))
                 .thenReturn("01012340000");
 
         FamilyListResponse response = service.getFamilyList(request);
@@ -88,6 +91,7 @@ class GetFamilyListServiceTest {
 
         List<FamilyListItem> rows = List.of(FamilyListItem.builder()
                 .familyId(1L)
+                .subId(101L)
                 .representativeName("대표자")
                 .phoneNumber("enc")
                 .memberCount(2)
@@ -97,7 +101,7 @@ class GetFamilyListServiceTest {
                 .thenReturn(1L);
         when(familyQueryRepository.findFamilyList(20, 0))
                 .thenReturn(rows);
-        when(phoneCryptoUtil.decryptPhone("enc"))
+        when(phoneCryptoUtil.decryptPhone("enc", 101L))
                 .thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyList(request))

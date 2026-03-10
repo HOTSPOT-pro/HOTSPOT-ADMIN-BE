@@ -95,7 +95,7 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
 
         return FamilyPolicyMemberDetailItem.builder()
                 .memberName(member.memberName())
-                .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc()))
+                .phoneNumber(decryptAndMaskPhone(member.phoneNumberEnc(), member.subId()))
                 .familyRole(member.familyRole())
                 .blocked(blocked)
                 .appliedTimePolicies(toTimeItems(timePolicyOptions, memberTimePolicyIds))
@@ -161,13 +161,13 @@ public class GetFamilyPolicyDetailStatusServiceImpl implements GetFamilyPolicyDe
         }
     }
 
-    private String decryptAndMaskPhone(String encryptedPhone) {
+    private String decryptAndMaskPhone(String encryptedPhone, Long subId) {
         if (encryptedPhone == null || encryptedPhone.isBlank()) {
             return encryptedPhone;
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone);
+            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone, subId);
             return PhoneMaskingUtil.maskMiddle(decrypted);
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);

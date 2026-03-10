@@ -75,8 +75,8 @@ class GetFamilyPolicyStatusServiceTest {
                                 .appliedBlockedServicePolicies(List.of())
                                 .build()
                 ));
-        when(phoneCryptoUtil.decryptPhone("enc-1")).thenReturn("01011112222");
-        when(phoneCryptoUtil.decryptPhone("enc-2")).thenReturn("01033334444");
+        when(phoneCryptoUtil.decryptPhone("enc-1", 10L)).thenReturn("01011112222");
+        when(phoneCryptoUtil.decryptPhone("enc-2", 11L)).thenReturn("01033334444");
         when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
                 .thenReturn(java.util.Map.of(10L, true, 11L, true));
 
@@ -119,7 +119,7 @@ class GetFamilyPolicyStatusServiceTest {
                         .build()));
         when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
                 .thenReturn(java.util.Map.of(1L, false));
-        when(phoneCryptoUtil.decryptPhone("enc")).thenThrow(new GeneralSecurityException("decrypt failed"));
+        when(phoneCryptoUtil.decryptPhone("enc", 1L)).thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyPolicyStatus(1L))
                 .isInstanceOf(ApplicationException.class)

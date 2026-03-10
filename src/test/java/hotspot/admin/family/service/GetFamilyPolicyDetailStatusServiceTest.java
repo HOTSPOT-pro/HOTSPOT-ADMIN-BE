@@ -119,7 +119,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
                 ));
         when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
                 .thenReturn(java.util.Map.of(10L, true, 11L, false));
-        when(phoneCryptoUtil.decryptPhone("enc-1")).thenReturn("01011112222");
+        when(phoneCryptoUtil.decryptPhone("enc-1", 10L)).thenReturn("01011112222");
 
         FamilyPolicyMemberDetailItem response = service.getFamilyPolicyDetailStatus(1L, 10L);
 
@@ -200,7 +200,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
         when(familySubQueryRepository.findFamilyAppPolicies(1L)).thenReturn(List.of());
         when(familyBlockedStatusResolver.resolveBlockedBySubId(1L))
                 .thenReturn(java.util.Map.of(1L, false));
-        when(phoneCryptoUtil.decryptPhone("enc")).thenThrow(new GeneralSecurityException("decrypt failed"));
+        when(phoneCryptoUtil.decryptPhone("enc", 1L)).thenThrow(new GeneralSecurityException("decrypt failed"));
 
         assertThatThrownBy(() -> service.getFamilyPolicyDetailStatus(1L, 1L))
                 .isInstanceOf(ApplicationException.class)

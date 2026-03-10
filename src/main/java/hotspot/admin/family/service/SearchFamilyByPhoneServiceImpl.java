@@ -63,6 +63,7 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
         if (item.phoneNumber() == null || item.phoneNumber().isBlank()) {
             return FamilyListItem.builder()
                     .familyId(item.familyId())
+                    .subId(item.subId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(item.phoneNumber())
@@ -71,10 +72,11 @@ public class SearchFamilyByPhoneServiceImpl implements SearchFamilyByPhoneServic
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber());
+            String decrypted = phoneCryptoUtil.decryptPhone(item.phoneNumber(), item.subId());
             String masked = PhoneMaskingUtil.maskMiddle(decrypted);
             return FamilyListItem.builder()
                     .familyId(item.familyId())
+                    .subId(item.subId())
                     .displayId(DisplayIdFormatter.format(DisplayIdType.FAMILY, item.familyId()))
                     .representativeName(item.representativeName())
                     .phoneNumber(masked)

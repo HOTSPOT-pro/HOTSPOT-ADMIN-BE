@@ -52,6 +52,12 @@ public class SubscriptionEntity extends BaseEntity {
     @Column(name = "phone_hash", length = 64, nullable = false)
     private String phoneHash;
 
+    @Column(name = "phone_key_bucket_id", nullable = false)
+    private Integer phoneKeyBucketId;
+
+    @Column(name = "phone_key_version", nullable = false)
+    private Integer phoneKeyVersion;
+
     @Column(name = "is_locked", nullable = false)
     @Builder.Default
     private Boolean isLocked = false;
@@ -71,6 +77,8 @@ public class SubscriptionEntity extends BaseEntity {
                 .member(memberEntity)
                 .phoneEnc(subscription.getPhoneEnc())
                 .phoneHash(subscription.getPhoneHash())
+                .phoneKeyBucketId(subscription.getPhoneKeyBucketId())
+                .phoneKeyVersion(subscription.getPhoneKeyVersion())
                 .isLocked(subscription.getIsLocked())
                 .isDeleted(subscription.getIsDeleted())
                 .build();
@@ -83,6 +91,8 @@ public class SubscriptionEntity extends BaseEntity {
                 .member(member.entityToDomain())
                 .phoneEnc(phoneEnc)
                 .phoneHash(phoneHash)
+                .phoneKeyBucketId(phoneKeyBucketId)
+                .phoneKeyVersion(phoneKeyVersion)
                 .isLocked(isLocked)
                 .isDeleted(isDeleted)
                 .createdTime(getCreatedTime())
