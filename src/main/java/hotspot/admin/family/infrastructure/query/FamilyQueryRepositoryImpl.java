@@ -31,6 +31,11 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                             MIN(m.name)
                         ) AS representative_name,
                         COALESCE(
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
+                            MIN(s.sub_id)
+                        ) AS phone_sub_id,
+                        COALESCE(
                             MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
                             MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
                             MIN(s.phone_enc)
@@ -43,7 +48,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                     WHERE f.is_deleted = false
                     GROUP BY f.family_id
                 )
-                SELECT family_id, representative_name, phone_number_enc, member_count
+                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
                 FROM family_agg
                 ORDER BY family_id ASC
                 LIMIT :limit
@@ -85,6 +90,11 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                             MIN(m.name)
                         ) AS representative_name,
                         COALESCE(
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
+                            MIN(s.sub_id)
+                        ) AS phone_sub_id,
+                        COALESCE(
                             MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
                             MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
                             MIN(s.phone_enc)
@@ -105,7 +115,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                     )
                     GROUP BY f.family_id
                 )
-                SELECT family_id, representative_name, phone_number_enc, member_count
+                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
                 FROM family_agg
                 ORDER BY family_id ASC
                 LIMIT 1
@@ -133,6 +143,11 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                             MIN(m.name)
                         ) AS representative_name,
                         COALESCE(
+                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
+                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
+                            MIN(s.sub_id)
+                        ) AS phone_sub_id,
+                        COALESCE(
                             MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
                             MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
                             MIN(s.phone_enc)
@@ -146,7 +161,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                       AND f.family_id = :familyId
                     GROUP BY f.family_id
                 )
-                SELECT family_id, representative_name, phone_number_enc, member_count
+                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
                 FROM family_agg
                 LIMIT 1
                 """;
@@ -164,6 +179,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
     private FamilyListItem mapFamilyListItem(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
         return FamilyListItem.builder()
                 .familyId(rs.getLong("family_id"))
+                .subId(rs.getObject("phone_sub_id", Long.class))
                 .representativeName(rs.getString("representative_name"))
                 .phoneNumber(rs.getString("phone_number_enc"))
                 .memberCount(rs.getInt("member_count"))

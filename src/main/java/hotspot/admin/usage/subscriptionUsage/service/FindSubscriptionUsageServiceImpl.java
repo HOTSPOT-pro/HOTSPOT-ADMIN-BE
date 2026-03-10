@@ -84,7 +84,7 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
                     SubscriptionUsage usage =
                             usageMap.get(subId);
 
-                    String maskedPhone = decryptAndMaskPhone(subscription.getPhoneEnc());
+                    String maskedPhone = decryptAndMaskPhone(subscription.getPhoneEnc(), subId);
                     Boolean blocked = blockedBySubId.getOrDefault(
                             subId,
                             Boolean.TRUE.equals(subscription.getIsLocked())
@@ -104,13 +104,13 @@ public class FindSubscriptionUsageServiceImpl implements FindSubscriptionUsageSe
                 .toList();
     }
 
-    private String decryptAndMaskPhone(String encryptedPhone) {
+    private String decryptAndMaskPhone(String encryptedPhone, Long subId) {
         if (encryptedPhone == null || encryptedPhone.isBlank()) {
             return encryptedPhone;
         }
 
         try {
-            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone);
+            String decrypted = phoneCryptoUtil.decryptPhone(encryptedPhone, subId);
             return PhoneMaskingUtil.maskMiddle(decrypted);
         } catch (GeneralSecurityException e) {
             throw new ApplicationException(FamilyErrorCode.PHONE_DECRYPT_FAILED);
