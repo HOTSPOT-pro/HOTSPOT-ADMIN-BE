@@ -15,8 +15,8 @@ server:
 
   # 프론트 주소
   domain:
-    local: ${LOCAL_SERVER_URL}
-    dev: ${DEV_SERVER_URL}
+    local: ${ADMIN_LOCAL_SERVER_URL}
+    dev: ${ADMIN_DEV_SERVER_URL}
 
 spring:
   application:
