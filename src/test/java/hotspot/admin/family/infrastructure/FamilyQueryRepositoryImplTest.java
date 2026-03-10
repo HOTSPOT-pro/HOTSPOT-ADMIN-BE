@@ -39,6 +39,7 @@ class FamilyQueryRepositoryImplTest {
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("family_id")).thenReturn(31L);
+                    when(rs.getObject("phone_sub_id", Long.class)).thenReturn(101L);
                     when(rs.getString("representative_name")).thenReturn("김가족");
                     when(rs.getString("phone_number_enc")).thenReturn("encrypted-phone");
                     when(rs.getInt("member_count")).thenReturn(4);
@@ -64,6 +65,7 @@ class FamilyQueryRepositoryImplTest {
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("family_id")).thenReturn(7L);
+                    when(rs.getObject("phone_sub_id", Long.class)).thenReturn(107L);
                     when(rs.getString("representative_name")).thenReturn("박대표");
                     when(rs.getString("phone_number_enc")).thenReturn("enc-phone");
                     when(rs.getInt("member_count")).thenReturn(2);
@@ -89,6 +91,7 @@ class FamilyQueryRepositoryImplTest {
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("family_id")).thenReturn(9L);
+                    when(rs.getObject("phone_sub_id", Long.class)).thenReturn(109L);
                     when(rs.getString("representative_name")).thenReturn("이대표");
                     when(rs.getString("phone_number_enc")).thenReturn("enc-9999");
                     when(rs.getInt("member_count")).thenReturn(5);
