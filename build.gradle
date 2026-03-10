@@ -42,6 +42,7 @@ dependencies {
 
 	// DB
 	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'software.amazon.awssdk:kms:2.31.2'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

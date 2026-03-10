@@ -17,6 +17,8 @@ public class Subscription {
     private final Member member;
     private final String phoneEnc;
     private final String phoneHash;
+    private final Integer phoneKeyBucketId;
+    private final Integer phoneKeyVersion;
     private final Boolean isLocked;
     private final Boolean isDeleted;
     private final LocalDateTime createdTime;

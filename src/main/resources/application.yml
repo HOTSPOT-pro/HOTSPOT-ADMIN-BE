@@ -2,6 +2,8 @@ project:
   name: Hotspot Admin Domain API
   version: 1.0.0
   admin-code: ${ADMIN_CODE}
+  encryption-provider: ${ENCRYPTION_PROVIDER:local}
+  kms-key-id: ${KEK_KEY_ID:}
   phone-secret-key: ${PHONE_SECRET_KEY}
   phone-hash-key: ${PHONE_HASH_KEY}
 
