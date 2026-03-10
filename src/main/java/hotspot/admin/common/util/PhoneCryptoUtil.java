@@ -5,12 +5,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Objects;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,13 +26,18 @@ import software.amazon.awssdk.services.kms.model.KmsException;
 
 @Component
 @Slf4j
-public class PhoneCryptoUtil {
+public class PhoneCryptoUtil implements DisposableBean {
 
     private static final String AES_ALGORITHM = "AES";
     private static final int AES_BLOCK_SIZE = 16;
+    private static final int AES_KEY_SIZE_128 = 16;
+    private static final int AES_KEY_SIZE_192 = 24;
+    private static final int AES_KEY_SIZE_256 = 32;
     private static final int GCM_NONCE_SIZE = 12;
     private static final int GCM_TAG_SIZE = 16;
     private static final String GCM_PREFIX = "gcm:";
+    private static final String ENCRYPTION_PROVIDER_LOCAL = "local";
+    private static final String ENCRYPTION_PROVIDER_KMS = "kms";
 
     private final SubscriptionPhoneKeyLookupRepository phoneKeyLookupRepository;
     private final byte[] localSecretKey;
@@ -46,8 +53,10 @@ public class PhoneCryptoUtil {
             @Value("${project.kms-key-id:}") String configuredKmsKeyId
     ) {
         this.phoneKeyLookupRepository = phoneKeyLookupRepository;
-        this.localSecretKey = resolveKey(phoneSecretKey);
-        this.encryptionProvider = encryptionProvider == null ? "local" : encryptionProvider.trim().toLowerCase();
+        this.localSecretKey = parseAndValidateSecretKey(phoneSecretKey);
+        this.encryptionProvider = encryptionProvider == null
+                ? ENCRYPTION_PROVIDER_LOCAL
+                : encryptionProvider.trim().toLowerCase();
         this.configuredKmsKeyId = configuredKmsKeyId == null ? "" : configuredKmsKeyId.trim();
     }
 
@@ -67,7 +76,7 @@ public class PhoneCryptoUtil {
     }
 
     private byte[] unwrapDek(SubscriptionPhoneKeyInfo phoneKeyInfo) throws GeneralSecurityException {
-        if ("kms".equals(encryptionProvider)) {
+        if (ENCRYPTION_PROVIDER_KMS.equals(encryptionProvider)) {
             return decryptDekWithKms(phoneKeyInfo);
         }
         return decryptPayloadBytes(phoneKeyInfo.encryptedDek(), localSecretKey);
@@ -97,12 +106,19 @@ public class PhoneCryptoUtil {
     }
 
     private byte[] decryptPayloadBytes(String cipherText, byte[] key) throws GeneralSecurityException {
-        if (cipherText.startsWith(GCM_PREFIX)) {
-            String encoded = cipherText.substring(GCM_PREFIX.length());
-            byte[] decoded = Base64.getDecoder().decode(encoded);
-            return decryptAesGcm(decoded, key);
+        if (cipherText == null || cipherText.isBlank()) {
+            throw new GeneralSecurityException("Cipher text must not be null or blank.");
         }
-        return decryptAesCbc(Base64.getDecoder().decode(cipherText), key);
+        try {
+            if (cipherText.startsWith(GCM_PREFIX)) {
+                String encoded = cipherText.substring(GCM_PREFIX.length());
+                byte[] decoded = Base64.getDecoder().decode(encoded);
+                return decryptAesGcm(decoded, key);
+            }
+            return decryptAesCbc(Base64.getDecoder().decode(cipherText), key);
+        } catch (IllegalArgumentException e) {
+            throw new GeneralSecurityException("Invalid encrypted payload.", e);
+        }
     }
 
     private byte[] decryptAesGcm(byte[] payload, byte[] key) throws GeneralSecurityException {
@@ -133,7 +149,8 @@ public class PhoneCryptoUtil {
         return cipher.doFinal(ciphertext);
     }
 
-    private byte[] resolveKey(String rawKey) {
+    private byte[] parseAndValidateSecretKey(String rawKey) {
+        Objects.requireNonNull(rawKey, "PHONE_SECRET_KEY must not be null.");
         byte[] rawBytes = rawKey.getBytes(StandardCharsets.UTF_8);
         if (isValidAesKeyLength(rawBytes.length)) {
             return rawBytes;
@@ -152,7 +169,9 @@ public class PhoneCryptoUtil {
     }
 
     private boolean isValidAesKeyLength(int length) {
-        return length == 16 || length == 24 || length == 32;
+        return length == AES_KEY_SIZE_128
+                || length == AES_KEY_SIZE_192
+                || length == AES_KEY_SIZE_256;
     }
 
     private KmsClient getKmsClient() {
@@ -165,6 +184,14 @@ public class PhoneCryptoUtil {
                 kmsClient = KmsClient.builder().build();
             }
             return kmsClient;
+        }
+    }
+
+    @Override
+    public void destroy() {
+        KmsClient current = kmsClient;
+        if (current != null) {
+            current.close();
         }
     }
 }
