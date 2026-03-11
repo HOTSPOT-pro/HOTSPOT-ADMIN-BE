@@ -22,37 +22,46 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
     @Override
     public List<FamilyListItem> findFamilyList(int limit, long offset) {
         String sql = """
-                WITH family_agg AS (
+                WITH paged_family AS (
                     SELECT
-                        f.family_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN m.name END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN m.name END),
-                            MIN(m.name)
-                        ) AS representative_name,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
-                            MIN(s.sub_id)
-                        ) AS phone_sub_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
-                            MIN(s.phone_enc)
-                        ) AS phone_number_enc,
-                        COUNT(fs.family_sub_id)::int AS member_count
+                        f.family_id
                     FROM family f
-                    LEFT JOIN family_sub fs ON fs.family_id = f.family_id
-                    LEFT JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                    LEFT JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
                     WHERE f.is_deleted = false
-                    GROUP BY f.family_id
+                    ORDER BY f.family_id ASC
+                    LIMIT :limit
+                    OFFSET :offset
                 )
-                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
-                FROM family_agg
-                ORDER BY family_id ASC
-                LIMIT :limit
-                OFFSET :offset
+                SELECT
+                    pf.family_id,
+                    rep.phone_sub_id,
+                    rep.representative_name,
+                    rep.phone_number_enc,
+                    fc.member_count::int AS member_count
+                FROM paged_family pf
+                LEFT JOIN LATERAL (
+                    SELECT
+                        s.sub_id AS phone_sub_id,
+                        m.name AS representative_name,
+                        s.phone_enc AS phone_number_enc
+                    FROM family_sub fs
+                    JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                    JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                    WHERE fs.family_id = pf.family_id
+                    ORDER BY
+                        CASE fs.family_role
+                            WHEN :ownerRole THEN 1
+                            WHEN :parentRole THEN 2
+                            ELSE 3
+                        END,
+                        s.sub_id ASC
+                    LIMIT 1
+                ) rep ON true
+                LEFT JOIN LATERAL (
+                    SELECT COUNT(*) AS member_count
+                    FROM family_sub fs
+                    WHERE fs.family_id = pf.family_id
+                ) fc ON true
+                ORDER BY pf.family_id ASC
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -81,31 +90,12 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
     @Override
     public Optional<FamilyListItem> findFamilyByPhoneHash(String phoneHash) {
         String sql = """
-                WITH family_agg AS (
+                WITH target_family AS (
                     SELECT
-                        f.family_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN m.name END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN m.name END),
-                            MIN(m.name)
-                        ) AS representative_name,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
-                            MIN(s.sub_id)
-                        ) AS phone_sub_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
-                            MIN(s.phone_enc)
-                        ) AS phone_number_enc,
-                        COUNT(fs.family_sub_id)::int AS member_count
+                        f.family_id
                     FROM family f
-                    LEFT JOIN family_sub fs ON fs.family_id = f.family_id
-                    LEFT JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                    LEFT JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
                     WHERE f.is_deleted = false
-                    AND EXISTS (
+                      AND EXISTS (
                         SELECT 1
                         FROM family_sub fs2
                         JOIN subscription s2 ON s2.sub_id = fs2.sub_id
@@ -113,12 +103,39 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                         AND s2.is_deleted = false
                         AND s2.phone_hash = :phoneHash
                     )
-                    GROUP BY f.family_id
+                    ORDER BY f.family_id ASC
+                    LIMIT 1
                 )
-                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
-                FROM family_agg
-                ORDER BY family_id ASC
-                LIMIT 1
+                SELECT
+                    tf.family_id,
+                    rep.phone_sub_id,
+                    rep.representative_name,
+                    rep.phone_number_enc,
+                    fc.member_count::int AS member_count
+                FROM target_family tf
+                LEFT JOIN LATERAL (
+                    SELECT
+                        s.sub_id AS phone_sub_id,
+                        m.name AS representative_name,
+                        s.phone_enc AS phone_number_enc
+                    FROM family_sub fs
+                    JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                    JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                    WHERE fs.family_id = tf.family_id
+                    ORDER BY
+                        CASE fs.family_role
+                            WHEN :ownerRole THEN 1
+                            WHEN :parentRole THEN 2
+                            ELSE 3
+                        END,
+                        s.sub_id ASC
+                    LIMIT 1
+                ) rep ON true
+                LEFT JOIN LATERAL (
+                    SELECT COUNT(*) AS member_count
+                    FROM family_sub fs
+                    WHERE fs.family_id = tf.family_id
+                ) fc ON true
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
@@ -134,36 +151,43 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
     @Override
     public Optional<FamilyListItem> findFamilyById(Long familyId) {
         String sql = """
-                WITH family_agg AS (
+                WITH target_family AS (
                     SELECT
-                        f.family_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN m.name END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN m.name END),
-                            MIN(m.name)
-                        ) AS representative_name,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.sub_id END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.sub_id END),
-                            MIN(s.sub_id)
-                        ) AS phone_sub_id,
-                        COALESCE(
-                            MAX(CASE WHEN fs.family_role = :ownerRole THEN s.phone_enc END),
-                            MAX(CASE WHEN fs.family_role = :parentRole THEN s.phone_enc END),
-                            MIN(s.phone_enc)
-                        ) AS phone_number_enc,
-                        COUNT(fs.family_sub_id)::int AS member_count
+                        f.family_id
                     FROM family f
-                    LEFT JOIN family_sub fs ON fs.family_id = f.family_id
-                    LEFT JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
-                    LEFT JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
                     WHERE f.is_deleted = false
                       AND f.family_id = :familyId
-                    GROUP BY f.family_id
                 )
-                SELECT family_id, phone_sub_id, representative_name, phone_number_enc, member_count
-                FROM family_agg
-                LIMIT 1
+                SELECT
+                    tf.family_id,
+                    rep.phone_sub_id,
+                    rep.representative_name,
+                    rep.phone_number_enc,
+                    fc.member_count::int AS member_count
+                FROM target_family tf
+                LEFT JOIN LATERAL (
+                    SELECT
+                        s.sub_id AS phone_sub_id,
+                        m.name AS representative_name,
+                        s.phone_enc AS phone_number_enc
+                    FROM family_sub fs
+                    JOIN subscription s ON s.sub_id = fs.sub_id AND s.is_deleted = false
+                    JOIN member m ON m.member_id = s.member_id AND m.is_deleted = false
+                    WHERE fs.family_id = tf.family_id
+                    ORDER BY
+                        CASE fs.family_role
+                            WHEN :ownerRole THEN 1
+                            WHEN :parentRole THEN 2
+                            ELSE 3
+                        END,
+                        s.sub_id ASC
+                    LIMIT 1
+                ) rep ON true
+                LEFT JOIN LATERAL (
+                    SELECT COUNT(*) AS member_count
+                    FROM family_sub fs
+                    WHERE fs.family_id = tf.family_id
+                ) fc ON true
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
