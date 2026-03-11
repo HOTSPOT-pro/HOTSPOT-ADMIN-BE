@@ -65,15 +65,8 @@ public class FamilyPolicyOutboxPublisher {
     }
 
     private String resolvePolicyAlertType(List<PolicyActiveRequest> policies) {
-        boolean hasApplied = policies.stream().anyMatch(PolicyActiveRequest::isActive);
-        boolean hasReleased = policies.stream().anyMatch(policy -> !policy.isActive());
-
-        if (hasApplied && hasReleased) {
-            return ALERT_TYPE_APPLIED;
-        }
-        if (hasApplied) {
-            return ALERT_TYPE_APPLIED;
-        }
-        return ALERT_TYPE_RELEASED;
+        return policies.stream().anyMatch(PolicyActiveRequest::isActive)
+                ? ALERT_TYPE_APPLIED
+                : ALERT_TYPE_RELEASED;
     }
 }
