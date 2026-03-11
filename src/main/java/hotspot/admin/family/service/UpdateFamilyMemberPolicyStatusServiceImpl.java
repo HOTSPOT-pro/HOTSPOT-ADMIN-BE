@@ -15,6 +15,7 @@ import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.exception.code.PolicyErrorCode;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberPolicyStatusService;
 import hotspot.admin.family.controller.request.PolicyActiveRequest;
+import hotspot.admin.family.outbox.FamilyPolicyOutboxPublisher;
 import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
@@ -31,6 +32,7 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
     private final FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
     private final PolicyBlockSnapshotPublisher policyBlockSnapshotPublisher;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final FamilyPolicyOutboxPublisher familyPolicyOutboxPublisher;
 
     @Transactional
     @Override
@@ -42,6 +44,7 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
         validateFamilyAndMember(familyId, subId);
         validateTimePolicies(familyId, policies);
         updateTimePolicies(subId, policies);
+        familyPolicyOutboxPublisher.publishTimeWindowPolicy(familyId, subId, policies);
     }
 
     @Transactional
@@ -54,6 +57,7 @@ public class UpdateFamilyMemberPolicyStatusServiceImpl implements UpdateFamilyMe
         validateFamilyAndMember(familyId, subId);
         validateAppPolicies(policies);
         updateAppPolicies(subId, policies);
+        familyPolicyOutboxPublisher.publishServiceAccess(familyId, subId, policies);
     }
 
     private void validateTimePolicies(Long familyId, List<PolicyActiveRequest> policies) {

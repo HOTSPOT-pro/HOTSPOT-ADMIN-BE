@@ -20,6 +20,7 @@ import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.common.exception.code.PolicyErrorCode;
 import hotspot.admin.family.controller.request.PolicyActiveRequest;
+import hotspot.admin.family.outbox.FamilyPolicyOutboxPublisher;
 import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
@@ -44,6 +45,9 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private FamilyPolicyOutboxPublisher familyPolicyOutboxPublisher;
+
     private UpdateFamilyMemberPolicyStatusServiceImpl service;
 
     @BeforeEach
@@ -53,7 +57,8 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
                 familySubRepository,
                 familyPolicyAssignmentRepository,
                 policyBlockSnapshotPublisher,
-                applicationEventPublisher
+                applicationEventPublisher,
+                familyPolicyOutboxPublisher
         );
     }
 
@@ -85,6 +90,9 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
 
         verify(policyBlockSnapshotPublisher)
                 .publish(10L, List.of(101L));
+
+        verify(familyPolicyOutboxPublisher)
+                .publishTimeWindowPolicy(1L, 10L, policies);
     }
 
     @Test
@@ -115,6 +123,9 @@ class UpdateFamilyMemberPolicyStatusServiceTest {
 
         verify(applicationEventPublisher)
                 .publishEvent(org.mockito.ArgumentMatchers.any(AppBlockListUpdateEvent.class));
+
+        verify(familyPolicyOutboxPublisher)
+                .publishServiceAccess(1L, 10L, policies);
     }
 
     @Test
