@@ -36,7 +36,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                     rep.phone_sub_id,
                     rep.representative_name,
                     rep.phone_number_enc,
-                    COALESCE(fc.member_count, 0)::int AS member_count
+                    fc.member_count::int AS member_count
                 FROM paged_family pf
                 LEFT JOIN LATERAL (
                     SELECT
@@ -92,7 +92,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
         String sql = """
                 WITH target_family AS (
                     SELECT
-                        f.family_id,
+                        f.family_id
                     FROM family f
                     WHERE f.is_deleted = false
                       AND EXISTS (
@@ -111,7 +111,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                     rep.phone_sub_id,
                     rep.representative_name,
                     rep.phone_number_enc,
-                    COALESCE(fc.member_count, 0)::int AS member_count
+                    fc.member_count::int AS member_count
                 FROM target_family tf
                 LEFT JOIN LATERAL (
                     SELECT
@@ -163,7 +163,7 @@ public class FamilyQueryRepositoryImpl implements FamilyQueryRepository {
                     rep.phone_sub_id,
                     rep.representative_name,
                     rep.phone_number_enc,
-                    COALESCE(fc.member_count, 0)::int AS member_count
+                    fc.member_count::int AS member_count
                 FROM target_family tf
                 LEFT JOIN LATERAL (
                     SELECT
