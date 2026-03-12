@@ -28,6 +28,7 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
             FROM app_blocked_service abs
             WHERE abs.is_active = true
               AND abs.is_deleted = false
+              AND abs.blocked_service_code <> :excludedPolicyCode
               AND abs.app_blocked_service_id IN (:policyIds)
             """;
 
@@ -96,7 +97,8 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
         }
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("policyIds", policyIds);
+                .addValue("policyIds", policyIds)
+                .addValue("excludedPolicyCode", FamilyPolicyConstants.EXCLUDED_FAMILY_APP_POLICY_CODE);
 
         List<Long> ids = jdbcTemplate.queryForList(SQL_FIND_EXISTING_APP_POLICY_IDS, params, Long.class);
         return new HashSet<>(ids);

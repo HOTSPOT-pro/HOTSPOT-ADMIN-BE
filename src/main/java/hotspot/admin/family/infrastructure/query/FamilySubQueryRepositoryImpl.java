@@ -166,11 +166,13 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                  AND abs.is_active = true
                  AND abs.is_deleted = false
                 WHERE fs.family_id = :familyId
+                  AND abs.blocked_service_code <> :excludedPolicyCode
                 ORDER BY bss.sub_id, abs.blocked_service_name
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("familyId", familyId);
+                .addValue("familyId", familyId)
+                .addValue("excludedPolicyCode", FamilyPolicyConstants.EXCLUDED_FAMILY_APP_POLICY_CODE);
 
         return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyRow);
     }
@@ -185,9 +187,12 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 FROM app_blocked_service abs
                 WHERE abs.is_active = true
                   AND abs.is_deleted = false
+                  AND abs.blocked_service_code <> :excludedPolicyCode
                 ORDER BY abs.blocked_service_name, abs.app_blocked_service_id
                 """;
-        return jdbcTemplate.query(sql, this::mapFamilyAppPolicyOptionRow);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("excludedPolicyCode", FamilyPolicyConstants.EXCLUDED_FAMILY_APP_POLICY_CODE);
+        return jdbcTemplate.query(sql, params, this::mapFamilyAppPolicyOptionRow);
     }
 
     /** 정책 탭 화면용 통합 행을 한 번의 조회로 구성한다. */
@@ -228,6 +233,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                      AND abs.is_deleted = false
                     WHERE bss.sub_id = s.sub_id
                       AND bss.is_active = true
+                      AND abs.blocked_service_code <> :excludedPolicyCode
                 ) ap ON true
                 WHERE fs.family_id = :familyId
                 ORDER BY
@@ -242,6 +248,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("familyId", familyId)
+                .addValue("excludedPolicyCode", FamilyPolicyConstants.EXCLUDED_FAMILY_APP_POLICY_CODE)
                 .addValue("ownerRole", FamilyRole.OWNER.name())
                 .addValue("parentRole", FamilyRole.PARENT.name())
                 .addValue("childRole", FamilyRole.CHILD.name());
