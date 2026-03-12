@@ -98,25 +98,11 @@ class FamilyDataControlRedisRepositoryTest {
                 "31457280"
         );
 
-        // 구성원1 limit 10GB
-        redisTemplate.opsForHash().put(
-                "limit:family_sub:1:1",
-                "family_limit",
-                "10485760"
-        );
-
         // 구성원1 usage 5GB
         redisTemplate.opsForHash().put(
                 "usage:sub:1:" + yyyyMM,
                 "member_family_used",
                 "5242880"
-        );
-
-        // 구성원2 limit 10GB
-        redisTemplate.opsForHash().put(
-                "limit:family_sub:1:2",
-                "family_limit",
-                "10485760"
         );
 
         // 구성원2 usage 2GB
@@ -139,7 +125,6 @@ class FamilyDataControlRedisRepositoryTest {
                         .orElseThrow();
 
         assertEquals(5L, sub1.familyDataUsage());
-        assertEquals(10L, sub1.familyDataSubLimit());
 
         FamilyDataControl.SubFamilyDataControl sub2 =
                 result.subFamilies().stream()
@@ -148,6 +133,5 @@ class FamilyDataControlRedisRepositoryTest {
                         .orElseThrow();
 
         assertEquals(2L, sub2.familyDataUsage());
-        assertEquals(10L, sub2.familyDataSubLimit());
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
+import hotspot.admin.common.util.redis.RedisUsageCalculator;
 import hotspot.admin.family.controller.port.GetFamilyControlStatusService;
 import hotspot.admin.family.controller.response.FamilyControlMemberItem;
 import hotspot.admin.family.controller.response.FamilyControlStatusResponse;
@@ -26,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatusService {
 
-    private static final double KB_PER_GB = 1024D * 1024D;
     private static final int UNUSED_PRIORITY_ORDER = -1;
 
     private final FamilyRepository familyRepository;
@@ -79,7 +79,8 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 dataMap.get(member.subId());
 
         Long usage = data != null ? data.familyDataUsage() : 0L;
-        Long subLimit = data != null ? data.familyDataSubLimit() : 0L;
+
+        double subLimit = RedisUsageCalculator.kbToGb(member.dataLimit());
 
         return FamilyControlMemberItem.builder()
                 .subId(member.subId())
@@ -89,7 +90,7 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
                 .isBlocked(Boolean.TRUE.equals(member.blocked()))
                 .familyDataLimit(familyLimit)
                 .familyDataUsage(usage)
-                .familyDataSubLimit(subLimit)
+                .familyDataSubLimit((long) subLimit)
                 .priorityOrder(resolvePriorityOrder(member.priority(), priorityType))
                 .build();
     }
@@ -108,13 +109,5 @@ public class GetFamilyControlStatusServiceImpl implements GetFamilyControlStatus
             return UNUSED_PRIORITY_ORDER;
         }
         return priority == null ? UNUSED_PRIORITY_ORDER : priority;
-    }
-
-    /** 데이터 한도(KB)를 GB 단위로 변환한다. */
-    private Double toGb(Long dataLimit) {
-        if (dataLimit == null) {
-            return null;
-        }
-        return dataLimit / KB_PER_GB;
     }
 }

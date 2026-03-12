@@ -186,4 +186,21 @@ class FamilySubRepositoryImplTest {
 
         assertThat(updated).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("특정 구성원 우선순위 업데이트 성공")
+    void updateMemberPrioritySuccess() {
+        FamilySubRepositoryImpl familySubRepository = new FamilySubRepositoryImpl(
+                familySubJpaRepository,
+                familyJpaRepository,
+                subscriptionJpaRepository
+        );
+
+        when(familySubJpaRepository.updatePriorityByFamilyIdAndSubId(3L, 100L, 5))
+                .thenReturn(1);
+
+        int updated = familySubRepository.updateMemberPriority(3L, 100L, 5);
+
+        assertThat(updated).isEqualTo(1);
+    }
 }

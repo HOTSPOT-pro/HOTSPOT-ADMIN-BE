@@ -15,6 +15,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.outbox.FamilyPolicyOutboxPublisher;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.subscription.infrastructure.SubscriptionJpaRepository;
@@ -34,6 +35,9 @@ class UpdateFamilyMemberControlStatusServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private FamilyPolicyOutboxPublisher familyPolicyOutboxPublisher;
+
     private UpdateFamilyMemberControlStatusServiceImpl service;
 
     @BeforeEach
@@ -42,7 +46,8 @@ class UpdateFamilyMemberControlStatusServiceTest {
                 familyRepository,
                 familySubRepository,
                 subscriptionJpaRepository,
-                applicationEventPublisher
+                applicationEventPublisher,
+                familyPolicyOutboxPublisher
         );
     }
 
@@ -61,6 +66,7 @@ class UpdateFamilyMemberControlStatusServiceTest {
 
         verify(familySubRepository).updateMemberDataLimit(1L, 101L, 1048576L);
         verify(familySubRepository).updateMemberBlocked(1L, 101L, true);
+        verify(familyPolicyOutboxPublisher).publishImmediateBlock(1L, 101L, true);
     }
 
     @Test

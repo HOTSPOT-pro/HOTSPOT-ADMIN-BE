@@ -63,6 +63,7 @@ class GetFamilyControlStatusServiceTest {
                                 .familyRole(FamilyRole.OWNER)
                                 .blocked(false)
                                 .priority(1)
+                                .dataLimit(1024L)
                                 .build(),
                         FamilyControlMemberRow.builder()
                                 .subId(11L)
@@ -70,6 +71,7 @@ class GetFamilyControlStatusServiceTest {
                                 .familyRole(FamilyRole.PARENT)
                                 .blocked(true)
                                 .priority(2)
+                                .dataLimit(1024L)
                                 .build(),
                         FamilyControlMemberRow.builder()
                                 .subId(12L)
@@ -77,6 +79,7 @@ class GetFamilyControlStatusServiceTest {
                                 .familyRole(FamilyRole.CHILD)
                                 .blocked(false)
                                 .priority(3)
+                                .dataLimit(1024L)
                                 .build()
                 ));
 
@@ -84,9 +87,9 @@ class GetFamilyControlStatusServiceTest {
                 .thenReturn(new FamilyDataControl(
                         30L,
                         List.of(
-                                new FamilyDataControl.SubFamilyDataControl(10L, 5L, 10L),
-                                new FamilyDataControl.SubFamilyDataControl(11L, 2L, 10L),
-                                new FamilyDataControl.SubFamilyDataControl(12L, 1L, 10L)
+                                new FamilyDataControl.SubFamilyDataControl(10L, 5L),
+                                new FamilyDataControl.SubFamilyDataControl(11L, 2L),
+                                new FamilyDataControl.SubFamilyDataControl(12L, 1L)
                         )
                 ));
 
@@ -127,8 +130,7 @@ class GetFamilyControlStatusServiceTest {
                         List.of(
                                 new FamilyDataControl.SubFamilyDataControl(
                                         20L,
-                                        5L,
-                                        10L
+                                        5L
                                 )
                         )
                 ));

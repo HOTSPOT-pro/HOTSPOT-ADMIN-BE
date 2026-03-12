@@ -22,7 +22,7 @@ public class FamilySubRepositoryImpl implements FamilySubRepository {
 
     @Override
     public List<FamilySub> findByFamilyId(Long familyId) {
-        return familySubJpaRepository.findByFamilyFamilyId(familyId).stream()
+        return familySubJpaRepository.findByFamilyId(familyId).stream()
                 .map(FamilySubEntity::entityToDomain)
                 .toList();
     }

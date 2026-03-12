@@ -42,7 +42,7 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
         List<String> subIdList = new ArrayList<>(subIds);
 
         List<Object> rawResults =
-                fetchSubUsageWithPipeline(familyId, subIdList, date);
+                fetchSubUsageWithPipeline(subIdList, date);
 
         if (rawResults == null) {
             return new FamilyDataControl(familyLimitGb, List.of());
@@ -85,7 +85,6 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
      * Redis pipeline 조회
      */
     private List<Object> fetchSubUsageWithPipeline(
-            Long familyId,
             List<String> subIds,
             LocalDate date
     ) {
@@ -96,16 +95,8 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
 
                 Long sub = Long.parseLong(subId);
 
-                String limitKey =
-                        FamilyUsageRedisKeyBuilder.familySubLimit(familyId, sub);
-
                 String usageKey =
                         FamilyUsageRedisKeyBuilder.subUsage(sub, date);
-
-                conn.hashCommands().hGet(
-                        pipelineExecutor.serialize(limitKey),
-                        pipelineExecutor.serialize("family_limit")
-                );
 
                 conn.hashCommands().hGet(
                         pipelineExecutor.serialize(usageKey),
@@ -131,16 +122,8 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
 
         for (String subId : subIds) {
 
-            Long subLimitKb =
-                    RedisValueParser.toLong(rawResults.get(index++));
-
             Long subUsageKb =
                     RedisValueParser.toLong(rawResults.get(index++));
-
-            Long subLimitGb =
-                    RedisUsageCalculator.kbToGbCeil(
-                            subLimitKb == null ? 0 : subLimitKb
-                    );
 
             Long subUsageGb =
                     RedisUsageCalculator.kbToGbCeil(
@@ -150,8 +133,7 @@ public class FamilyDataControlRedisRepository implements FamilyDataLimitReposito
             result.add(
                     new FamilyDataControl.SubFamilyDataControl(
                             Long.parseLong(subId),
-                            subUsageGb,
-                            subLimitGb
+                            subUsageGb
                     )
             );
         }
