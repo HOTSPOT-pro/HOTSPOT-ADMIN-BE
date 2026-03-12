@@ -8,7 +8,6 @@ public record FamilyDataControl(
 ) {
     public record SubFamilyDataControl(
             Long subId,
-            Long familyDataUsage,
-            Long familyDataSubLimit
+            Long familyDataUsage
     ){}
 }
