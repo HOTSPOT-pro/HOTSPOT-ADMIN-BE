@@ -107,6 +107,16 @@ class FamilyPolicyAssignmentRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("앱 정책 기준 가족 정책 일괄 비활성화 성공")
+    void bulkDeactivateAppPoliciesByPolicyIdSuccess() {
+        when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class))).thenReturn(3);
+
+        repository.bulkDeactivateAppPoliciesByPolicyId(201L);
+
+        verify(jdbcTemplate).update(anyString(), any(MapSqlParameterSource.class));
+    }
+
+    @Test
     @DisplayName("만료 시간 정책 벌크 비활성화 성공")
     void bulkDeactivateTimePoliciesByIdsSuccess() {
         when(jdbcTemplate.update(anyString(), any(MapSqlParameterSource.class))).thenReturn(2);
