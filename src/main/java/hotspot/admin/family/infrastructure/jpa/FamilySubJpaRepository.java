@@ -20,7 +20,18 @@ public interface FamilySubJpaRepository extends JpaRepository<FamilySubEntity, L
             "subscription",
             "subscription.member"
     })
-    List<FamilySubEntity> findByFamilyFamilyId(Long familyId);
+    @Query("""
+        SELECT fs
+        FROM FamilySubEntity fs
+        WHERE fs.family.familyId = :familyId
+        ORDER BY
+            CASE fs.familyRole
+                WHEN hotspot.admin.family.domain.FamilyRole.OWNER THEN 1
+                WHEN hotspot.admin.family.domain.FamilyRole.PARENT THEN 2
+                WHEN hotspot.admin.family.domain.FamilyRole.CHILD THEN 3
+            END
+        """)
+    List<FamilySubEntity> findByFamilyId(@Param("familyId") Long familyId);
 
     @Query("""
             SELECT COALESCE(MAX(fs.priority), 0)

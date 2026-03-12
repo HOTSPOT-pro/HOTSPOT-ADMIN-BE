@@ -26,6 +26,13 @@ public class FamilySubscriptionJdbcRepository {
                     JOIN member m
                         ON s.member_id = m.member_id
                     WHERE fs.family_id = ?
+                    ORDER BY
+                        CASE fs.family_role
+                            WHEN 'OWNER' THEN 1
+                            WHEN 'PARENT' THEN 2
+                            WHEN 'CHILD' THEN 3
+                            ELSE 4
+                        END
                     """;
 
         return jdbcTemplate.query(
