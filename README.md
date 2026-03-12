@@ -427,12 +427,45 @@ erDiagram
 | 카카오 웹툰 | `TOON_KAKAO` |
 
 #### 정책 템플릿 예시
-| 정책명 | 설명 | 정책 유형 | 정책 스냅샷 |
-| --- | --- | --- | --- |
-| 수면 모드 | 매일 지정한 수면 시간 동안 앱 사용을 제한해 규칙적인 생활을 돕는 정책입니다. | `SCHEDULED` | `{"days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"],"startTime":"00:00","endTime":"07:00"}` |
-| 방해 금지 모드 | 일정 시간 동안 즉시 앱 사용을 차단해 집중이 필요한 순간을 지원하는 정책입니다. | `ONCE` | `{"durationMinutes":180}` |
-| 수업 집중 모드 | 평일 수업 시간에 맞춰 앱 사용을 자동 제한해 학습 집중도를 높이는 정책입니다. | `SCHEDULED` | `{"days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"],"startTime":"09:00","endTime":"14:00"}` |
-| 시험 기간 집중 모드 | 시험 대비 기간에 장시간 앱 사용을 제한해 학습 몰입을 강화하는 정책입니다. | `ONCE` | `{"startTime":"06:00","endTime":"23:59"}` |
+| 정책명 | 정책 유형 | 설명 |
+| --- | --- | --- |
+| 수면 모드 | `SCHEDULED` | 매일 지정한 수면 시간 동안 앱 사용을 제한해 규칙적인 생활을 돕는 정책 |
+| 방해 금지 모드 | `ONCE` | 일정 시간 동안 즉시 앱 사용을 차단해 집중이 필요한 순간을 지원하는 정책 |
+| 수업 집중 모드 | `SCHEDULED` | 평일 수업 시간에 맞춰 앱 사용을 자동 제한해 학습 집중도를 높이는 정책 |
+| 시험 기간 집중 모드 | `ONCE` | 시험 대비 기간에 장시간 앱 사용을 제한해 학습 몰입을 강화하는 정책 |
+
+**수면 모드**
+```json
+{
+  "days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+  "startTime": "00:00",
+  "endTime": "07:00"
+}
+```
+
+**방해 금지 모드**
+```json
+{
+  "durationMinutes": 180
+}
+```
+
+**수업 집중 모드**
+```json
+{
+  "days": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+  "startTime": "09:00",
+  "endTime": "14:00"
+}
+```
+
+**시험 기간 집중 모드**
+```json
+{
+  "startTime": "06:00",
+  "endTime": "23:59"
+}
+```
 
 #### 운영 포인트
 * `.generator-dummy` 기준 총 사용자 1,000,000명 / 가족 250,000개 데이터를 기준으로 구성
