@@ -164,10 +164,10 @@ class FamilySubQueryRepositoryImplTest {
     @DisplayName("가족 정책 현황 앱 정책 옵션 조회 시 row 매핑이 정상 동작한다")
     void findAllAppPolicyOptionsSuccess() throws Exception {
         FamilySubQueryRepositoryImpl familySubRepository = new FamilySubQueryRepositoryImpl(jdbcTemplate);
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
                 .thenAnswer(invocation -> {
                     @SuppressWarnings("unchecked")
-                    RowMapper<FamilyPolicyAppOptionRow> mapper = invocation.getArgument(1);
+                    RowMapper<FamilyPolicyAppOptionRow> mapper = invocation.getArgument(2);
 
                     ResultSet rs = org.mockito.Mockito.mock(ResultSet.class);
                     when(rs.getLong("policy_id")).thenReturn(301L);
