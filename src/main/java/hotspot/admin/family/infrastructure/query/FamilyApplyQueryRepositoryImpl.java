@@ -40,7 +40,7 @@ public class FamilyApplyQueryRepositoryImpl implements FamilyApplyQueryRepositor
                     FROM family_apply fa
                     WHERE fa.apply_type = :applyType
                       AND fa.status = :status
-                    ORDER BY fa.family_apply_id DESC
+                    ORDER BY fa.family_apply_id ASC
                     LIMIT :limit
                     OFFSET :offset
                 )
@@ -62,7 +62,7 @@ public class FamilyApplyQueryRepositoryImpl implements FamilyApplyQueryRepositor
                 LEFT JOIN family_apply_target fat ON fat.family_apply_id = pr.family_apply_id
                 LEFT JOIN subscription ts ON ts.sub_id = fat.target_sub_id AND ts.is_deleted = false
                 LEFT JOIN member tm ON tm.member_id = ts.member_id AND tm.is_deleted = false
-                ORDER BY pr.family_apply_id DESC, fat.family_apply_target_id ASC NULLS LAST
+                ORDER BY pr.family_apply_id ASC, fat.family_apply_target_id ASC NULLS LAST
                 """;
 
         MapSqlParameterSource params = new MapSqlParameterSource()
