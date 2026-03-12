@@ -10,6 +10,7 @@ import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.FamilyErrorCode;
 import hotspot.admin.family.controller.port.UpdateFamilyMemberControlStatusService;
 import hotspot.admin.family.domain.FamilyRole;
+import hotspot.admin.family.outbox.FamilyPolicyOutboxPublisher;
 import hotspot.admin.family.service.port.FamilyRepository;
 import hotspot.admin.family.service.port.FamilySubRepository;
 import hotspot.admin.outbox.consistencyOutbox.domain.event.family.limit.FamilySubLimitChangedEvent;
@@ -29,6 +30,7 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
     private final SubscriptionJpaRepository subscriptionJpaRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final FamilyPolicyOutboxPublisher familyPolicyOutboxPublisher;
 
     @Transactional
     @Override
@@ -72,6 +74,7 @@ public class UpdateFamilyMemberControlStatusServiceImpl implements UpdateFamilyM
             }
 
             publishSubscriptionStatusEvent(subId, isBlocked, current);
+            familyPolicyOutboxPublisher.publishImmediateBlock(familyId, subId, isBlocked);
         }
 
         if (isParent != null) {
