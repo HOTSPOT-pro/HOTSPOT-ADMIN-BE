@@ -26,7 +26,8 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
     private static final String SQL_FIND_EXISTING_APP_POLICY_IDS = """
             SELECT abs.app_blocked_service_id
             FROM app_blocked_service abs
-            WHERE abs.is_deleted = false
+            WHERE abs.is_active = true
+              AND abs.is_deleted = false
               AND abs.app_blocked_service_id IN (:policyIds)
             """;
 
@@ -61,6 +62,14 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
             SET is_active = false,
                 modified_time = now()
             WHERE policy_sub_id IN (:policySubIds)
+              AND is_active = true
+            """;
+
+    private static final String SQL_BULK_DEACTIVATE_APP_POLICIES_BY_POLICY_ID = """
+            UPDATE blocked_service_sub
+            SET is_active = false,
+                modified_time = now()
+            WHERE blocked_service_id = :policyId
               AND is_active = true
             """;
 
@@ -142,5 +151,13 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
                 .addValue("policySubIds", policySubIds);
 
         jdbcTemplate.update(SQL_BULK_DEACTIVATE_TIME_POLICIES_BY_IDS, params);
+    }
+
+    @Override
+    public void bulkDeactivateAppPoliciesByPolicyId(Long policyId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("policyId", policyId);
+
+        jdbcTemplate.update(SQL_BULK_DEACTIVATE_APP_POLICIES_BY_POLICY_ID, params);
     }
 }

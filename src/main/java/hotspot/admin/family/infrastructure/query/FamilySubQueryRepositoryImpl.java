@@ -163,6 +163,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                 JOIN blocked_service_sub bss ON bss.sub_id = s.sub_id AND bss.is_active = true
                 JOIN app_blocked_service abs
                   ON abs.app_blocked_service_id = bss.blocked_service_id
+                 AND abs.is_active = true
                  AND abs.is_deleted = false
                 WHERE fs.family_id = :familyId
                 ORDER BY bss.sub_id, abs.blocked_service_name
@@ -182,7 +183,8 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                     abs.app_blocked_service_id AS policy_id,
                     abs.blocked_service_name
                 FROM app_blocked_service abs
-                WHERE abs.is_deleted = false
+                WHERE abs.is_active = true
+                  AND abs.is_deleted = false
                 ORDER BY abs.blocked_service_name, abs.app_blocked_service_id
                 """;
         return jdbcTemplate.query(sql, this::mapFamilyAppPolicyOptionRow);
@@ -222,6 +224,7 @@ public class FamilySubQueryRepositoryImpl implements FamilySubQueryRepository {
                     FROM blocked_service_sub bss
                     JOIN app_blocked_service abs
                       ON abs.app_blocked_service_id = bss.blocked_service_id
+                     AND abs.is_active = true
                      AND abs.is_deleted = false
                     WHERE bss.sub_id = s.sub_id
                       AND bss.is_active = true
