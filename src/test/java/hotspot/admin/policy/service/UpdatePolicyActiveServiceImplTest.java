@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hotspot.admin.common.exception.ApplicationException;
 import hotspot.admin.common.exception.code.PolicyErrorCode;
+import hotspot.admin.family.service.port.FamilyPolicyAssignmentRepository;
 import hotspot.admin.policy.controller.response.UpdatePolicyActiveResponse;
 import hotspot.admin.policy.domain.AdminPolicyType;
 import hotspot.admin.policy.service.port.AppBlockedServiceRepository;
@@ -27,11 +28,18 @@ class UpdatePolicyActiveServiceImplTest {
     @Mock
     private AppBlockedServiceRepository appBlockedServiceRepository;
 
+    @Mock
+    private FamilyPolicyAssignmentRepository familyPolicyAssignmentRepository;
+
     private UpdatePolicyActiveServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new UpdatePolicyActiveServiceImpl(blockPolicyRepository, appBlockedServiceRepository);
+        service = new UpdatePolicyActiveServiceImpl(
+                blockPolicyRepository,
+                appBlockedServiceRepository,
+                familyPolicyAssignmentRepository
+        );
     }
 
     @Test
@@ -54,6 +62,7 @@ class UpdatePolicyActiveServiceImplTest {
         assertThat(result.policyId()).isEqualTo(2L);
         assertThat(result.displayId()).isEqualTo("AP-002");
         assertThat(result.isActive()).isFalse();
+        org.mockito.Mockito.verify(familyPolicyAssignmentRepository).bulkDeactivateAppPoliciesByPolicyId(2L);
     }
 
     @Test
