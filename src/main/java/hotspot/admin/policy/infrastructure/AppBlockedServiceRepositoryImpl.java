@@ -15,11 +15,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AppBlockedServiceRepositoryImpl implements AppBlockedServiceRepository {
 
+    private static final String EXCLUDED_APP_POLICY_CODE = "PRESENT_DATA";
+
     private final AppBlockedServiceJpaRepository appBlockedServiceJpaRepository;
 
     @Override
     public Page<AppBlockedService> findAll(Pageable pageable) {
-        return appBlockedServiceJpaRepository.findAll(pageable)
+        return appBlockedServiceJpaRepository.findByBlockedServiceCodeNot(EXCLUDED_APP_POLICY_CODE, pageable)
                 .map(hotspot.admin.appservice.infrastructure.entity.AppBlockedServiceEntity::entityToDomain);
     }
 
