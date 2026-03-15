@@ -22,7 +22,7 @@ server:
 
 spring:
   application:
-    name: backend
+    name: hotspot-admin
 
   profiles:
     default: local
@@ -40,6 +40,24 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 ---
 spring:

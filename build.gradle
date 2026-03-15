@@ -44,6 +44,8 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	implementation 'software.amazon.awssdk:kms:2.31.2'
 
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
