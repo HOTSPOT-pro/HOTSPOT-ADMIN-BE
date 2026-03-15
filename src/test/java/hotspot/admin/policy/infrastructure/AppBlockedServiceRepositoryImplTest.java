@@ -43,7 +43,8 @@ class AppBlockedServiceRepositoryImplTest {
                 .isDeleted(false)
                 .build();
         Page<AppBlockedServiceEntity> page = new PageImpl<>(List.of(entity));
-        when(appBlockedServiceJpaRepository.findAll(PageRequest.of(0, 20))).thenReturn(page);
+        when(appBlockedServiceJpaRepository.findByBlockedServiceCodeNot("PRESENT_DATA", PageRequest.of(0, 20)))
+                .thenReturn(page);
 
         Page<AppBlockedService> result = repository.findAll(PageRequest.of(0, 20));
         assertThat(result.getContent()).hasSize(1);

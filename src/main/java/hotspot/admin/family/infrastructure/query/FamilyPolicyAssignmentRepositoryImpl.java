@@ -26,7 +26,9 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
     private static final String SQL_FIND_EXISTING_APP_POLICY_IDS = """
             SELECT abs.app_blocked_service_id
             FROM app_blocked_service abs
-            WHERE abs.is_deleted = false
+            WHERE abs.is_active = true
+              AND abs.is_deleted = false
+              AND abs.blocked_service_code <> :excludedPolicyCode
               AND abs.app_blocked_service_id IN (:policyIds)
             """;
 
@@ -64,6 +66,14 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
               AND is_active = true
             """;
 
+    private static final String SQL_BULK_DEACTIVATE_APP_POLICIES_BY_POLICY_ID = """
+            UPDATE blocked_service_sub
+            SET is_active = false,
+                modified_time = now()
+            WHERE blocked_service_id = :policyId
+              AND is_active = true
+            """;
+
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
@@ -87,7 +97,8 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
         }
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("policyIds", policyIds);
+                .addValue("policyIds", policyIds)
+                .addValue("excludedPolicyCode", FamilyPolicyConstants.EXCLUDED_FAMILY_APP_POLICY_CODE);
 
         List<Long> ids = jdbcTemplate.queryForList(SQL_FIND_EXISTING_APP_POLICY_IDS, params, Long.class);
         return new HashSet<>(ids);
@@ -142,5 +153,13 @@ public class FamilyPolicyAssignmentRepositoryImpl implements FamilyPolicyAssignm
                 .addValue("policySubIds", policySubIds);
 
         jdbcTemplate.update(SQL_BULK_DEACTIVATE_TIME_POLICIES_BY_IDS, params);
+    }
+
+    @Override
+    public void bulkDeactivateAppPoliciesByPolicyId(Long policyId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("policyId", policyId);
+
+        jdbcTemplate.update(SQL_BULK_DEACTIVATE_APP_POLICIES_BY_POLICY_ID, params);
     }
 }
