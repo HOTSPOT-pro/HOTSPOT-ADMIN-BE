@@ -2,6 +2,7 @@ package hotspot.admin.common.config;
 
 import java.util.List;
 
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,9 +25,6 @@ public class SwaggerConfig {
                         .title("Hotspot Admin API")
                         .version("v1")
                         .description("Hotspot 관리자 API 명세"))
-                .servers(List.of(
-                        new Server().url("https://admin.hotspot.pics")
-                ))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(
@@ -37,5 +35,14 @@ public class SwaggerConfig {
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
                         ));
+    }
+
+    @Bean
+    public OpenApiCustomizer adminServerCustomizer() {
+        return openApi -> openApi.setServers(List.of(
+                new Server()
+                        .url("https://admin.hotspot.pics")
+                        .description("Production server")
+        ));
     }
 }
