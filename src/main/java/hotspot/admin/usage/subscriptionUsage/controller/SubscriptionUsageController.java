@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/subscriptionUsage")
+@RequestMapping("/api/v1/admin/subscriptionUsage")
 public class SubscriptionUsageController implements SubscriptionUsageApi {
 
     private final FindSubscriptionUsageService findSubscriptionUsageService;

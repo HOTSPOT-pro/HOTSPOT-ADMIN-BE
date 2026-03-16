@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/familyUsage")
+@RequestMapping("/api/v1/admin/familyUsage")
 public class FamilyUsageController implements FamilyUsageApi {
 
     private final FindFamilyUsageService findFamilyUsageService;
