@@ -13,7 +13,6 @@ jobs:
       AWS_REGION: ap-northeast-2
       CLUSTER: hotspot-cluster
       SERVICE: AdminServiceStack-AdminService91E7C329-VzmtgN5AkQjt
-      TASK_DEF_NAME: AdminServiceStackAdminTaskDefCDDAE11B
       ECR_REPO: hotspot-admin
       CONTAINER_NAME: AdminContainer
 
@@ -32,16 +31,27 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.sha }}
 
-          docker buildx create --use
+          docker buildx create --use || true
           docker buildx build \
             --platform linux/amd64 \
             -t 121834501390.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:$IMAGE_TAG \
             --push .
 
-      - name: Get Current Task Definition
+      - name: Get Active Task Definition ARN From Service
+        run: |
+          TASK_DEF_ARN=$(aws ecs describe-services \
+            --cluster $CLUSTER \
+            --services $SERVICE \
+            --query 'services[0].taskDefinition' \
+            --output text)
+
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+          echo "Active task definition: $TASK_DEF_ARN"
+
+      - name: Get Current Task Definition JSON
         run: |
           aws ecs describe-task-definition \
-            --task-definition $TASK_DEF_NAME \
+            --task-definition "$TASK_DEF_ARN" \
             --query taskDefinition > task-def.json
 
       - name: Render New Task Definition
@@ -49,26 +59,42 @@ jobs:
           IMAGE_TAG=${{ github.sha }}
           IMAGE_URI=121834501390.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:$IMAGE_TAG
 
-          jq --arg IMAGE "$IMAGE_URI" \
-            '.containerDefinitions[0].image = $IMAGE
-             | del(.taskDefinitionArn)
-             | del(.revision)
-             | del(.status)
-             | del(.requiresAttributes)
-             | del(.compatibilities)
-             | del(.registeredAt)
-             | del(.registeredBy)' \
-            task-def.json > new-task-def.json
+          jq --arg IMAGE "$IMAGE_URI" --arg NAME "$CONTAINER_NAME" '
+            .containerDefinitions |= map(
+              if .name == $NAME then
+                .image = $IMAGE
+              else
+                .
+              end
+            )
+            | del(.taskDefinitionArn)
+            | del(.revision)
+            | del(.status)
+            | del(.requiresAttributes)
+            | del(.compatibilities)
+            | del(.registeredAt)
+            | del(.registeredBy)
+          ' task-def.json > new-task-def.json
 
       - name: Register New Revision
         run: |
-          aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+          echo "Registered: $NEW_TASK_DEF_ARN"
 
       - name: Update ECS Service
         run: |
           aws ecs update-service \
             --cluster $CLUSTER \
             --service $SERVICE \
-            --task-definition $TASK_DEF_NAME \
-            --force-new-deployment
+            --task-definition "$NEW_TASK_DEF_ARN"
+
+      - name: Wait For Service Stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster $CLUSTER \
+            --services $SERVICE
