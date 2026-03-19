@@ -11,14 +11,14 @@ import hotspot.admin.policy.domain.PolicySnapshot;
 public final class PolicyScheduleLabelFormatter {
 
     private static final Set<PolicyDay> WEEKDAYS = EnumSet.of(
-            PolicyDay.MON,
-            PolicyDay.TUE,
-            PolicyDay.WED,
-            PolicyDay.THU,
-            PolicyDay.FRI
+            PolicyDay.MONDAY,
+            PolicyDay.TUESDAY,
+            PolicyDay.WEDNESDAY,
+            PolicyDay.THURSDAY,
+            PolicyDay.FRIDAY
     );
     private static final Set<PolicyDay> EVERYDAY = EnumSet.allOf(PolicyDay.class);
-    private static final Set<PolicyDay> WEEKEND = EnumSet.of(PolicyDay.SAT, PolicyDay.SUN);
+    private static final Set<PolicyDay> WEEKEND = EnumSet.of(PolicyDay.SATURDAY, PolicyDay.SUNDAY);
 
     private PolicyScheduleLabelFormatter() {
     }
@@ -67,13 +67,13 @@ public final class PolicyScheduleLabelFormatter {
 
     private static String toKoreanDayShort(PolicyDay day) {
         return switch (day) {
-            case MON -> "월";
-            case TUE -> "화";
-            case WED -> "수";
-            case THU -> "목";
-            case FRI -> "금";
-            case SAT -> "토";
-            case SUN -> "일";
+            case MONDAY -> "월";
+            case TUESDAY -> "화";
+            case WEDNESDAY -> "수";
+            case THURSDAY -> "목";
+            case FRIDAY -> "금";
+            case SATURDAY -> "토";
+            case SUNDAY -> "일";
         };
     }
 }

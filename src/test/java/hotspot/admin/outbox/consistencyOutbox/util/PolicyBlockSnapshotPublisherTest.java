@@ -54,7 +54,7 @@ class PolicyBlockSnapshotPublisherTest {
     @DisplayName("활성 정책이 있으면 snapshot을 payload로 변환해 이벤트를 발행한다")
     void publishActivePolicies() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON, PolicyDay.WED))
+                .days(List.of(PolicyDay.MONDAY, PolicyDay.WEDNESDAY))
                 .startTime("06:00")
                 .endTime("07:00")
                 .build();

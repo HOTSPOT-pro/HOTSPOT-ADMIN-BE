@@ -20,7 +20,7 @@ class PolicySnapshotUtilTest {
     @DisplayName("SCHEDULED 정책이면 요일/시작시간/종료시간을 인코딩한 payload를 만든다")
     void mapScheduledPolicy() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON, PolicyDay.TUE))
+                .days(List.of(PolicyDay.MONDAY, PolicyDay.TUESDAY))
                 .startTime("06:00")
                 .endTime("07:00")
                 .build();

@@ -3,13 +3,13 @@ package hotspot.admin.policy.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum PolicyDay {
-    MON(1),
-    TUE(2),
-    WED(3),
-    THU(4),
-    FRI(5),
-    SAT(6),
-    SUN(7);
+    MONDAY(1),
+    TUESDAY(2),
+    WEDNESDAY(3),
+    THURSDAY(4),
+    FRIDAY(5),
+    SATURDAY(6),
+    SUNDAY(7);
 
     private final int value;
 
@@ -28,13 +28,13 @@ public enum PolicyDay {
         }
 
         return switch (value.trim().toUpperCase()) {
-            case "MON", "MONDAY" -> MON;
-            case "TUE", "TUESDAY" -> TUE;
-            case "WED", "WEDNESDAY" -> WED;
-            case "THU", "THURSDAY" -> THU;
-            case "FRI", "FRIDAY" -> FRI;
-            case "SAT", "SATURDAY" -> SAT;
-            case "SUN", "SUNDAY" -> SUN;
+            case "MON", "MONDAY" -> MONDAY;
+            case "TUE", "TUESDAY" -> TUESDAY;
+            case "WED", "WEDNESDAY" -> WEDNESDAY;
+            case "THU", "THURSDAY" -> THURSDAY;
+            case "FRI", "FRIDAY" -> FRIDAY;
+            case "SAT", "SATURDAY" -> SATURDAY;
+            case "SUN", "SUNDAY" -> SUNDAY;
             default -> throw new IllegalArgumentException("Unknown day: " + value);
         };
     }

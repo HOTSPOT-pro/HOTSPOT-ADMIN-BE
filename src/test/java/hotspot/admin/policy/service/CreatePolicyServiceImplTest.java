@@ -51,7 +51,7 @@ class CreatePolicyServiceImplTest {
                 "매일 00:00~07:00 차단",
                 PolicyType.SCHEDULED,
                 PolicySnapshot.builder()
-                        .days(List.of(PolicyDay.MON, PolicyDay.TUE))
+                        .days(List.of(PolicyDay.MONDAY, PolicyDay.TUESDAY))
                         .startTime("00:00")
                         .endTime("07:00")
                         .build()
@@ -83,7 +83,7 @@ class CreatePolicyServiceImplTest {
                 "중복 설명",
                 PolicyType.SCHEDULED,
                 PolicySnapshot.builder()
-                        .days(List.of(PolicyDay.MON))
+                        .days(List.of(PolicyDay.MONDAY))
                         .startTime("00:00")
                         .endTime("07:00")
                         .build()

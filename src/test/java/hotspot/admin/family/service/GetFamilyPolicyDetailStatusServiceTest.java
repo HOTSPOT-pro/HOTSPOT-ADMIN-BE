@@ -89,7 +89,11 @@ class GetFamilyPolicyDetailStatusServiceTest {
                                 .policyDescription("매일 야간 차단")
                                 .policyType(PolicyType.SCHEDULED)
                                 .policySnapshotJson("""
-                                        {"days":["MON","TUE","WED","THU","FRI"],"startTime":"22:00","endTime":"07:00"}
+                                        {
+                                          "days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"],
+                                          "startTime":"22:00",
+                                          "endTime":"07:00"
+                                        }
                                         """)
                                 .build(),
                         FamilyPolicyTimeOptionRow.builder()
@@ -98,7 +102,7 @@ class GetFamilyPolicyDetailStatusServiceTest {
                                 .policyDescription("주말 학습 시간")
                                 .policyType(PolicyType.SCHEDULED)
                                 .policySnapshotJson("""
-                                        {"days":["SAT","SUN"],"startTime":"10:00","endTime":"12:00"}
+                                        {"days":["SATURDAY","SUNDAY"],"startTime":"10:00","endTime":"12:00"}
                                         """)
                                 .build()
                 ));

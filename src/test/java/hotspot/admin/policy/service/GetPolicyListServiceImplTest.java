@@ -57,8 +57,8 @@ class GetPolicyListServiceImplTest {
                         .policyType(PolicyType.SCHEDULED)
                         .policySnapshot(PolicySnapshot.builder()
                                 .days(List.of(
-                                        PolicyDay.MON, PolicyDay.TUE, PolicyDay.WED, PolicyDay.THU,
-                                        PolicyDay.FRI, PolicyDay.SAT, PolicyDay.SUN
+                                        PolicyDay.MONDAY, PolicyDay.TUESDAY, PolicyDay.WEDNESDAY, PolicyDay.THURSDAY,
+                                        PolicyDay.FRIDAY, PolicyDay.SATURDAY, PolicyDay.SUNDAY
                                 ))
                                 .startTime("00:00")
                                 .endTime("07:00")
@@ -81,7 +81,7 @@ class GetPolicyListServiceImplTest {
                         .policyDescription("커스텀 요일 차단")
                         .policyType(PolicyType.SCHEDULED)
                         .policySnapshot(PolicySnapshot.builder()
-                                .days(List.of(PolicyDay.MON, PolicyDay.WED, PolicyDay.FRI))
+                                .days(List.of(PolicyDay.MONDAY, PolicyDay.WEDNESDAY, PolicyDay.FRIDAY))
                                 .startTime("09:00")
                                 .endTime("14:00")
                                 .build())

@@ -187,25 +187,25 @@ public class FamilyBlockedStatusResolver {
 
     private static PolicyDay toPolicyDay(DayOfWeek dayOfWeek) {
         return switch (dayOfWeek) {
-            case MONDAY -> PolicyDay.MON;
-            case TUESDAY -> PolicyDay.TUE;
-            case WEDNESDAY -> PolicyDay.WED;
-            case THURSDAY -> PolicyDay.THU;
-            case FRIDAY -> PolicyDay.FRI;
-            case SATURDAY -> PolicyDay.SAT;
-            case SUNDAY -> PolicyDay.SUN;
+            case MONDAY -> PolicyDay.MONDAY;
+            case TUESDAY -> PolicyDay.TUESDAY;
+            case WEDNESDAY -> PolicyDay.WEDNESDAY;
+            case THURSDAY -> PolicyDay.THURSDAY;
+            case FRIDAY -> PolicyDay.FRIDAY;
+            case SATURDAY -> PolicyDay.SATURDAY;
+            case SUNDAY -> PolicyDay.SUNDAY;
         };
     }
 
     private static PolicyDay previousDay(PolicyDay day) {
         return switch (day) {
-            case MON -> PolicyDay.SUN;
-            case TUE -> PolicyDay.MON;
-            case WED -> PolicyDay.TUE;
-            case THU -> PolicyDay.WED;
-            case FRI -> PolicyDay.THU;
-            case SAT -> PolicyDay.FRI;
-            case SUN -> PolicyDay.SAT;
+            case MONDAY -> PolicyDay.SUNDAY;
+            case TUESDAY -> PolicyDay.MONDAY;
+            case WEDNESDAY -> PolicyDay.TUESDAY;
+            case THURSDAY -> PolicyDay.WEDNESDAY;
+            case FRIDAY -> PolicyDay.THURSDAY;
+            case SATURDAY -> PolicyDay.FRIDAY;
+            case SUNDAY -> PolicyDay.SATURDAY;
         };
     }
 }

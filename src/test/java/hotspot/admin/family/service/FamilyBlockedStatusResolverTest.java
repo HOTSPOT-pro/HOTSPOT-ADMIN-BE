@@ -187,7 +187,13 @@ class FamilyBlockedStatusResolverTest {
     @Test
     void scheduledPolicyInRangeThenBlocked() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON, PolicyDay.TUE, PolicyDay.WED, PolicyDay.THU, PolicyDay.FRI))
+                .days(List.of(
+                        PolicyDay.MONDAY,
+                        PolicyDay.TUESDAY,
+                        PolicyDay.WEDNESDAY,
+                        PolicyDay.THURSDAY,
+                        PolicyDay.FRIDAY
+                ))
                 .startTime("10:00")
                 .endTime("12:00")
                 .build();
@@ -203,7 +209,13 @@ class FamilyBlockedStatusResolverTest {
     @Test
     void scheduledPolicyOutOfRangeThenNotBlocked() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON, PolicyDay.TUE, PolicyDay.WED, PolicyDay.THU, PolicyDay.FRI))
+                .days(List.of(
+                        PolicyDay.MONDAY,
+                        PolicyDay.TUESDAY,
+                        PolicyDay.WEDNESDAY,
+                        PolicyDay.THURSDAY,
+                        PolicyDay.FRIDAY
+                ))
                 .startTime("10:00")
                 .endTime("12:00")
                 .build();
@@ -219,7 +231,7 @@ class FamilyBlockedStatusResolverTest {
     @Test
     void overnightPolicyUsesPreviousDayWindow() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON))
+                .days(List.of(PolicyDay.MONDAY))
                 .startTime("22:00")
                 .endTime("07:00")
                 .build();
@@ -240,7 +252,7 @@ class FamilyBlockedStatusResolverTest {
     @Test
     void sameStartAndEndMeansAllDayForMatchedDay() {
         PolicySnapshot snapshot = PolicySnapshot.builder()
-                .days(List.of(PolicyDay.MON))
+                .days(List.of(PolicyDay.MONDAY))
                 .startTime("00:00")
                 .endTime("00:00")
                 .build();
